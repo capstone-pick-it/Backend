@@ -20,24 +20,28 @@
 
 ```
 com.capstone.pickIt
+├── api
+│   └── user
+│       ├── UserController
+│       ├── UserService
+│       ├── UserServiceImpl
+│       └── dto
+│           ├── UserRequestDto
+│           └── UserResponseDto
+│   └── [도메인명]
+│       ├── [도메인명]Controller
+│       ├── [도메인명]Service
+│       ├── [도메인명]ServiceImpl
+│       └── dto
+│           ├── [도메인명]RequestDto
+│           └── [도메인명]ResponseDto
 ├── domain
-│   ├── user
-│   │   ├── User
-│   │   ├── UserController
-│   │   ├── UserService
-│   │   ├── UserServiceImpl
-│   │   ├── UserRepository
-│   │   └── dto
-│   │       ├── UserRequestDto
-│   │       └── UserResponseDto
-│   ├── [도메인명]
-│   │   ├── [도메인명]
-│   │   ├── [도메인명]Controller
-│   │   ├── [도메인명]Service
-│   │   ├── [도메인명]ServiceImpl
-│   │   ├── [도메인명]Repository
-│   │   └── dto
-│   └── ...
+│   └── user
+│       ├── User
+│       └── UserRepository
+│   └── [도메인명]
+│       ├── [도메인명]
+│       └── [도메인명]Repository
 ├── global
 │   ├── config
 │   │   └── SecurityConfiguration
@@ -45,6 +49,9 @@ com.capstone.pickIt
 │   └── util
 └── PickItApplication
 ```
+
+도메인형 패키지 구조를 기반으로, 비즈니스 로직과 핵심 데이터 패키지를 분리합니다. api 패키지에는 Service, DTO, Controller를 두고, domain 패키지에는 entity와 repository를 둡니다. 
+
 
 ---
 
