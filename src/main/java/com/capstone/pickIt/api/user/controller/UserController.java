@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,14 +49,15 @@ public class UserController {
 
     @Operation(summary = "회원가입", description = "이메일 인증 완료 후 회원가입을 진행합니다.")
     @PostMapping("/signup")
-    public ApiResponse<UserResponseDTO> signUp(@RequestBody @Valid UserRequestDTO request) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> signUp(@RequestBody @Valid UserRequestDTO request) {
         UserResponseDTO response = userService.signUp(request);
-        return ApiResponse.<UserResponseDTO>builder()
-                .isSuccess(true)
-                .code(SuccessCode.CREATED.getCode())
-                .message("회원가입에 성공했습니다.")
-                .result(response)
-                .build();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<UserResponseDTO>builder()
+                        .isSuccess(true)
+                        .code(SuccessCode.CREATED.getCode())
+                        .message("회원가입에 성공했습니다.")
+                        .result(response)
+                        .build());
     }
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
