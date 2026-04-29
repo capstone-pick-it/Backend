@@ -47,11 +47,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UserException(UserErrorCode.INVALID_PASSWORD);
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new UserException(UserErrorCode.AUTHENTICATION_FAILED);
         }
 
         String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getEmail());
