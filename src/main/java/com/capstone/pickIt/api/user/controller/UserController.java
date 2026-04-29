@@ -14,6 +14,7 @@ import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
 import com.capstone.pickIt.global.apiPayload.response.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -82,5 +83,15 @@ public class UserController {
                 .message("토큰이 재발급되었습니다.")
                 .result(response)
                 .build();
+    }
+
+    @Operation(
+            summary = "로그아웃",
+            description = "Access Token을 무효화하고 Refresh Token을 삭제합니다.\n\n"
+    )
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(HttpServletRequest request) {
+        authService.logout(request.getHeader("Authorization"));
+        return ApiResponse.onSuccess(null, SuccessCode.OK);
     }
 }
