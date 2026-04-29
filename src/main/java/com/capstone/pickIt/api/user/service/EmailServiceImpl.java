@@ -3,7 +3,7 @@ package com.capstone.pickIt.api.user.service;
 import com.capstone.pickIt.api.user.dto.request.EmailSendRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.EmailVerifyRequestDTO;
 import com.capstone.pickIt.domain.user.exception.UserErrorCode;
-import com.capstone.pickIt.global.apiPayload.exception.CustomException;
+import com.capstone.pickIt.domain.user.exception.UserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -49,7 +49,7 @@ public class EmailServiceImpl implements EmailService {
         String storedCode = redisTemplate.opsForValue().get(EMAIL_CODE_PREFIX + email);
 
         if (storedCode == null || !storedCode.equals(request.getCode())) {
-            throw new CustomException(UserErrorCode.EMAIL_CODE_INVALID);
+            throw new UserException(UserErrorCode.EMAIL_CODE_INVALID);
         }
 
         redisTemplate.delete(EMAIL_CODE_PREFIX + email);
@@ -78,7 +78,7 @@ public class EmailServiceImpl implements EmailService {
     private void validateUniversityEmail(String email) {
         String domain = email.substring(email.indexOf('@') + 1);
         if (!domain.endsWith(UNIVERSITY_DOMAIN_SUFFIX)) {
-            throw new CustomException(UserErrorCode.EMAIL_DOMAIN_INVALID);
+            throw new UserException(UserErrorCode.EMAIL_DOMAIN_INVALID);
         }
     }
 

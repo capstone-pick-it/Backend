@@ -4,8 +4,8 @@ import com.capstone.pickIt.api.user.dto.request.UserRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.UserResponseDTO;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.exception.UserErrorCode;
+import com.capstone.pickIt.domain.user.exception.UserException;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
-import com.capstone.pickIt.global.apiPayload.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,11 +28,11 @@ public class UserServiceImpl implements UserService {
         String email = request.getEmail();
 
         if (!Boolean.TRUE.equals(redisTemplate.hasKey(EMAIL_VERIFIED_PREFIX + email))) {
-            throw new CustomException(UserErrorCode.USER_EMAIL_NOT_VERIFIED);
+            throw new UserException(UserErrorCode.USER_EMAIL_NOT_VERIFIED);
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new CustomException(UserErrorCode.USER_ALREADY_EXISTS);
+            throw new UserException(UserErrorCode.USER_ALREADY_EXISTS);
         }
 
         User user = User.builder()
