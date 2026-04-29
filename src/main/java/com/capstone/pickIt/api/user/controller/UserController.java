@@ -92,6 +92,11 @@ public class UserController {
     @PostMapping("/logout")
     public ApiResponse<Void> logout(HttpServletRequest request) {
         authService.logout(request.getHeader("Authorization"));
-        return ApiResponse.onSuccess(null, SuccessCode.OK);
+        return ApiResponse.<Void>builder()
+                .isSuccess(true)
+                .code(SuccessCode.OK.getCode())
+                .message("로그아웃에 성공했습니다.")
+                .result(null)
+                .build();
     }
 }
