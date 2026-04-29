@@ -11,9 +11,11 @@ import com.capstone.pickIt.global.infra.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -21,6 +23,19 @@ import java.util.concurrent.TimeUnit;
 public class AuthServiceImpl implements AuthService {
 
     private static final String REFRESH_TOKEN_PREFIX = "refresh:token:";
+
+    // Refresh Token Rotation을 원자적으로 처리하는 Lua 스크립트
+    // 기존 토큰과 일치할 때만 새 토큰으로 교체 (Race Condition 방지)
+    private static final DefaultRedisScript<Long> REFRESH_TOKEN_ROTATION_SCRIPT =
+            new DefaultRedisScript<>(
+                    "if redis.call('get', KEYS[1]) == ARGV[1] then " +
+                    "   redis.call('set', KEYS[1], ARGV[2], 'PX', ARGV[3]) " +
+                    "   return 1 " +
+                    "else " +
+                    "   return 0 " +
+                    "end",
+                    Long.class
+            );
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -30,30 +45,18 @@ public class AuthServiceImpl implements AuthService {
     @Value("${jwt.refresh-token-expire-ms}")
     private long refreshTokenExpireMs;
 
-
-    /**
-     * 사용자 로그인을 처리합니다.
-     * 1. 사용자 존재 여부 및 비밀번호 검증
-     * 2. Access/Refresh 토큰 생성
-     * 3. Refresh 토큰을 Redis에 저장 (추후 갱신 및 로그아웃용)
-     */
     @Override
     public LoginResponseDTO login(LoginRequestDTO request) {
-
-        //이메일로 사용자 조회하기
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        // 비밀번호 일치 여부 확인
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new UserException(UserErrorCode.INVALID_PASSWORD);
         }
 
-        //jwt 토큰 발급
         String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getEmail());
         String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), user.getEmail());
 
-        // refresh 토큰을 레디스에 저장
         redisTemplate.opsForValue().set(
                 REFRESH_TOKEN_PREFIX + user.getUserId(),
                 refreshToken,
@@ -69,44 +72,36 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
-    /**
-     * Access 토큰 만료 시 Refresh 토큰을 통해 새로운 토큰 쌍을 발급합니다.
-     * Refresh Token Rotation 전략을 사용하여 보안을 강화합니다.
-     */
     @Override
     public LoginResponseDTO refresh(TokenRefreshRequestDTO request) {
-        String refreshToken = request.getRefreshToken();
+        //  Bearer 접두사 제거 후 정규화된 토큰으로 이후 모든 작업 수행
+        String refreshToken = jwtProvider.normalize(request.getRefreshToken());
 
-        //전달 받은 refresh 토큰의 유효성 검증하기
         if (!jwtProvider.validateRefreshToken(refreshToken)) {
             throw new UserException(UserErrorCode.TOKEN_INVALID);
         }
 
-        // 토큰에서 유저 정보 추출하기
         Long userId = jwtProvider.getMemberId(refreshToken);
-        String email = jwtProvider.getEmail(refreshToken);
 
-        //레디스에 저장된 토큰하고 일치하는지 확인하기
-        String storedToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + userId);
-        if (!refreshToken.equals(storedToken)) {
-            throw new UserException(UserErrorCode.TOKEN_INVALID);
-        }
-
-        //유저 존재 여부 재확인하기
-        User user = userRepository.findByEmail(email)
+        // 변경 불가능한 userId로 사용자 조회 → 최신 이메일로 새 토큰 생성
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        //새로운 토큰 쌍 생성하기 기존 토큰은 무효화하고 새롭게 발급해주는 것
-        String newAccessToken = jwtProvider.createAccessToken(userId, email);
-        String newRefreshToken = jwtProvider.createRefreshToken(userId, email);
+        String newAccessToken = jwtProvider.createAccessToken(user.getUserId(), user.getEmail());
+        String newRefreshToken = jwtProvider.createRefreshToken(user.getUserId(), user.getEmail());
 
-        //레디스에 새로운 refresh토큰 갱신하기
-        redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + userId,
+        // Lua 스크립트로 기존 토큰 검증 + 새 토큰 저장을 원자적으로 처리
+        Long result = redisTemplate.execute(
+                REFRESH_TOKEN_ROTATION_SCRIPT,
+                Collections.singletonList(REFRESH_TOKEN_PREFIX + userId),
+                refreshToken,
                 newRefreshToken,
-                refreshTokenExpireMs,
-                TimeUnit.MILLISECONDS
+                String.valueOf(refreshTokenExpireMs)
         );
+
+        if (result == null || result == 0L) {
+            throw new UserException(UserErrorCode.TOKEN_INVALID);
+        }
 
         return LoginResponseDTO.builder()
                 .accessToken(newAccessToken)
