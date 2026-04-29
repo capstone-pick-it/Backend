@@ -65,7 +65,6 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .userId(user.getUserId())
-                .email(user.getEmail())
                 .nickname(user.getNickname())
                 .build();
     }
@@ -113,7 +112,6 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .userId(user.getUserId())
-                .email(user.getEmail())
                 .nickname(user.getNickname())
                 .build();
     }
