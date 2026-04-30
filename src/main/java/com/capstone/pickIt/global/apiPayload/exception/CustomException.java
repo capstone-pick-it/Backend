@@ -20,6 +20,7 @@ public class CustomException extends RuntimeException {
 
     public CustomException(BaseCode errorCode, String message, Throwable cause) {
         super(message, cause);
+
         this.errorCode = errorCode;
     }
 }
