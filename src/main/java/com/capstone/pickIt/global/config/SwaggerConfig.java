@@ -14,7 +14,7 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI swagger() {
-        Info info = new Info().title("PickIt API 명세서").description("PickIt의 SpringBoot 서버 API 명세서입니다.").version("0.0.1");
+        Info info = new Info().title("Finly API 명세서").description("Finly의 SpringBoot 서버 API 명세서입니다.").version("0.0.1");
 
         // JWT 토큰 헤더 방식
         String securityScheme = "JWT TOKEN";

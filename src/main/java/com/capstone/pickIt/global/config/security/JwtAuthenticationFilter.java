@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,11 +15,9 @@ import java.util.Collections;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-    private static final String ACCESS_TOKEN_BLACKLIST_PREFIX = "blacklist:access:";
+    // 요청마다 JWT 검사
 
     private final JwtProvider jwtProvider;
-    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     protected void doFilterInternal(
@@ -40,10 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(authHeader != null && authHeader.startsWith("Bearer ")){
             String token = authHeader.substring(7);
 
-            boolean isBlacklisted = Boolean.TRUE.equals(
-                    redisTemplate.hasKey(ACCESS_TOKEN_BLACKLIST_PREFIX + token));
-
-            if(jwtProvider.validateAccessToken(token) && !isBlacklisted) {
+            if(jwtProvider.validateAccessToken(token)) {
 
                 Long memberId = jwtProvider.getMemberId(token);
                 String email = jwtProvider.getEmail(token);
