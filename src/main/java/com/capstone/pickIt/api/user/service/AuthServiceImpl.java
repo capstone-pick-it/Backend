@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class AuthServiceImpl implements AuthService {
 
     private static final String REFRESH_TOKEN_PREFIX = "refresh:token:";
+    private static final String ACCESS_TOKEN_BLACKLIST_PREFIX = "blacklist:access:";
 
     // Refresh Token Rotation을 원자적으로 처리하는 Lua 스크립트
     // 기존 토큰과 일치할 때만 새 토큰으로 교체 (Race Condition 방지)
@@ -107,5 +108,28 @@ public class AuthServiceImpl implements AuthService {
                 .userId(user.getUserId())
                 .nickname(user.getNickname())
                 .build();
+    }
+
+    @Override
+    public void logout(String accessToken) {
+        String token = jwtProvider.normalize(accessToken);
+
+        if (!jwtProvider.validateAccessToken(token)) {
+            throw new UserException(UserErrorCode.TOKEN_INVALID);
+        }
+
+        Long userId = jwtProvider.getMemberId(token);
+
+        redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
+
+        long remainingMs = jwtProvider.getExpiration(token).getTime() - System.currentTimeMillis();
+        if (remainingMs > 0) {
+            redisTemplate.opsForValue().set(
+                    ACCESS_TOKEN_BLACKLIST_PREFIX + token,
+                    "logout",
+                    remainingMs,
+                    TimeUnit.MILLISECONDS
+            );
+        }
     }
 }

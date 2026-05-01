@@ -9,4 +9,6 @@ public interface AuthService {
     LoginResponseDTO login(LoginRequestDTO request);
 
     LoginResponseDTO refresh(TokenRefreshRequestDTO request);
+
+    void logout(String accessToken);
 }
