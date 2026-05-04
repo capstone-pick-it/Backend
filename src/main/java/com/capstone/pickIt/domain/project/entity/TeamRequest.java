@@ -6,6 +6,7 @@ import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @Table(name = "team_request")
@@ -45,17 +46,15 @@ public class TeamRequest extends CreatedBaseEntity {
 
     public void accept() {
         this.teamRequestStatus = TeamRequestStatus.ACCEPTED;
-        this.respondedAt = LocalDateTime.now();
+        this.respondedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
-
     public void reject() {
         this.teamRequestStatus = TeamRequestStatus.REJECTED;
-        this.respondedAt = LocalDateTime.now();
+        this.respondedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
-
     public void cancel() {
         this.teamRequestStatus = TeamRequestStatus.CANCELED;
-        this.respondedAt = LocalDateTime.now();
+        this.respondedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     @PrePersist
