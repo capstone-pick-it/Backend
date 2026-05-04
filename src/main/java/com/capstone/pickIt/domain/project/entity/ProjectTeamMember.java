@@ -56,18 +56,35 @@ public class ProjectTeamMember {
     private RecruitmentConfirmStatus recruitmentConfirmStatus;
 
     public void confirm() {
+        if (this.recruitmentConfirmStatus != RecruitmentConfirmStatus.PENDING) {
+            throw new IllegalStateException("PENDING 상태에서만 승인할 수 있습니다. 현재 상태: " + this.recruitmentConfirmStatus);
+        }
+        this.joinedAt = LocalDateTime.now();
+
         this.recruitmentConfirmStatus = RecruitmentConfirmStatus.CONFIRMED;
     }
 
     public void reject() {
+        if (this.recruitmentConfirmStatus != RecruitmentConfirmStatus.PENDING) {
+            throw new IllegalStateException("PENDING 상태에서만 거절할 수 있습니다. 현재 상태: " + this.recruitmentConfirmStatus);
+        }
+
         this.recruitmentConfirmStatus = RecruitmentConfirmStatus.REJECTED;
     }
 
     public void leave() {
+        if (this.leftAt != null) {
+            throw new IllegalStateException("이미 탈퇴한 멤버입니다.");
+        }
+
         this.leftAt = LocalDateTime.now();
     }
 
     public void completeReview() {
+        if (this.reviewCompletedAt != null) {
+            throw new IllegalStateException("이미 리뷰가 완료된 멤버입니다.");
+        }
+
         this.reviewCompletedAt = LocalDateTime.now();
     }
 
