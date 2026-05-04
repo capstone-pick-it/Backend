@@ -35,10 +35,25 @@ public class Point {
     private LocalDateTime updatedAt;
 
     public void add(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("추가 포인트는 1 이상이어야 합니다.");
+        }
+        if (this.balance == null) {
+            this.balance = 0;
+        }
+
         this.balance += amount;
     }
 
     public void subtract(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("추가 포인트는 1 이상이어야 합니다.");
+        }
+        if (this.balance == null) {
+            this.balance = 0;
+        }
+
+        // 포인트는 음수로 내려갈 수 있으므로 this.balance < amount는 제한하지 않음
         this.balance -= amount;
     }
 
