@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
         redisTemplate.delete(EMAIL_VERIFIED_PREFIX + email);
 
         return UserResponseDTO.builder()
-                .userId(savedUser.getUserId())
+                .userId(savedUser.getId())
                 .email(savedUser.getEmail())
                 .nickname(savedUser.getNickname())
                 .build();
