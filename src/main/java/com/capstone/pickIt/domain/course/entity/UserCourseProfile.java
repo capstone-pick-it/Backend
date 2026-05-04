@@ -56,6 +56,10 @@ public class UserCourseProfile {
     private LocalDateTime updatedAt;
 
     public void changeRecruitmentStatus(RecruitmentStatus recruitmentStatus) {
+        if (recruitmentStatus == null) {
+            throw new IllegalStateException("모집 상태는 필수입니다.");
+        }
+
         this.recruitmentStatus = recruitmentStatus;
     }
 
