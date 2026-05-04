@@ -72,7 +72,8 @@ public class ProjectTeamMember {
     }
 
     public boolean isActiveMember() {
-        return this.leftAt == null;
+        return this.leftAt == null
+                && this.recruitmentConfirmStatus == RecruitmentConfirmStatus.CONFIRMED;
     }
 
     @PrePersist
