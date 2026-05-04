@@ -48,6 +48,14 @@ public class ProjectTeamReviewStatus {
     private LocalDateTime completedAt;
 
     public void increaseSubmittedCount() {
+        if (this.submittedReviewCount == null) {
+            this.submittedReviewCount = 0;
+        }
+
+        if (this.completed) {
+            return;
+        }
+
         this.submittedReviewCount += 1;
 
         if (this.submittedReviewCount >= this.expectedReviewCount) {
