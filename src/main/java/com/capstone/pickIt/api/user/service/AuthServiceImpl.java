@@ -53,11 +53,11 @@ public class AuthServiceImpl implements AuthService {
             throw new UserException(UserErrorCode.AUTHENTICATION_FAILED);
         }
 
-        String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getEmail());
-        String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), user.getEmail());
+        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getEmail());
+        String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getEmail());
 
         redisTemplate.opsForValue().set(
-                REFRESH_TOKEN_PREFIX + user.getUserId(),
+                REFRESH_TOKEN_PREFIX + user.getId(),
                 refreshToken,
                 refreshTokenExpireMs,
                 TimeUnit.MILLISECONDS
@@ -66,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .userId(user.getUserId())
+                .userId(user.getId())
                 .nickname(user.getNickname())
                 .build();
     }
@@ -86,8 +86,8 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        String newAccessToken = jwtProvider.createAccessToken(user.getUserId(), user.getEmail());
-        String newRefreshToken = jwtProvider.createRefreshToken(user.getUserId(), user.getEmail());
+        String newAccessToken = jwtProvider.createAccessToken(user.getId(), user.getEmail());
+        String newRefreshToken = jwtProvider.createRefreshToken(user.getId(), user.getEmail());
 
         // Lua 스크립트로 기존 토큰 검증 + 새 토큰 저장을 원자적으로 처리
         Long result = redisTemplate.execute(
@@ -105,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponseDTO.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
-                .userId(user.getUserId())
+                .userId(user.getId())
                 .nickname(user.getNickname())
                 .build();
     }
