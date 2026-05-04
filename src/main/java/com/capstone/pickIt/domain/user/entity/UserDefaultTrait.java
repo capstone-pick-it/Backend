@@ -2,9 +2,9 @@ package com.capstone.pickIt.domain.user.entity;
 
 import com.capstone.pickIt.domain.course.entity.TraitItem;
 import com.capstone.pickIt.domain.course.entity.TraitSide;
+import com.capstone.pickIt.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_default_traits")
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class UserDefaultTrait {
+public class UserDefaultTrait extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +31,7 @@ public class UserDefaultTrait {
     @Column(name = "selected_side", nullable = false)
     private TraitSide selectedSide;
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
     public void updateSide(TraitSide selectedSide) {
         this.selectedSide = selectedSide;
-        this.updatedAt = LocalDateTime.now();
     }
 }

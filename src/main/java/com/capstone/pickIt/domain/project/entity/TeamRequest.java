@@ -2,7 +2,7 @@ package com.capstone.pickIt.domain.project.entity;
 
 import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.user.entity.User;
-//import com.capstone.pickIt.domain.chat.entity.ChatRoom;
+import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class TeamRequest {
+public class TeamRequest extends CreatedBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,33 +36,30 @@ public class TeamRequest {
     @JoinColumn(name = "receiver_id", nullable = false)
     private User receiver;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "team_request_status", nullable = false)
-    private String teamRequestStatus;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private TeamRequestStatus teamRequestStatus;
 
     @Column(name = "responded_at")
     private LocalDateTime respondedAt;
 
     public void accept() {
-        this.teamRequestStatus = "ACCEPTED";
+        this.teamRequestStatus = TeamRequestStatus.ACCEPTED;
         this.respondedAt = LocalDateTime.now();
     }
 
     public void reject() {
-        this.teamRequestStatus = "REJECTED";
+        this.teamRequestStatus = TeamRequestStatus.REJECTED;
         this.respondedAt = LocalDateTime.now();
     }
 
     public void cancel() {
-        this.teamRequestStatus = "CANCELED";
+        this.teamRequestStatus = TeamRequestStatus.CANCELED;
         this.respondedAt = LocalDateTime.now();
     }
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.teamRequestStatus = "PENDING";
+        this.teamRequestStatus = TeamRequestStatus.PENDING;
     }
 }
