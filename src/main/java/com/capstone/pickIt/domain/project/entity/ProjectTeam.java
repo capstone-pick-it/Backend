@@ -44,11 +44,19 @@ public class ProjectTeam {
     private LocalDateTime updatedAt;
 
     public void start() {
+        if (this.status != ProjectTeamStatus.RECRUITING) {
+            throw new IllegalStateException("Project team은 RECRUITING 상태에서만 시작 가능합니다.");
+        }
+
         this.status = ProjectTeamStatus.IN_PROGRESS;
         this.startedAt = LocalDateTime.now();
     }
 
     public void complete() {
+        if (this.status != ProjectTeamStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Project team은 IN_PROGRESS 상태에서만 종료 가능합니다.");
+        }
+
         this.status = ProjectTeamStatus.DONE;
         this.endedAt = LocalDateTime.now();
         this.progressRate = BigDecimal.valueOf(100);
