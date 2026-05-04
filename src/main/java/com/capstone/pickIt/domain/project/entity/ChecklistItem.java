@@ -62,6 +62,10 @@ public class ChecklistItem {
     private LocalDateTime deletedAt;
 
     public void update(String title, LocalDate dueDate, User manager) {
+        if (title == null || manager == null) {
+            throw new IllegalArgumentException("제목과 담당자는 필수입니다.");
+        }
+
         this.title = title;
         this.dueDate = dueDate;
         this.manager = manager;
