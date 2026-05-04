@@ -38,17 +38,22 @@ public class ProjectTeamCompletionRequest {
     private LocalDateTime finalizedAt;
 
     public void approve() {
-        this.status = CompletionRequestStatus.APPROVED;
-        this.finalizedAt = LocalDateTime.now();
+        finalizeAs(CompletionRequestStatus.APPROVED);
     }
 
     public void reject() {
-        this.status = CompletionRequestStatus.REJECTED;
-        this.finalizedAt = LocalDateTime.now();
+        finalizeAs(CompletionRequestStatus.REJECTED);
     }
 
     public void cancel() {
-        this.status = CompletionRequestStatus.CANCELLED;
+        finalizeAs(CompletionRequestStatus.CANCELLED);
+    }
+
+    private void finalizeAs(CompletionRequestStatus nextStatus) {
+        if (this.finalizedAt != null) {
+            throw new IllegalStateException("이미 종료된 요청입니다.");
+        }
+        this.status = nextStatus;
         this.finalizedAt = LocalDateTime.now();
     }
 
