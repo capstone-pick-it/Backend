@@ -1,6 +1,7 @@
 package com.capstone.pickIt.domain.project.entity;
 
 import com.capstone.pickIt.domain.course.entity.Course;
+import com.capstone.pickIt.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class ProjectTeam {
+public class ProjectTeam extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,12 +38,6 @@ public class ProjectTeam {
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
     public void start() {
         if (this.status != ProjectTeamStatus.RECRUITING) {
             throw new IllegalStateException("Project team은 RECRUITING 상태에서만 시작 가능합니다.");
@@ -63,18 +58,9 @@ public class ProjectTeam {
     }
 
     @PrePersist
-    protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-
+    protected void onCreateProjectTeam() {
         if (this.status == null) {
             this.status = ProjectTeamStatus.RECRUITING;
         }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }

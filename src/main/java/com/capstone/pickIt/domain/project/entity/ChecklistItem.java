@@ -1,6 +1,7 @@
 package com.capstone.pickIt.domain.project.entity;
 
 import com.capstone.pickIt.domain.user.entity.User;
+import com.capstone.pickIt.global.entity.CreatedUpdatedDeletedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class ChecklistItem {
+public class ChecklistItem extends CreatedUpdatedDeletedBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,18 +50,6 @@ public class ChecklistItem {
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdByUser;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(name = "is_deleted", nullable = false)
-    private boolean deleted;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
     public void update(String title, LocalDate dueDate, User manager) {
         if (title == null || manager == null) {
             throw new IllegalArgumentException("제목과 담당자는 필수입니다.");
@@ -83,24 +72,10 @@ public class ChecklistItem {
         this.completedAt = null;
     }
 
-    public void delete() {
-        this.deleted = true;
-        this.deletedAt = LocalDateTime.now();
-    }
-
     @PrePersist
-    protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-
+    protected void onCreateChecklistItem() {
         if (this.status == null) {
             this.status = ChecklistStatus.TODO;
         }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }
