@@ -1,6 +1,7 @@
 package com.capstone.pickIt.domain.project.entity;
 
 import com.capstone.pickIt.domain.user.entity.User;
+import com.capstone.pickIt.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +23,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class PeerReview {
+public class PeerReview extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,20 +57,12 @@ public class PeerReview {
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
     @PrePersist
-    protected void onCreate() {
+    protected void onCreatePeerReview() {
         validateScores();
         calculateAverageScore();
 
         LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
 
         if (this.submittedAt == null) {
             this.submittedAt = now;
@@ -80,7 +73,6 @@ public class PeerReview {
     protected void onUpdate() {
         validateScores();
         calculateAverageScore();
-        this.updatedAt = LocalDateTime.now();
     }
 
     private void validateScores() {

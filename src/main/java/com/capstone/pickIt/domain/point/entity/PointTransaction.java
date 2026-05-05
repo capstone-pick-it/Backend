@@ -2,6 +2,7 @@ package com.capstone.pickIt.domain.point.entity;
 
 import com.capstone.pickIt.domain.project.entity.ProjectTeam;
 import com.capstone.pickIt.domain.user.entity.User;
+import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class PointTransaction {
+public class PointTransaction extends CreatedBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,14 +41,4 @@ public class PointTransaction {
 
     @Column(name = "description", length = 255)
     private String description;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-    }
 }

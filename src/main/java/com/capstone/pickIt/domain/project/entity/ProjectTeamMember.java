@@ -1,6 +1,7 @@
 package com.capstone.pickIt.domain.project.entity;
 
 import com.capstone.pickIt.domain.user.entity.User;
+import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class ProjectTeamMember {
+public class ProjectTeamMember extends CreatedBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,9 +48,6 @@ public class ProjectTeamMember {
 
     @Column(name = "review_completed_at")
     private LocalDateTime reviewCompletedAt;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "recruitment_confirm_status", nullable = false, length = 20)
@@ -96,7 +94,6 @@ public class ProjectTeamMember {
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
 
         if (this.joinedAt == null) {
             this.joinedAt = now;

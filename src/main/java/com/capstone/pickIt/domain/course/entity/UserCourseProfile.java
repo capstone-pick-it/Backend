@@ -1,10 +1,9 @@
 package com.capstone.pickIt.domain.course.entity;
 
 import com.capstone.pickIt.domain.user.entity.User;
+import com.capstone.pickIt.global.entity.CreatedUpdatedDeletedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -20,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class UserCourseProfile {
+public class UserCourseProfile extends CreatedUpdatedDeletedBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,18 +42,6 @@ public class UserCourseProfile {
     @Column(name = "recruitment_status", nullable = false, length = 30)
     private RecruitmentStatus recruitmentStatus;
 
-    @Column(name = "is_deleted", nullable = false)
-    private boolean deleted;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
     public void changeRecruitmentStatus(RecruitmentStatus recruitmentStatus) {
         if (recruitmentStatus == null) {
             throw new IllegalArgumentException("모집 상태는 필수입니다.");
@@ -63,17 +50,8 @@ public class UserCourseProfile {
         this.recruitmentStatus = recruitmentStatus;
     }
 
-    public void delete() {
-        this.deleted = true;
-        this.deletedAt = LocalDateTime.now();
-    }
-
     @PrePersist
-    protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-
+    protected void onCreateUserCourseProfile() {
         if (this.importanceLevel == null) {
             this.importanceLevel = ImportanceLevel.HIGH;
         }
@@ -81,10 +59,5 @@ public class UserCourseProfile {
         if (this.recruitmentStatus == null) {
             this.recruitmentStatus = RecruitmentStatus.RECRUITING;
         }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }
