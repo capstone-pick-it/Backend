@@ -12,7 +12,7 @@ import java.time.ZoneOffset;
 @Table(name = "team_request")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class TeamRequest extends CreatedBaseEntity {
 

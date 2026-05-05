@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "match_scores")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class MatchScore extends CreatedBaseEntity {
 

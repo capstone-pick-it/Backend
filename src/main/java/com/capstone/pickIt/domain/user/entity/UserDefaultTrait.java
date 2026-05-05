@@ -10,7 +10,7 @@ import lombok.*;
 @Table(name = "user_default_traits")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class UserDefaultTrait extends BaseEntity {
 
