@@ -35,7 +35,7 @@ public class ChatPart extends CreatedDeletedBaseEntity {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_read_message_id")
     private Message lastReadMessage;
 
