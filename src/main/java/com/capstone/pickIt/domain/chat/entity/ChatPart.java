@@ -44,7 +44,7 @@ public class ChatPart extends CreatedDeletedBaseEntity {
     }
 
     public void restore() {
-        setDeletedAt(null);
+        restore();
     }
 
     public void updateLastReadMessage(Message message) {
