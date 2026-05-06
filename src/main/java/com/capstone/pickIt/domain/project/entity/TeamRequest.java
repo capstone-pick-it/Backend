@@ -1,5 +1,6 @@
 package com.capstone.pickIt.domain.project.entity;
 
+import com.capstone.pickIt.domain.chat.entity.ChatRoom;
 import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.global.entity.CreatedBaseEntity;
@@ -19,11 +20,11 @@ public class TeamRequest extends CreatedBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_request_id")
-    private Long teamRequestId;
+    private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "chat_room_id", nullable = false)
-//    private ChatRoom chatRoom;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
@@ -61,4 +62,5 @@ public class TeamRequest extends CreatedBaseEntity {
     protected void onCreate() {
         this.teamRequestStatus = TeamRequestStatus.PENDING;
     }
+
 }
