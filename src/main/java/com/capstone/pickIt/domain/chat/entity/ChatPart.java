@@ -10,6 +10,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+// 동일 사용자가 동일 채팅방에 중복 참여하는 것을 방지한다.
+// 채팅방 재참여 시 새 ChatPart를 생성하지 않고 기존 ChatPart의 deletedAt을 null로 복구한다.
 @Table(
         name = "chat_part",
         uniqueConstraints = {
