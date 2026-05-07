@@ -25,6 +25,7 @@ public class ChatPart extends CreatedDeletedBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "chat_part_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
