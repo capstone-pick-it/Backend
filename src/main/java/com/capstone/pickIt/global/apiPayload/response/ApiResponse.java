@@ -22,7 +22,7 @@ public class ApiResponse<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final T result;
 
-    public static <T> ApiResponse<T> onSuccess(T result, BaseCode code) {
+    public static <T> ApiResponse<T> onSuccess(BaseCode code, T result) {
         return ApiResponse.<T>builder()
                 .isSuccess(true)
                 .code(code.getCode())
