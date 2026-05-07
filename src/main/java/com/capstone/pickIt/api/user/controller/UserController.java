@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "User", description = "유저 API")
@@ -44,6 +45,7 @@ public class UserController {
     }
 
     @Operation(summary = "회원가입", description = "이메일 인증 완료 후 회원가입을 진행합니다.")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/signup")
     public ApiResponse<UserResponseDTO> signUp(@RequestBody @Valid UserRequestDTO request) {
         UserResponseDTO response = userService.signUp(request);
