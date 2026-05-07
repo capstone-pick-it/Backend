@@ -1,0 +1,55 @@
+package com.capstone.pickIt.domain.chat.entity;
+
+import com.capstone.pickIt.domain.user.entity.User;
+import com.capstone.pickIt.global.entity.CreatedDeletedBaseEntity;
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+// 동일 사용자가 동일 채팅방에 중복 참여하는 것을 방지한다.
+// 채팅방 재참여 시 새 ChatPart를 생성하지 않고 기존 ChatPart의 deletedAt을 null로 복구한다.
+@Table(
+        name = "chat_part",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_chat_part_user_room",
+                        columnNames = {"user_id", "chat_room_id"}
+                )
+        }
+)
+public class ChatPart extends CreatedDeletedBaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "chat_part_id")
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    private ChatRoom chatRoom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_read_message_id")
+    private Message lastReadMessage;
+
+    public void leave() {
+        softDelete();
+    }
+
+    public void restore() {
+        restore();
+    }
+
+    public void updateLastReadMessage(Message message) {
+        this.lastReadMessage = message;
+    }
+
+}

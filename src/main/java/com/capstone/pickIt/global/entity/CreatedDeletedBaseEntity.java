@@ -10,7 +10,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class CreatedDeletedBaseEntity extends CreatedBaseEntity {
@@ -22,6 +21,7 @@ public abstract class CreatedDeletedBaseEntity extends CreatedBaseEntity {
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
+    public void restore() { this.deletedAt = null; }
     public boolean isDeleted() {
         return deletedAt != null;
     }
