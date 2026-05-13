@@ -3,6 +3,8 @@ package com.capstone.pickIt.domain.user.entity;
 import com.capstone.pickIt.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import com.capstone.pickIt.domain.trait.entity.TraitItem;
+import com.capstone.pickIt.domain.trait.entity.TraitSide;
 
 @Entity
 @Table(name = "user_default_traits")
