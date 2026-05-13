@@ -3,6 +3,8 @@ package com.capstone.pickIt.domain.course.entity;
 import com.capstone.pickIt.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import com.capstone.pickIt.domain.trait.entity.TraitItem;
+import com.capstone.pickIt.domain.trait.entity.TraitSide;
 
 import java.time.LocalDateTime;
 
