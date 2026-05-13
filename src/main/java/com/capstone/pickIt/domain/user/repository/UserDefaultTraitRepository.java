@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface UserDefaultTraitRepository extends JpaRepository<UserDefaultTrait, Long> {
 
-    List<UserDefaultTrait> findByUserUserId(Long userId);
+    List<UserDefaultTrait> findByUserId(Long id);
 
-    void deleteByUserUserId(Long userId);
+    void deleteByUserId(Long id);
 }
