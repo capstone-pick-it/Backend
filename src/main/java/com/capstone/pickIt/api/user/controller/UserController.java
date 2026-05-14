@@ -3,6 +3,7 @@ package com.capstone.pickIt.api.user.controller;
 import com.capstone.pickIt.api.user.dto.request.EmailSendRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.EmailVerifyRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.LoginRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.OnboardingBasicInfoRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.TokenRefreshRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UserRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.LoginResponseDTO;
@@ -85,5 +86,13 @@ public class UserController {
     public ApiResponse<OnboardingStatusResponseDTO> getOnboardingStatus() {
         Long userId = SecurityUtil.requireUserId();
         return ApiResponse.onSuccess(SuccessCode.OK, onboardingService.getOnboardingStatus(userId));
+    }
+
+    @Operation(summary = "온보딩 기본 정보 저장", description = "학교, 학과, 학년, 학기, 수강 강의를 저장합니다.")
+    @PostMapping("/onboarding/profile")
+    public ApiResponse<String> saveBasicInfo(@RequestBody @Valid OnboardingBasicInfoRequestDTO request) {
+        Long userId = SecurityUtil.requireUserId();
+        onboardingService.saveBasicInfo(userId, request);
+        return ApiResponse.onSuccess(SuccessCode.OK, "기본 정보가 저장되었습니다.");
     }
 }
