@@ -38,6 +38,26 @@ public class ChatRoom extends CreatedBaseEntity {
     @JoinColumn(name = "project_team_id", unique = true)
     private ProjectTeam projectTeam;
 
+    @PrePersist
+    @PreUpdate
+    private void validateChatRoomMetadata() {
+        if (chatType == ChatType.GROUP) {
+            if (roomName == null || roomName.isBlank()) {
+                throw new IllegalStateException("단체 채팅방은 채팅방 이름이 필요합니다.");
+            }
+
+            if (projectTeam == null) {
+                throw new IllegalStateException("단체 채팅방은 프로젝트 팀 정보가 필요합니다.");
+            }
+        }
+
+        if (chatType == ChatType.DIRECT) {
+            if (projectTeam != null) {
+                throw new IllegalStateException("1:1 채팅방은 프로젝트 팀 정보를 가질 수 없습니다.");
+            }
+        }
+    }
+
     public void updateLastMessage(Message message) {
         if (message == null) {
             throw new IllegalArgumentException("마지막 메시지는 null일 수 없습니다.");
