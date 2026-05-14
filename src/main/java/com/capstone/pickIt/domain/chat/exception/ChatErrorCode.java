@@ -1,4 +1,4 @@
-package com.capstone.pickIt.api.chat.code;
+package com.capstone.pickIt.domain.chat.exception;
 
 import com.capstone.pickIt.global.apiPayload.response.BaseCode;
 import lombok.Getter;
