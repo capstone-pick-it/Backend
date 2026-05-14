@@ -45,10 +45,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if(jwtProvider.validateAccessToken(token) && !isBlacklisted) {
 
-                Long memberId = jwtProvider.getMemberId(token);
+                Long userId = jwtProvider.getUserId(token);
                 String email = jwtProvider.getEmail(token);
 
-                AuthPrincipal principal = new AuthPrincipal(memberId, email);
+                AuthPrincipal principal = new AuthPrincipal(userId, email);
 
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
