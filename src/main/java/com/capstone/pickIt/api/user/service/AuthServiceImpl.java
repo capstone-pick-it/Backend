@@ -80,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
             throw new UserException(UserErrorCode.TOKEN_INVALID);
         }
 
-        Long userId = jwtProvider.getMemberId(refreshToken);
+        Long userId = jwtProvider.getUserId(refreshToken);
 
         // 변경 불가능한 userId로 사용자 조회 → 최신 이메일로 새 토큰 생성
         User user = userRepository.findById(userId)
@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
             throw new UserException(UserErrorCode.TOKEN_INVALID);
         }
 
-        Long userId = jwtProvider.getMemberId(token);
+        Long userId = jwtProvider.getUserId(token);
 
         redisTemplate.delete(REFRESH_TOKEN_PREFIX + userId);
 
