@@ -31,4 +31,12 @@ public class MessageFile {
 
     @Column(name = "content_type", nullable = false, length = 150)
     private String contentType;
+
+    @PrePersist
+    @PreUpdate
+    private void validateFileMetadata() {
+        if (fileSize == null || fileSize < 0) {
+            throw new IllegalArgumentException("fileSize는 0 이상이어야 합니다.");
+        }
+    }
 }
