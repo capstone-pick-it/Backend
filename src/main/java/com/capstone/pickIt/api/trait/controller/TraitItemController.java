@@ -14,6 +14,7 @@ public class TraitItemController {
 
     private final TraitItemService traitItemService;
 
+    // 성향 항목 전체 조회
     @GetMapping
     public ResponseEntity<List<TraitItemResponseDTO>> getTraitItems() {
         return ResponseEntity.ok(traitItemService.getTraitItems());

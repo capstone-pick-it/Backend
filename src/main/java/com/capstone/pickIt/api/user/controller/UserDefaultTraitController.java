@@ -15,12 +15,16 @@ public class UserDefaultTraitController {
 
     private final UserDefaultTraitService userDefaultTraitService;
 
+    // 나중에 SecurityUtil 방식으로 수정할 예정!!!!!!
+
+    // 기본 팀플 성향 조회
     @GetMapping("/{userId}/traits/default")
     public ResponseEntity<List<UserDefaultTraitResponseDTO>> getDefaultTraits(
             @PathVariable Long userId) {
         return ResponseEntity.ok(userDefaultTraitService.getDefaultTraits(userId));
     }
 
+    // 기본 팀플 성향 등록/수정
     @PutMapping("/{userId}/traits/default")
     public ResponseEntity<List<UserDefaultTraitResponseDTO>> updateDefaultTraits(
             @PathVariable Long userId,
