@@ -43,8 +43,11 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.TARGET_USER_NOT_FOUND));
 
+        Long minUserId = Math.min(currentUserId, targetUserId);
+        Long maxUserId = Math.max(currentUserId, targetUserId);
+
         Optional<ChatRoom> existingChatRoom =
-                chatRoomRepository.findDirectChatRoomByUserIds(currentUserId, targetUserId);
+                chatRoomRepository.findDirectChatRoomByUserIds(minUserId, maxUserId);
 
         if (existingChatRoom.isPresent()) {
             ChatRoom chatRoom = existingChatRoom.get();
@@ -58,7 +61,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, false);
         }
 
-        ChatRoom chatRoom = ChatRoom.createDirectRoom();
+        ChatRoom chatRoom = ChatRoom.createDirectRoom(currentUser, targetUser);
 
         chatRoom.addParticipant(currentUser);
         chatRoom.addParticipant(targetUser);

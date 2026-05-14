@@ -10,14 +10,12 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     @Query("""
         SELECT cr
         FROM ChatRoom cr
-        JOIN ChatPart cp1 ON cp1.chatRoom = cr
-        JOIN ChatPart cp2 ON cp2.chatRoom = cr
         WHERE cr.chatType = 'DIRECT'
-          AND cp1.user.id = :currentUserId
-          AND cp2.user.id = :targetUserId
+          AND cr.directUserMinId = :minUserId
+          AND cr.directUserMaxId = :maxUserId
         """)
     Optional<ChatRoom> findDirectChatRoomByUserIds(
-            Long currentUserId,
-            Long targetUserId
+            Long minUserId,
+            Long maxUserId
     );
 }

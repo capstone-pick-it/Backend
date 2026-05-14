@@ -15,7 +15,15 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "chat_room")
+@Table(
+        name = "chat_room",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_direct_chat_room_user_pair",
+                        columnNames = {"chat_type", "direct_user_min_id", "direct_user_max_id"}
+                )
+        }
+)
 public class ChatRoom extends CreatedBaseEntity {
 
     @Id
@@ -41,6 +49,12 @@ public class ChatRoom extends CreatedBaseEntity {
     @JoinColumn(name = "project_team_id", unique = true)
     private ProjectTeam projectTeam;
 
+    @Column(name = "direct_user_min_id")
+    private Long directUserMinId;
+
+    @Column(name = "direct_user_max_id")
+    private Long directUserMaxId;
+
     // 양방향 매핑
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -62,14 +76,32 @@ public class ChatRoom extends CreatedBaseEntity {
             throw new IllegalArgumentException("GROUP 채팅은 projectTeam이 필요합니다.");
         }
 
+        if (chatType == ChatType.GROUP &&
+                (directUserMinId != null || directUserMaxId != null)) {
+            throw new IllegalArgumentException("GROUP 채팅은 directUserMinId와 directUserMaxId를 가질 수 없습니다.");
+        }
+
         if (chatType == ChatType.DIRECT && projectTeam != null) {
             throw new IllegalArgumentException("DIRECT 채팅은 projectTeam을 가질 수 없습니다.");
         }
+
+        if (chatType == ChatType.DIRECT &&
+                (directUserMinId == null || directUserMaxId == null)) {
+            throw new IllegalArgumentException("DIRECT 채팅은 directUserMinId와 directUserMaxId가 필요합니다.");
+        }
     }
 
-    public static ChatRoom createDirectRoom() {
+    public static ChatRoom createDirectRoom(User user1, User user2) {
+        Long user1Id = user1.getId();
+        Long user2Id = user2.getId();
+
+        Long minId = Math.min(user1Id, user2Id);
+        Long maxId = Math.max(user1Id, user2Id);
+
         return ChatRoom.builder()
                 .chatType(ChatType.DIRECT)
+                .directUserMinId(minId)
+                .directUserMaxId(maxId)
                 .build();
     }
 
