@@ -47,4 +47,12 @@ public class User extends BaseEntity {
     @Builder.Default
     @Column(name = "onboarding_step", nullable = false)
     private int onboardingStep = 1;
+
+    public void updateBasicInfo(String school, String major, Integer grade, String semester) { // 기본 정보 업데이트
+        this.school = school;
+        this.major = major;
+        this.grade = grade;
+        this.semester = semester;
+        this.onboardingStep = 2;
+    }
 }
