@@ -30,16 +30,16 @@ public class JwtProvider {
         this.refreshTokenExpireMs = refreshTokenExpireMs;
     }
 
-    public String createAccessToken(Long memberId, String email) {
-        return buildToken(memberId, email, "access", accessTokenExpireMs);
+    public String createAccessToken(Long userId, String email) {
+        return buildToken(userId, email, "access", accessTokenExpireMs);
     }
 
-    public String createRefreshToken(Long memberId, String email) {
-        return buildToken(memberId, email, "refresh", refreshTokenExpireMs);
+    public String createRefreshToken(Long userId, String email) {
+        return buildToken(userId, email, "refresh", refreshTokenExpireMs);
     }
 
-    public Long getMemberId(String token) {
-        return parseClaims(token).get("memberId", Long.class);
+    public Long getUserId(String token) {
+        return parseClaims(token).get("userId", Long.class);
     }
 
     public String getEmail(String token) {
@@ -80,10 +80,10 @@ public class JwtProvider {
         }
     }
 
-    private String buildToken(Long memberId, String email, String type, long expireMs) {
+    private String buildToken(Long userId, String email, String type, long expireMs) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
-                .claim("memberId", memberId)
+                .claim("userId", userId)
                 .claim("email", email)
                 .claim("type", type)
                 .setIssuedAt(new Date(now))
