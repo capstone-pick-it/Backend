@@ -9,7 +9,7 @@ import lombok.Getter;
 public class OnboardingStatusResponseDTO {
 
     @JsonProperty("isCompleted")
-    private final boolean isCompleted;
+    private final boolean completed;
 
     private final int currentStep;
 }

@@ -22,7 +22,7 @@ public class OnboardingServiceImpl implements OnboardingService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         return OnboardingStatusResponseDTO.builder()
-                .isCompleted(user.isOnboardingCompleted())
+                .completed(user.isOnboardingCompleted())
                 .currentStep(user.getOnboardingStep())
                 .build();
     }
