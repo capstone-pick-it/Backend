@@ -5,6 +5,7 @@ import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.DirectChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.service.ChatRoomCommandService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
+import com.capstone.pickIt.global.config.security.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ public class ChatRoomController {
     public ApiResponse<DirectChatRoomResponseDTO.CreateOrEnter> createOrEnterDirectChatRoom(
             @RequestBody @Valid DirectChatRoomCreateRequestDTO request
     ) {
-        Long currentUserId = 1L; // TODO: JWT 인증 적용 후 현재 로그인 사용자 ID로 변경
+        Long currentUserId = SecurityUtil.requireUserId();
 
         DirectChatRoomResponseDTO.CreateOrEnter result =
                 chatRoomCommandService.createOrEnterDirectChatRoom(currentUserId, request);

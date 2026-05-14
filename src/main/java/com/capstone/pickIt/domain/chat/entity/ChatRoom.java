@@ -1,11 +1,14 @@
 package com.capstone.pickIt.domain.chat.entity;
 
 import com.capstone.pickIt.domain.project.entity.ProjectTeam;
+import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -38,6 +41,11 @@ public class ChatRoom extends CreatedBaseEntity {
     @JoinColumn(name = "project_team_id", unique = true)
     private ProjectTeam projectTeam;
 
+    // 양방향 매핑
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChatPart> chatParts = new ArrayList<>();
+
     @PrePersist
     @PreUpdate
     private void validateChatRoomMetadata() {
@@ -57,6 +65,17 @@ public class ChatRoom extends CreatedBaseEntity {
         if (chatType == ChatType.DIRECT && projectTeam != null) {
             throw new IllegalArgumentException("DIRECT 채팅은 projectTeam을 가질 수 없습니다.");
         }
+    }
+
+    public static ChatRoom createDirectRoom() {
+        return ChatRoom.builder()
+                .chatType(ChatType.DIRECT)
+                .build();
+    }
+
+    public void addParticipant(User user) {
+        ChatPart chatPart = ChatPart.create(this, user);
+        this.chatParts.add(chatPart);
     }
 
     public void updateLastMessage(Message message) {
