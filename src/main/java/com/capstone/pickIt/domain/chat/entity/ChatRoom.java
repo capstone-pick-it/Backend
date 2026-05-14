@@ -1,5 +1,6 @@
 package com.capstone.pickIt.domain.chat.entity;
 
+import com.capstone.pickIt.domain.project.entity.ProjectTeam;
 import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,12 +20,23 @@ public class ChatRoom extends CreatedBaseEntity {
     @Column(name = "chat_room_id")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "chat_type", nullable = false)
+    private ChatType chatType;
+
+    @Column(name = "room_name", length = 100)
+    private String roomName;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_message_id")
     private Message lastMessage;
 
     @Column(name = "last_message_at")
     private LocalDateTime lastMessageAt;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_team_id", unique = true)
+    private ProjectTeam projectTeam;
 
     public void updateLastMessage(Message message) {
         if (message == null) {
