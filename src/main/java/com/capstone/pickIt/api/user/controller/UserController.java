@@ -6,12 +6,15 @@ import com.capstone.pickIt.api.user.dto.request.LoginRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.TokenRefreshRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UserRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.LoginResponseDTO;
+import com.capstone.pickIt.api.user.dto.response.OnboardingStatusResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.UserResponseDTO;
 import com.capstone.pickIt.api.user.service.AuthService;
 import com.capstone.pickIt.api.user.service.EmailService;
+import com.capstone.pickIt.api.user.service.OnboardingService;
 import com.capstone.pickIt.api.user.service.UserService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
 import com.capstone.pickIt.global.apiPayload.response.SuccessCode;
+import com.capstone.pickIt.global.config.security.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +32,7 @@ public class UserController {
     private final UserService userService;
     private final EmailService emailService;
     private final AuthService authService;
+    private final OnboardingService onboardingService;
 
     @Operation(summary = "이메일 인증코드 전송", description = "대학교 이메일로 인증코드를 전송합니다.")
     @PostMapping("/email/send")
@@ -74,5 +78,12 @@ public class UserController {
     public ApiResponse<Void> logout(HttpServletRequest request) {
         authService.logout(request.getHeader("Authorization"));
         return ApiResponse.onSuccess(SuccessCode.OK, null);
+    }
+
+    @Operation(summary = "온보딩 상태 조회", description = "로그인된 사용자의 온보딩 진행 상태를 조회합니다.")
+    @GetMapping("/onboarding/status")
+    public ApiResponse<OnboardingStatusResponseDTO> getOnboardingStatus() {
+        Long userId = SecurityUtil.requireUserId();
+        return ApiResponse.onSuccess(SuccessCode.OK, onboardingService.getOnboardingStatus(userId));
     }
 }

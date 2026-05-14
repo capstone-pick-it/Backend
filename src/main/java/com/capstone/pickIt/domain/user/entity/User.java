@@ -26,6 +26,25 @@ public class User extends BaseEntity {
     @Column(name = "nickname", length = 50, nullable = false)
     private String nickname;
 
+    //기본 정보 엔티티 추가
+    @Column(name = "school", length = 100)
+    private String school;
+
     @Column(name = "major", length = 100)
     private String major;
+
+    @Column(name = "grade")
+    private Integer grade;
+
+    @Column(name = "semester", length = 20)
+    private String semester;
+
+    //온보딩 엔티티 추가
+    @Builder.Default
+    @Column(name = "onboarding_completed", nullable = false)
+    private boolean onboardingCompleted = false;
+
+    @Builder.Default
+    @Column(name = "onboarding_step", nullable = false)
+    private int onboardingStep = 1;
 }
