@@ -106,6 +106,21 @@ public class ChatRoom extends CreatedBaseEntity {
     }
 
     public void addParticipant(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("참여 사용자는 null일 수 없습니다.");
+        }
+
+        boolean alreadyParticipated = chatParts.stream()
+                .anyMatch(chatPart -> chatPart.getUser().getId().equals(user.getId()));
+
+        if (alreadyParticipated) {
+            throw new IllegalArgumentException("이미 채팅방에 참여한 사용자입니다.");
+        }
+
+        if (chatType == ChatType.DIRECT && chatParts.size() >= 2) {
+            throw new IllegalArgumentException("DIRECT 채팅방은 최대 2명까지만 참여할 수 있습니다.");
+        }
+
         ChatPart chatPart = ChatPart.create(this, user);
         this.chatParts.add(chatPart);
     }
