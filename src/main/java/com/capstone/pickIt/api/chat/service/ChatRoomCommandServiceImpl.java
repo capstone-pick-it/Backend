@@ -53,12 +53,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
                     .findByChatRoomIdAndUserId(chatRoom.getId(), currentUserId)
                     .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
 
-            ChatPart targetChatPart = chatPartRepository
-                    .findByChatRoomIdAndUserId(chatRoom.getId(), targetUserId)
-                    .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
-
             currentChatPart.restore();
-            targetChatPart.restore();
 
             return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, false);
         }
