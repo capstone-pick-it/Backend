@@ -5,6 +5,8 @@ import com.capstone.pickIt.global.entity.CreatedDeletedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Builder
@@ -21,7 +23,7 @@ import lombok.*;
                 )
         }
 )
-public class ChatPart extends CreatedDeletedBaseEntity {
+public class ChatPart {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,12 +42,19 @@ public class ChatPart extends CreatedDeletedBaseEntity {
     @JoinColumn(name = "last_read_message_id")
     private Message lastReadMessage;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public void leave() {
-        softDelete();
+        this.deletedAt = LocalDateTime.now();
     }
 
     public void restore() {
-        restore();
+        this.deletedAt = null;
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
     public void updateLastReadMessage(Message message) {

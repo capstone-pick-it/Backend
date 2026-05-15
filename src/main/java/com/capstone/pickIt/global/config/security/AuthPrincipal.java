@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AuthPrincipal {
-    private final Long memberId;
+    private final Long userId;
     private final String email;
 }

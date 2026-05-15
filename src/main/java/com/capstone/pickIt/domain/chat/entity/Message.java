@@ -34,6 +34,28 @@ public class Message extends CreatedBaseEntity {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", nullable = false)
+    private MessageType messageType;
+
+    @PrePersist
+    @PreUpdate
+    private void validateMessage() {
+        if (messageType == null) {
+            throw new IllegalArgumentException("messageType은 필수입니다.");
+        }
+
+        if (messageType == MessageType.TEXT &&
+                (content == null || content.isBlank())) {
+                throw new IllegalArgumentException("TEXT 메시지는 content가 필요합니다.");
+        }
+
+        if (messageType == MessageType.FILE &&
+                (content != null && !content.isBlank())) {
+            throw new IllegalArgumentException("FILE 메시지는 content를 가질 수 없습니다.");
+        }
+    }
 }
