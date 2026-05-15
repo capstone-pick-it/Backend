@@ -72,7 +72,7 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Transactional
     public void savePersonality(Long userId, OnboardingPersonalityRequestDTO request) {
         List<UserDefaultTraitRequestDTO> traits = request.getTraits().stream()
-                .map(item -> new UserDefaultTraitRequestDTO(item.getTraitItemId(), item.getSelectedType()))
+                .map(item -> new UserDefaultTraitRequestDTO(item.getTraitItemId(), item.getSelectedType().name()))
                 .toList();
         userDefaultTraitService.updateDefaultTraits(userId, traits);
     }
