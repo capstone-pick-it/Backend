@@ -12,6 +12,7 @@ import com.capstone.pickIt.domain.chat.repository.ChatRoomRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,24 +51,40 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
                 chatRoomRepository.findDirectChatRoomByUserIds(minUserId, maxUserId);
 
         if (existingChatRoom.isPresent()) {
-            ChatRoom chatRoom = existingChatRoom.get();
-
-            ChatPart currentChatPart = chatPartRepository
-                    .findByChatRoomIdAndUserId(chatRoom.getId(), currentUserId)
-                    .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
-
-            currentChatPart.restore();
-
-            return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, false);
+            return restoreAndConvert(existingChatRoom.get(), currentUserId, targetUser, false);
         }
 
-        ChatRoom chatRoom = ChatRoom.createDirectRoom(currentUser, targetUser);
+        try {
+            ChatRoom chatRoom = ChatRoom.createDirectRoom(currentUser, targetUser);
 
-        chatRoom.addParticipant(currentUser);
-        chatRoom.addParticipant(targetUser);
+            chatRoom.addParticipant(currentUser);
+            chatRoom.addParticipant(targetUser);
 
-        chatRoomRepository.save(chatRoom);
+            chatRoomRepository.saveAndFlush(chatRoom);
 
-        return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, true);
+            return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, true);
+
+        } catch (DataIntegrityViolationException e) {
+            ChatRoom chatRoom = chatRoomRepository
+                    .findDirectChatRoomByUserIds(minUserId, maxUserId)
+                    .orElseThrow(() -> e);
+
+            return restoreAndConvert(chatRoom, currentUserId, targetUser, false);
+        }
+    }
+
+    private DirectChatRoomResponseDTO.CreateOrEnter restoreAndConvert(
+            ChatRoom chatRoom,
+            Long currentUserId,
+            User targetUser,
+            boolean isNew
+    ) {
+        ChatPart currentChatPart = chatPartRepository
+                .findByChatRoomIdAndUserId(chatRoom.getId(), currentUserId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
+
+        currentChatPart.restore();
+
+        return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, isNew);
     }
 }
