@@ -11,7 +11,7 @@ public enum ChatSuccessCode implements BaseCode {
 
     DIRECT_CHAT_ROOM_CREATED_OR_ENTERED(
             HttpStatus.OK,
-            "CHAT2001",
+            "CHAT200_1",
             "1:1 채팅방 생성 또는 재입장에 성공했습니다."
     );
 
