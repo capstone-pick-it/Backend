@@ -3,6 +3,7 @@ package com.capstone.pickIt.api.user.controller;
 import com.capstone.pickIt.api.user.dto.request.UserDefaultTraitRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.UserDefaultTraitResponseDTO;
 import com.capstone.pickIt.api.user.service.UserDefaultTraitService;
+import com.capstone.pickIt.global.config.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,20 +16,18 @@ public class UserDefaultTraitController {
 
     private final UserDefaultTraitService userDefaultTraitService;
 
-    // 나중에 SecurityUtil 방식으로 수정할 예정!!!!!!
-
     // 기본 팀플 성향 조회
-    @GetMapping("/{userId}/traits/default")
-    public ResponseEntity<List<UserDefaultTraitResponseDTO>> getDefaultTraits(
-            @PathVariable Long userId) {
+    @GetMapping("/me/traits/default")
+    public ResponseEntity<List<UserDefaultTraitResponseDTO>> getDefaultTraits() {
+        Long userId = SecurityUtil.requireUserId();
         return ResponseEntity.ok(userDefaultTraitService.getDefaultTraits(userId));
     }
 
     // 기본 팀플 성향 등록/수정
-    @PutMapping("/{userId}/traits/default")
+    @PutMapping("/me/traits/default")
     public ResponseEntity<List<UserDefaultTraitResponseDTO>> updateDefaultTraits(
-            @PathVariable Long userId,
             @RequestBody List<UserDefaultTraitRequestDTO> requests) {
+        Long userId = SecurityUtil.requireUserId();
         userDefaultTraitService.updateDefaultTraits(userId, requests);
         return ResponseEntity.ok(userDefaultTraitService.getDefaultTraits(userId));
     }

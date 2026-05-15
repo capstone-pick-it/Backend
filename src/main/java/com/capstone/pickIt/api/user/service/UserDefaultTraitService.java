@@ -4,6 +4,8 @@ import com.capstone.pickIt.api.user.dto.request.UserDefaultTraitRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.UserDefaultTraitResponseDTO;
 import com.capstone.pickIt.domain.trait.entity.TraitItem;
 import com.capstone.pickIt.domain.trait.entity.TraitSide;
+import com.capstone.pickIt.domain.trait.exception.TraitErrorCode;
+import com.capstone.pickIt.domain.trait.exception.TraitException;
 import com.capstone.pickIt.domain.trait.repository.TraitItemRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.entity.UserDefaultTrait;
@@ -40,7 +42,7 @@ public class UserDefaultTraitService {
         List<UserDefaultTrait> traits = requests.stream()
                 .map(request -> {
                     TraitItem traitItem = traitItemRepository.findById(request.getTraitItemsId())
-                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 성향 항목입니다."));
+                            .orElseThrow(() -> new TraitException(TraitErrorCode.TRAIT_NOT_FOUND));
                     return UserDefaultTrait.builder()
                             .user(user)
                             .traitItem(traitItem)
