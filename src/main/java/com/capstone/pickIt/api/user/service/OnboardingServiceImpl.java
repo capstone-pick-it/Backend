@@ -1,6 +1,8 @@
 package com.capstone.pickIt.api.user.service;
 
 import com.capstone.pickIt.api.user.dto.request.OnboardingBasicInfoRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.OnboardingPersonalityRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.UserDefaultTraitRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.OnboardingStatusResponseDTO;
 import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.course.entity.UserCourse;
@@ -14,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class OnboardingServiceImpl implements OnboardingService {
@@ -21,6 +25,7 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final UserCourseRepository userCourseRepository;
+    private final UserDefaultTraitService userDefaultTraitService;
 
     @Override
     @Transactional(readOnly = true)
@@ -61,5 +66,14 @@ public class OnboardingServiceImpl implements OnboardingService {
                 );
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public void savePersonality(Long userId, OnboardingPersonalityRequestDTO request) {
+        List<UserDefaultTraitRequestDTO> traits = request.getTraits().stream()
+                .map(item -> new UserDefaultTraitRequestDTO(item.getTraitItemId(), item.getSelectedType().name()))
+                .toList();
+        userDefaultTraitService.updateDefaultTraits(userId, traits);
     }
 }
