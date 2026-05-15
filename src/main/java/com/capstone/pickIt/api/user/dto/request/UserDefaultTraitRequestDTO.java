@@ -3,11 +3,13 @@ package com.capstone.pickIt.api.user.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserDefaultTraitRequestDTO {
 
     @NotNull(message = "성향 항목 ID는 필수입니다.")
