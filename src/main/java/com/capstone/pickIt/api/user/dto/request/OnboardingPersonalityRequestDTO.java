@@ -2,9 +2,11 @@ package com.capstone.pickIt.api.user.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,9 +30,19 @@ import java.util.List;
 public class OnboardingPersonalityRequestDTO {
 
     @NotEmpty(message = "성향 목록은 비어 있을 수 없습니다.")
+    @Size(min = 4, max = 4, message = "성향 목록은 4개 항목을 모두 포함해야 합니다.")
     @Valid
     @Schema(description = "팀플 성향 선택 목록 (전체 스탭 선택값을 한 번에 담아서 전송)")
     private List<TraitItem> traits;
+
+    @AssertTrue(message = "중복된 traitItemId는 허용되지 않습니다.")
+    private boolean hasUniqueTraitItemIds() {
+        if (traits == null) return true;
+        return traits.stream()
+                .map(TraitItem::getTraitItemId)
+                .distinct()
+                .count() == traits.size();
+    }
 
     @Getter
     @NoArgsConstructor
