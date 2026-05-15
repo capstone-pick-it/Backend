@@ -56,8 +56,9 @@ public class UserDefaultTraitService {
 
     // 기본 팀플 성향 수정 (마이페이지)
     @Transactional
-    public void updateDefaultTraits(Long userId, List<UserDefaultTraitRequestDTO> requests) {
+    public List<UserDefaultTraitResponseDTO> updateDefaultTraits(Long userId, List<UserDefaultTraitRequestDTO> requests) {
         userDefaultTraitRepository.deleteByUserId(userId);
         saveDefaultTraits(userId, requests);
+        return getDefaultTraits(userId);
     }
 }

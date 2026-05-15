@@ -4,6 +4,7 @@ import com.capstone.pickIt.api.user.dto.request.UserDefaultTraitRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.UserDefaultTraitResponseDTO;
 import com.capstone.pickIt.api.user.service.UserDefaultTraitService;
 import com.capstone.pickIt.global.config.security.SecurityUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,9 +27,8 @@ public class UserDefaultTraitController {
     // 기본 팀플 성향 등록/수정
     @PutMapping("/me/traits/default")
     public ResponseEntity<List<UserDefaultTraitResponseDTO>> updateDefaultTraits(
-            @RequestBody List<UserDefaultTraitRequestDTO> requests) {
+            @RequestBody @Valid List<UserDefaultTraitRequestDTO> requests) {
         Long userId = SecurityUtil.requireUserId();
-        userDefaultTraitService.updateDefaultTraits(userId, requests);
-        return ResponseEntity.ok(userDefaultTraitService.getDefaultTraits(userId));
+        return ResponseEntity.ok(userDefaultTraitService.updateDefaultTraits(userId, requests));
     }
 }
