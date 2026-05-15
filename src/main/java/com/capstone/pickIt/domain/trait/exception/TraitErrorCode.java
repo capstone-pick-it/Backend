@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum TraitErrorCode implements BaseCode {
 
-    TRAIT_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAIT404", "존재하지 않는 성향 항목입니다.");
+    TRAIT_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAIT404", "존재하지 않는 성향 항목입니다."),
+    DUPLICATE_TRAIT_ITEM(HttpStatus.BAD_REQUEST, "TRAIT400", "중복된 성향 항목이 있습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

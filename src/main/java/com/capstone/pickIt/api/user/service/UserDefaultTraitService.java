@@ -9,6 +9,8 @@ import com.capstone.pickIt.domain.trait.exception.TraitException;
 import com.capstone.pickIt.domain.trait.repository.TraitItemRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.entity.UserDefaultTrait;
+import com.capstone.pickIt.domain.user.exception.UserErrorCode;
+import com.capstone.pickIt.domain.user.exception.UserException;
 import com.capstone.pickIt.domain.user.repository.UserDefaultTraitRepository;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +39,16 @@ public class UserDefaultTraitService {
     @Transactional
     public void saveDefaultTraits(Long userId, List<UserDefaultTraitRequestDTO> requests) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        // 중복 검증
+        List<Long> traitItemIds = requests.stream()
+                .map(UserDefaultTraitRequestDTO::getTraitItemsId)
+                .toList();
+
+        if (traitItemIds.size() != traitItemIds.stream().distinct().count()) {
+            throw new TraitException(TraitErrorCode.DUPLICATE_TRAIT_ITEM);
+        }
 
         List<UserDefaultTrait> traits = requests.stream()
                 .map(request -> {
