@@ -4,6 +4,7 @@ import com.capstone.pickIt.api.user.dto.request.EmailSendRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.EmailVerifyRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.LoginRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.OnboardingBasicInfoRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.OnboardingPersonalityRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.TokenRefreshRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UserRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.LoginResponseDTO;
@@ -94,5 +95,20 @@ public class UserController {
         Long userId = SecurityUtil.requireUserId();
         onboardingService.saveBasicInfo(userId, request);
         return ApiResponse.onSuccess(SuccessCode.OK, "기본 정보가 저장되었습니다.");
+    }
+
+    @Operation(
+            summary = "온보딩 팀플 성향 저장",
+            description = "팀플 성향 선택값을 저장합니다.\n\n" +
+                    "- 4개 스탭의 선택을 모두 완료한 후 **한 번에** 전송해야 합니다.\n" +
+                    "- 스탭마다 개별 호출 시 이전 선택이 삭제됩니다.\n" +
+                    "- `traitItemId`: GET /api/traits 로 조회한 성향 항목 ID\n" +
+                    "- `selectedType`: nameA 선택 → A, nameB 선택 → B"
+    )
+    @PostMapping("/onboarding/personality")
+    public ApiResponse<String> savePersonality(@RequestBody @Valid OnboardingPersonalityRequestDTO request) {
+        Long userId = SecurityUtil.requireUserId();
+        onboardingService.savePersonality(userId, request);
+        return ApiResponse.onSuccess(SuccessCode.OK, "팀플 성향 입력이 완료되었습니다.");
     }
 }
