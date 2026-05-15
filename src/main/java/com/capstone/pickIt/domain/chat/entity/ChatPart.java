@@ -53,12 +53,17 @@ public class ChatPart {
         this.deletedAt = null;
     }
 
-    public boolean isDeleted() {
-        return deletedAt != null;
-    }
+    public boolean isDeleted() { return deletedAt != null; }
 
     public void updateLastReadMessage(Message message) {
         this.lastReadMessage = message;
+    }
+
+    public static ChatPart create(ChatRoom chatRoom, User user) {
+        return ChatPart.builder()
+                .chatRoom(chatRoom)
+                .user(user)
+                .build();
     }
 
 }
