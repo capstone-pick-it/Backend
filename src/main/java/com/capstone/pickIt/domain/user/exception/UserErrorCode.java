@@ -22,6 +22,7 @@ public enum UserErrorCode implements BaseCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER404_1", "사용자를 찾을 수 없습니다."),
 
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "USER409_1", "이미 존재하는 사용자입니다."),
+    ALREADY_WITHDRAWN(HttpStatus.CONFLICT, "USER409_2", "이미 탈퇴한 사용자입니다."),
 
     ;
 
