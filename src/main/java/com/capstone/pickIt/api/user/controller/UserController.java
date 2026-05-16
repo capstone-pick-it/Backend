@@ -89,6 +89,15 @@ public class UserController {
         return ApiResponse.onSuccess(SuccessCode.OK, onboardingService.getOnboardingStatus(userId));
     }
 
+    @Operation(summary = "회원 탈퇴", description = "계정을 비활성화합니다. 탈퇴 후 30일 뒤 계정이 완전히 삭제됩니다.")
+    @DeleteMapping("/delete")
+    public ApiResponse<String> withdraw(HttpServletRequest request) {
+        Long userId = SecurityUtil.requireUserId();
+        userService.withdrawUser(userId);
+        authService.logout(request.getHeader("Authorization"));
+        return ApiResponse.onSuccess(SuccessCode.OK, "회원 탈퇴가 완료되었습니다.");
+    }
+
     @Operation(summary = "온보딩 기본 정보 저장", description = "학교, 학과, 학년, 학기, 수강 강의를 저장합니다.")
     @PostMapping("/onboarding/profile")
     public ApiResponse<String> saveBasicInfo(@RequestBody @Valid OnboardingBasicInfoRequestDTO request) {
