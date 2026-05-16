@@ -17,7 +17,7 @@ public class UserCleanupScheduler {
     private final UserRepository userRepository;
 
     // 매일 새벽 3시에 탈퇴 후 30일 지난 계정 하드 딜리트
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     @Transactional
     public void deleteWithdrawnUsers() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);

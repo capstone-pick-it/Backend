@@ -48,6 +48,9 @@ public class User extends BaseEntity {
     @Column(name = "onboarding_step", nullable = false)
     private int onboardingStep = 1;
 
+    @Version
+    private Long version;
+
     @Column(name = "deleted_at")
     private java.time.LocalDateTime deletedAt;
 
