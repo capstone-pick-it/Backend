@@ -57,6 +57,12 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+    // Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Bad word filtering
+    implementation 'io.github.vaneproject:badwordfiltering:1.0.0'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
