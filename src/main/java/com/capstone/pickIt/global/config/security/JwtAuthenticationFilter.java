@@ -18,6 +18,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String ACCESS_TOKEN_BLACKLIST_PREFIX = "blacklist:access:";
+    private static final String WITHDRAWN_USER_PREFIX = "withdrawn:user:";
 
     private final JwtProvider jwtProvider;
     private final RedisTemplate<String, String> redisTemplate;
@@ -46,15 +47,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if(jwtProvider.validateAccessToken(token) && !isBlacklisted) {
 
                 Long userId = jwtProvider.getUserId(token);
-                String email = jwtProvider.getEmail(token);
 
-                AuthPrincipal principal = new AuthPrincipal(userId, email);
+                boolean isWithdrawn = Boolean.TRUE.equals(
+                        redisTemplate.hasKey(WITHDRAWN_USER_PREFIX + userId));
 
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(
-                                principal, null, Collections.emptyList()
-                        );
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                if (!isWithdrawn) {
+                    String email = jwtProvider.getEmail(token);
+
+                    AuthPrincipal principal = new AuthPrincipal(userId, email);
+
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    principal, null, Collections.emptyList()
+                            );
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
             }
         }
         filterChain.doFilter(request, response);
