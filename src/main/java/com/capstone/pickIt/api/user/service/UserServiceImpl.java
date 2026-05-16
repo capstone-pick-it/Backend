@@ -24,6 +24,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public void withdrawUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isWithdrawn()) {
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
+        }
+
+        user.withdraw();
+    }
+
+    @Override
+    @Transactional
     public UserResponseDTO signUp(UserRequestDTO request) {
         String email = request.getEmail();
 

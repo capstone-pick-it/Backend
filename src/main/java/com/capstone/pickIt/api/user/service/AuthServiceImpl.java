@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponseDTO login(LoginRequestDTO request) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword()) || user.isWithdrawn()) {
             throw new UserException(UserErrorCode.AUTHENTICATION_FAILED);
         }
 

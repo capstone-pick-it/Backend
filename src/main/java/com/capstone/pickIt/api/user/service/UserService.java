@@ -6,4 +6,6 @@ import com.capstone.pickIt.api.user.dto.response.UserResponseDTO;
 public interface UserService {
 
     UserResponseDTO signUp(UserRequestDTO request);
+
+    void withdrawUser(Long userId);
 }
