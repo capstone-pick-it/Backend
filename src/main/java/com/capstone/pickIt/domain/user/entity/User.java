@@ -48,11 +48,22 @@ public class User extends BaseEntity {
     @Column(name = "onboarding_step", nullable = false)
     private int onboardingStep = 1;
 
-    public void updateBasicInfo(String school, String major, Integer grade, String semester) { // 기본 정보 업데이트
+    @Column(name = "deleted_at")
+    private java.time.LocalDateTime deletedAt;
+
+    public void updateBasicInfo(String school, String major, Integer grade, String semester) {
         this.school = school;
         this.major = major;
         this.grade = grade;
         this.semester = semester;
         this.onboardingStep = 2;
+    }
+
+    public void withdraw() {
+        this.deletedAt = java.time.LocalDateTime.now();
+    }
+
+    public boolean isWithdrawn() {
+        return this.deletedAt != null;
     }
 }
