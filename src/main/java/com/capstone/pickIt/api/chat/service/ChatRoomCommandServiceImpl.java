@@ -164,7 +164,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         //        TeamRequestCreatedEvent.from(teamRequest)
         // );
 
-        return TeamRequestConverter.toCreateResponse(teamRequest);
+        return TeamRequestConverter.toCreateResponse(teamRequest, currentUserId);
     }
 
     private DirectChatRoomResponseDTO.CreateOrEnter restoreAndConvert(

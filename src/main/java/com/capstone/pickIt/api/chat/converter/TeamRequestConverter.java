@@ -8,7 +8,14 @@ public class TeamRequestConverter {
     private TeamRequestConverter() {
     }
 
-    public static TeamRequestResponseDTO.Create toCreateResponse(TeamRequest teamRequest) {
+    public static TeamRequestResponseDTO.Create toCreateResponse(
+            TeamRequest teamRequest,
+            Long currentUserId
+    ) {
+        String role = teamRequest.getSender().getId().equals(currentUserId)
+                ? "SENDER"
+                : "RECEIVER";
+
         return new TeamRequestResponseDTO.Create(
                 teamRequest.getId(),
                 teamRequest.getChatRoom().getId(),
@@ -19,7 +26,7 @@ public class TeamRequestConverter {
                 teamRequest.getSender().getId(),
                 teamRequest.getReceiver().getId(),
                 teamRequest.getTeamRequestStatus().name(),
-                "SENDER",
+                role,
                 teamRequest.getCreatedAt()
         );
     }
