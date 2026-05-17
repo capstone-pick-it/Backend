@@ -15,6 +15,7 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
             JOIN FETCH cp.user
             WHERE cp.chatRoom.id = :chatRoomId
               AND cp.user.id <> :currentUserId
+              AND cp.deletedAt IS NULL
             """)
     Optional<ChatPart> findOpponent(
             Long chatRoomId,
