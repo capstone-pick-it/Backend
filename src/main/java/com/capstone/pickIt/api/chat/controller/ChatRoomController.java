@@ -49,8 +49,7 @@ public class ChatRoomController {
     ) {
         Long currentUserId = SecurityUtil.requireUserId();
 
-        TeamRequestResponseDTO.Create result = null;
-                // chatRoomCommandService.createTeamRequest(currentUserId, chatRoomId, request);
+        TeamRequestResponseDTO.Create result = chatRoomCommandService.createTeamRequest(currentUserId, chatRoomId, request);
 
         return ApiResponse.onSuccess(
                 ChatSuccessCode.TEAM_REQUEST_CREATED,
