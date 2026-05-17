@@ -60,7 +60,24 @@ public class TeamRequest extends CreatedBaseEntity {
 
     @PrePersist
     protected void onCreate() {
-        this.teamRequestStatus = TeamRequestStatus.PENDING;
+        if (this.teamRequestStatus == null) {
+            this.teamRequestStatus = TeamRequestStatus.PENDING;
+        }
+    }
+
+    public static TeamRequest create(
+            ChatRoom chatRoom,
+            Course course,
+            User sender,
+            User receiver
+    ) {
+        return TeamRequest.builder()
+                .chatRoom(chatRoom)
+                .course(course)
+                .sender(sender)
+                .receiver(receiver)
+                .teamRequestStatus(TeamRequestStatus.PENDING)
+                .build();
     }
 
 }
