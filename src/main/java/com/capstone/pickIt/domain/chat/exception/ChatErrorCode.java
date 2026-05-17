@@ -63,8 +63,12 @@ public enum ChatErrorCode implements BaseCode {
             HttpStatus.CONFLICT,
             "CHAT409_2",
             "해당 사용자에게 이미 대기 중인 팀원 요청을 보냈습니다."
-    )
-    ;
+    ),
+    PENDING_TEAM_REQUEST_ALREADY_EXISTS(
+            HttpStatus.CONFLICT,
+        "CHAT409_3",
+            "대기 중인 팀원 요청이 이미 존재합니다."
+    );
 
     private final HttpStatus httpStatus;
     private final String code;

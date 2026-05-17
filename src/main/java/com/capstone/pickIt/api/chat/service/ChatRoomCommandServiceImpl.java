@@ -149,22 +149,23 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             throw new ChatException(ChatErrorCode.PENDING_REQUEST_EXISTS_FOR_RECEIVER);
         }
 
-        TeamRequest teamRequest = TeamRequest.create(
-                chatRoom,
-                course,
-                sender,
-                receiver
-        );
+        try {
+            TeamRequest teamRequest = TeamRequest.create(
+                    chatRoom,
+                    course,
+                    sender,
+                    receiver
+            );
 
-        teamRequestRepository.save(teamRequest);
+            teamRequestRepository.saveAndFlush(teamRequest);
 
-        // TODO: WebSocket 연결 후 TEAM_REQUEST_CREATED 이벤트 브로드캐스트 구현
-        // messagingTemplate.convertAndSend(
-        //        "/topic/chatrooms/" + chatRoomId,
-        //        TeamRequestCreatedEvent.from(teamRequest)
-        // );
+            // TODO: WebSocket 연결 후 TEAM_REQUEST_CREATED 이벤트 브로드캐스트 구현
 
-        return TeamRequestConverter.toCreateResponse(teamRequest, currentUserId);
+            return TeamRequestConverter.toCreateResponse(teamRequest, currentUserId);
+
+        } catch (DataIntegrityViolationException e) {
+            throw new ChatException(ChatErrorCode.PENDING_TEAM_REQUEST_ALREADY_EXISTS);
+        }
     }
 
     private DirectChatRoomResponseDTO.CreateOrEnter restoreAndConvert(

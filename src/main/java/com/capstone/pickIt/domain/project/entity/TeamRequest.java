@@ -10,11 +10,23 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 @Entity
-@Table(name = "team_request")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
+@Table(
+        name = "team_request",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_pending_team_request_sender_course",
+                        columnNames = {"sender_id", "course_id", "pending_unique_flag"}
+                ),
+                @UniqueConstraint(
+                        name = "uk_pending_team_request_sender_receiver",
+                        columnNames = {"sender_id", "receiver_id", "pending_unique_flag"}
+                )
+        }
+)
 public class TeamRequest extends CreatedBaseEntity {
 
     @Id
@@ -45,23 +57,35 @@ public class TeamRequest extends CreatedBaseEntity {
     @Column(name = "responded_at")
     private LocalDateTime respondedAt;
 
+    @Column(name = "pending_unique_flag")
+    private Boolean pendingUniqueFlag;
+
     public void accept() {
         this.teamRequestStatus = TeamRequestStatus.ACCEPTED;
         this.respondedAt = LocalDateTime.now(ZoneOffset.UTC);
+        this.pendingUniqueFlag = null;
     }
+
     public void reject() {
         this.teamRequestStatus = TeamRequestStatus.REJECTED;
         this.respondedAt = LocalDateTime.now(ZoneOffset.UTC);
+        this.pendingUniqueFlag = null;
     }
+
     public void cancel() {
         this.teamRequestStatus = TeamRequestStatus.CANCELED;
         this.respondedAt = LocalDateTime.now(ZoneOffset.UTC);
+        this.pendingUniqueFlag = null;
     }
 
     @PrePersist
     protected void onCreate() {
         if (this.teamRequestStatus == null) {
             this.teamRequestStatus = TeamRequestStatus.PENDING;
+        }
+
+        if (this.teamRequestStatus == TeamRequestStatus.PENDING) {
+            this.pendingUniqueFlag = true;
         }
     }
 
@@ -77,6 +101,7 @@ public class TeamRequest extends CreatedBaseEntity {
                 .sender(sender)
                 .receiver(receiver)
                 .teamRequestStatus(TeamRequestStatus.PENDING)
+                .pendingUniqueFlag(true)
                 .build();
     }
 
