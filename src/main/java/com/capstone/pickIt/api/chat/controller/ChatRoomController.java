@@ -63,7 +63,7 @@ public class ChatRoomController {
 
     @Operation(
             summary = "공통 과목 목록 조회",
-            description = "팀원 요청 전송 전, 현재 사용자와 채팅 상대방의 팀원 요청 가능한 공통 과목 목록을 조회합니다."
+            description = "팀원 요청 전송 전, 현재 사용자와 채팅 상대방 간의 팀원 요청 가능한 공통 과목 목록을 조회합니다."
     )
     @GetMapping("/{chatRoomId}/common-courses")
     public ApiResponse<CommonCourseResponseDTO.CommonCourseList> getCommonCourses(
