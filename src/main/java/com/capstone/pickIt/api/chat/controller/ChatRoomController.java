@@ -7,6 +7,7 @@ import com.capstone.pickIt.api.chat.dto.response.CommonCourseResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.DirectChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
 import com.capstone.pickIt.api.chat.service.ChatRoomCommandService;
+import com.capstone.pickIt.api.chat.service.ChatRoomQueryService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
 import com.capstone.pickIt.global.config.security.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class ChatRoomController {
 
     private final ChatRoomCommandService chatRoomCommandService;
+    private final ChatRoomQueryService chatRoomQueryService;
 
     @Operation(summary = "1:1 채팅방 생성/재입장", description = "상대 사용자와의 1:1 채팅방을 생성하거나, 기존 채팅방이 존재하면 재사용 및 재입장 처리합니다.")
     @PostMapping
@@ -50,7 +52,8 @@ public class ChatRoomController {
     ) {
         Long currentUserId = SecurityUtil.requireUserId();
 
-        TeamRequestResponseDTO.Create result = chatRoomCommandService.createTeamRequest(currentUserId, chatRoomId, request);
+        TeamRequestResponseDTO.Create result =
+                chatRoomCommandService.createTeamRequest(currentUserId, chatRoomId, request);
 
         return ApiResponse.onSuccess(
                 ChatSuccessCode.TEAM_REQUEST_CREATED,
@@ -68,8 +71,8 @@ public class ChatRoomController {
     ) {
         Long currentUserId = SecurityUtil.requireUserId();
 
-        CommonCourseResponseDTO.CommonCourseList result = null;
-                // chatRoomQueryService.getCommonCourses(currentUserId, chatRoomId);
+        CommonCourseResponseDTO.CommonCourseList result =
+                chatRoomQueryService.getCommonCourses(currentUserId, chatRoomId);
 
         return ApiResponse.onSuccess(
                 ChatSuccessCode.COMMON_COURSE_LIST_FETCHED,
