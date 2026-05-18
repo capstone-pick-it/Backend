@@ -43,6 +43,6 @@ jobs:
           fingerprint: ${{ secrets.GCP_HOST_FINGERPRINT }}
           script: |
             cd /srv/pickit-backend
-            docker compose pull
-            docker compose up -d
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
