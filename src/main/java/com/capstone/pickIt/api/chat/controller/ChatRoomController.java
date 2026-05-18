@@ -3,6 +3,7 @@ package com.capstone.pickIt.api.chat.controller;
 import com.capstone.pickIt.api.chat.code.ChatSuccessCode;
 import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
+import com.capstone.pickIt.api.chat.dto.response.CommonCourseResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.DirectChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
 import com.capstone.pickIt.api.chat.service.ChatRoomCommandService;
@@ -53,6 +54,25 @@ public class ChatRoomController {
 
         return ApiResponse.onSuccess(
                 ChatSuccessCode.TEAM_REQUEST_CREATED,
+                result
+        );
+    }
+
+    @Operation(
+            summary = "공통 과목 목록 조회",
+            description = "팀원 요청 전송 전, 현재 사용자와 채팅 상대방의 팀원 요청 가능한 공통 과목 목록을 조회합니다."
+    )
+    @GetMapping("/{chatRoomId}/common-courses")
+    public ApiResponse<CommonCourseResponseDTO.CommonCourseList> getCommonCourses(
+            @PathVariable Long chatRoomId
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        CommonCourseResponseDTO.CommonCourseList result = null;
+                // chatRoomQueryService.getCommonCourses(currentUserId, chatRoomId);
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.COMMON_COURSE_LIST_FETCHED,
                 result
         );
     }
