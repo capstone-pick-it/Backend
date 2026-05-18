@@ -9,6 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    concurrency:
+      group: deploy-main
+      cancel-in-progress: false
+
     permissions:
       contents: read
       packages: write
@@ -36,6 +40,7 @@ jobs:
           host: ${{ secrets.GCP_HOST }}
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
+          fingerprint: ${{ secrets.GCP_HOST_FINGERPRINT }}
           script: |
             cd /srv/pickit-backend
             docker compose pull
