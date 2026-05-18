@@ -14,8 +14,14 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
 COPY --from=build /app/build/libs/*.jar app.jar
 
+RUN chown -R appuser:appgroup /app
+
 EXPOSE 8080
+
+USER appuser
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
