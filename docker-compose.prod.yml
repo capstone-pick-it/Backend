@@ -14,7 +14,7 @@ services:
     restart: always
 
   redis:
-    image: redis:latest
+    image: redis:7.4
     container_name: redis
     volumes:
       - redis-data:/data
