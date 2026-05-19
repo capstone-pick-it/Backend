@@ -168,6 +168,43 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         }
     }
 
+    @Override
+    public TeamRequestResponseDTO.Respond acceptTeamRequest(
+            Long currentUserId,
+            Long chatRoomId,
+            Long teamRequestId
+    ) {
+        TeamRequest teamRequest = teamRequestRepository.findById(teamRequestId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_FOUND));
+
+        if (!teamRequest.getChatRoom().getId().equals(chatRoomId)) {
+            throw new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_FOUND);
+        }
+
+        if (!teamRequest.isReceiver(currentUserId)) {
+            throw new ChatException(ChatErrorCode.NOT_TEAM_REQUEST_RECEIVER);
+        }
+
+        if (!teamRequest.isPending()) {
+            throw new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_PENDING);
+        }
+
+        if (teamRequest.isExpired()) {
+            teamRequest.expire();
+            throw new ChatException(ChatErrorCode.TEAM_REQUEST_EXPIRED);
+        }
+
+        teamRequest.accept();
+
+        // TODO: WebSocket 연결 후 TEAM_REQUEST_ACCEPTED 이벤트 브로드캐스트 구현
+        // messagingTemplate.convertAndSend(
+        //        "/topic/chatrooms/" + chatRoomId,
+        //        TeamRequestAcceptedEvent.from(teamRequest)
+        // );
+
+        return TeamRequestConverter.toRespondResponse(teamRequest);
+    }
+
     private DirectChatRoomResponseDTO.CreateOrEnter restoreAndConvert(
             ChatRoom chatRoom,
             Long currentUserId,
