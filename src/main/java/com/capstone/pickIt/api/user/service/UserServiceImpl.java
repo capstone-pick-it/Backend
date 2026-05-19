@@ -1,5 +1,6 @@
 package com.capstone.pickIt.api.user.service;
 
+import com.capstone.pickIt.api.user.dto.request.PasswordResetRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UserRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.UserResponseDTO;
 import com.capstone.pickIt.domain.user.entity.User;
@@ -20,11 +21,29 @@ import java.time.Duration;
 public class UserServiceImpl implements UserService {
 
     private static final String EMAIL_VERIFIED_PREFIX = "email:verified:";
+    private static final String PASSWORD_RESET_VERIFIED_PREFIX = "password:reset:verified:";
     static final String WITHDRAWN_USER_PREFIX = "withdrawn:user:";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+
+    @Override
+    @Transactional
+    public void resetPassword(PasswordResetRequestDTO request) {
+        String email = request.getEmail();
+
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(PASSWORD_RESET_VERIFIED_PREFIX + email))) {
+            throw new UserException(UserErrorCode.PASSWORD_RESET_NOT_VERIFIED);
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+
+        redisTemplate.delete(PASSWORD_RESET_VERIFIED_PREFIX + email);
+    }
 
     @Override
     @Transactional
