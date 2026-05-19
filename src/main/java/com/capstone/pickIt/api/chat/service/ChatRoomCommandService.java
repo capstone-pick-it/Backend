@@ -6,6 +6,7 @@ import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
 
 public interface ChatRoomCommandService {
+
     DirectChatRoomResponseDTO.CreateOrEnter createOrEnterDirectChatRoom(
             Long currentUserId,
             DirectChatRoomCreateRequestDTO request
@@ -15,5 +16,11 @@ public interface ChatRoomCommandService {
             Long currentUserId,
             Long chatRoomId,
             TeamRequestCreateRequestDTO request
+    );
+
+    TeamRequestResponseDTO.Respond acceptTeamRequest(
+            Long currentUserId,
+            Long chatRoomId,
+            Long teamRequestId
     );
 }
