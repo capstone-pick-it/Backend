@@ -78,6 +78,24 @@ public class TeamRequest extends CreatedBaseEntity {
         this.pendingUniqueFlag = null;
     }
 
+    public boolean isPending() {
+        return this.teamRequestStatus == TeamRequestStatus.PENDING;
+    }
+
+    public boolean isExpired() {
+        return this.getCreatedAt().plusHours(24).isBefore(LocalDateTime.now(ZoneOffset.UTC));
+    }
+
+    public boolean isReceiver(Long userId) {
+        return this.receiver.getId().equals(userId);
+    }
+
+    public void expire() {
+        this.teamRequestStatus = TeamRequestStatus.REJECTED;
+        this.respondedAt = LocalDateTime.now(ZoneOffset.UTC);
+        this.pendingUniqueFlag = null;
+    }
+
     @PrePersist
     protected void onCreate() {
         if (this.teamRequestStatus == null) {
