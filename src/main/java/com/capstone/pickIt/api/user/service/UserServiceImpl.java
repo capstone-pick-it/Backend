@@ -37,10 +37,11 @@ public class UserServiceImpl implements UserService {
             throw new UserException(UserErrorCode.PASSWORD_RESET_NOT_VERIFIED);
         }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        if (!userRepository.existsByEmail(email)) {
+            throw new UserException(UserErrorCode.USER_NOT_FOUND);
+        }
 
-        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.updatePasswordByEmail(email, passwordEncoder.encode(request.getNewPassword()));
 
         redisTemplate.delete(PASSWORD_RESET_VERIFIED_PREFIX + email);
     }
