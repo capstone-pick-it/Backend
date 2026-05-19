@@ -5,6 +5,9 @@ import com.capstone.pickIt.api.user.dto.request.EmailVerifyRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.LoginRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.OnboardingBasicInfoRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.OnboardingPersonalityRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.PasswordResetRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.PasswordResetSendRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.PasswordResetVerifyRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.TokenRefreshRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UserRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.LoginResponseDTO;
@@ -96,6 +99,27 @@ public class UserController {
         userService.withdrawUser(userId);
         authService.logout(request.getHeader("Authorization"));
         return ApiResponse.onSuccess(SuccessCode.OK, "회원 탈퇴가 완료되었습니다.");
+    }
+
+    @Operation(summary = "비밀번호 재설정 인증코드 전송", description = "가입된 이메일로 비밀번호 재설정 인증코드를 전송합니다.")
+    @PostMapping("/password/reset/send")
+    public ApiResponse<Void> sendPasswordResetCode(@RequestBody @Valid PasswordResetSendRequestDTO request) {
+        emailService.sendPasswordResetCode(request);
+        return ApiResponse.onSuccess(SuccessCode.OK, null);
+    }
+
+    @Operation(summary = "비밀번호 재설정 인증코드 확인", description = "비밀번호 재설정 인증코드를 검증합니다.")
+    @PostMapping("/password/reset/verify")
+    public ApiResponse<Void> verifyPasswordResetCode(@RequestBody @Valid PasswordResetVerifyRequestDTO request) {
+        emailService.verifyPasswordResetCode(request);
+        return ApiResponse.onSuccess(SuccessCode.OK, null);
+    }
+
+    @Operation(summary = "비밀번호 재설정", description = "인증 완료 후 새 비밀번호로 변경합니다.")
+    @PutMapping("/password/reset")
+    public ApiResponse<Void> resetPassword(@RequestBody @Valid PasswordResetRequestDTO request) {
+        userService.resetPassword(request);
+        return ApiResponse.onSuccess(SuccessCode.OK, null);
     }
 
     @Operation(summary = "온보딩 기본 정보 저장", description = "학교, 학과, 학년, 학기, 수강 강의를 저장합니다.")
