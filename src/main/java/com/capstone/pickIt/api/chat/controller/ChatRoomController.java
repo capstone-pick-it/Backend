@@ -91,12 +91,8 @@ public class ChatRoomController {
     ) {
         Long currentUserId = SecurityUtil.requireUserId();
 
-        TeamRequestResponseDTO.Respond result = null;
-  /*              chatRoomCommandService.acceptTeamRequest(
-                        currentUserId,
-                        chatRoomId,
-                        teamRequestId
-                );*/
+        TeamRequestResponseDTO.Respond result =
+                chatRoomCommandService.acceptTeamRequest(currentUserId, chatRoomId, teamRequestId);
 
         return ApiResponse.onSuccess(
                 ChatSuccessCode.TEAM_REQUEST_RESPONDED,
