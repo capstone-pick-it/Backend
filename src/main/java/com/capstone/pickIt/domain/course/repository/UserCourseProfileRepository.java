@@ -36,4 +36,9 @@ public interface UserCourseProfileRepository extends JpaRepository<UserCoursePro
             Long currentUserId,
             Long opponentUserId
     );
+
+    Optional<UserCourseProfile> findByUserIdAndCourseIdAndDeletedAtIsNull(
+            Long userId,
+            Long courseId
+    );
 }

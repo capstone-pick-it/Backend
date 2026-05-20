@@ -41,11 +41,11 @@ public class ChatRoomController {
         );
     }
 
-    @PostMapping("/{chatRoomId}/team-requests")
     @Operation(
             summary = "팀원 요청 보내기",
             description = "현재 사용자가 1:1 채팅방의 상대 사용자에게 팀원 요청을 보냅니다."
     )
+    @PostMapping("/{chatRoomId}/team-requests")
     public ApiResponse<TeamRequestResponseDTO.Create> createTeamRequest(
             @PathVariable Long chatRoomId,
             @RequestBody @Valid TeamRequestCreateRequestDTO request
@@ -76,6 +76,26 @@ public class ChatRoomController {
 
         return ApiResponse.onSuccess(
                 ChatSuccessCode.COMMON_COURSE_LIST_FETCHED,
+                result
+        );
+    }
+
+    @Operation(
+            summary = "팀원 요청 수락",
+            description = "현재 사용자가 받은 PENDING 상태의 팀원 요청을 수락합니다."
+    )
+    @PatchMapping("/{chatRoomId}/team-requests/{teamRequestId}")
+    public ApiResponse<TeamRequestResponseDTO.Respond> acceptTeamRequest(
+            @PathVariable Long chatRoomId,
+            @PathVariable Long teamRequestId
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        TeamRequestResponseDTO.Respond result =
+                chatRoomCommandService.acceptTeamRequest(currentUserId, chatRoomId, teamRequestId);
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.TEAM_REQUEST_RESPONDED,
                 result
         );
     }

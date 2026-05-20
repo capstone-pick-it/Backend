@@ -12,6 +12,9 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
 
     List<ProjectTeamMember> findByProjectTeam_Id(Long projectTeamId);
 
+    boolean existsByProjectTeamIdAndUserId(Long projectTeamId, Long userId);
+
+
     @Query("""
     SELECT COUNT(ptm) > 0
     FROM ProjectTeamMember ptm
