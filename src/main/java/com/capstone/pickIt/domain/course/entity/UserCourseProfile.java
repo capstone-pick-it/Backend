@@ -42,6 +42,10 @@ public class UserCourseProfile extends CreatedUpdatedDeletedBaseEntity {
     @Column(name = "recruitment_status", nullable = false, length = 30)
     private RecruitmentStatus recruitmentStatus;
 
+    public void updateImportanceLevel(ImportanceLevel importanceLevel) {
+        this.importanceLevel = importanceLevel;
+    }
+
     public void changeRecruitmentStatus(RecruitmentStatus recruitmentStatus) {
         if (recruitmentStatus == null) {
             throw new IllegalArgumentException("모집 상태는 필수입니다.");
