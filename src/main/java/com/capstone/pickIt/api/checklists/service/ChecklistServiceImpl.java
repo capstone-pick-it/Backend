@@ -109,10 +109,14 @@ public class ChecklistServiceImpl implements ChecklistService {
 
         User completedByUser = findUser(currentUserId);
 
-        if (request.status() == ChecklistStatus.DONE) {
+        if (request.status() == null) {
+            throw new ChecklistException(ChecklistErrorCode.INVALID_UPDATE_REQUEST);
+        } else if (request.status() == ChecklistStatus.DONE) {
             checklistItem.markDone(completedByUser);
-        } else {
+        } else if (request.status() == ChecklistStatus.TODO) {
             checklistItem.markTodo();
+        } else {
+            throw new ChecklistException(ChecklistErrorCode.INVALID_UPDATE_REQUEST);
         }
 
         return ChecklistConverter.toResponse(checklistItem);
