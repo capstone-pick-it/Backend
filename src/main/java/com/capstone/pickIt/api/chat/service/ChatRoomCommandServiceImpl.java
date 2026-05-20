@@ -196,11 +196,6 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             throw new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_PENDING);
         }
 
-        if (teamRequest.isExpired()) {
-            teamRequest.expire();
-            throw new ChatException(ChatErrorCode.TEAM_REQUEST_EXPIRED);
-        }
-
         Course course = teamRequest.getCourse();
         User sender = teamRequest.getSender();
         User receiver = teamRequest.getReceiver();
