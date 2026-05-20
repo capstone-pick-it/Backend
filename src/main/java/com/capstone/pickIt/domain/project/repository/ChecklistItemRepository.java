@@ -16,6 +16,10 @@ public interface ChecklistItemRepository extends JpaRepository<ChecklistItem, Lo
     @Query("""
         SELECT c
         FROM ChecklistItem c
+        JOIN FETCH c.manager
+        JOIN FETCH c.createdByUser
+        LEFT JOIN FETCH c.completedByUser
+        JOIN FETCH c.projectTeam
         WHERE c.projectTeam = :projectTeam
           AND c.deletedAt IS NULL
         ORDER BY
