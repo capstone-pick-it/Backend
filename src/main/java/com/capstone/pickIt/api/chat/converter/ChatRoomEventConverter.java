@@ -85,4 +85,23 @@ public class ChatRoomEventConverter {
                 )
         );
     }
+
+    public static ChatRoomEventResponseDTO.ChatRoomEvent toTeamRequestRejectedEvent(
+            TeamRequest teamRequest
+    ) {
+        return new ChatRoomEventResponseDTO.ChatRoomEvent(
+                ChatEventType.TEAM_REQUEST_REJECTED.name(),
+                teamRequest.getChatRoom().getId(),
+                teamRequest.getChatRoom().getChatType().name(),
+                null,
+                new ChatRoomEventResponseDTO.TeamRequestPayload(
+                        teamRequest.getId(),
+                        teamRequest.getSender().getId(),
+                        teamRequest.getReceiver().getId(),
+                        teamRequest.getTeamRequestStatus().name(),
+                        teamRequest.getCreatedAt(),
+                        teamRequest.getRespondedAt()
+                )
+        );
+    }
 }
