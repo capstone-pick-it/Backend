@@ -85,15 +85,9 @@ public class ChecklistServiceImpl implements ChecklistService {
         Long projectTeamId = checklistItem.getProjectTeam().getId();
 
         validateActiveProjectMember(projectTeamId, currentUserId);
-        validateManagerIsActiveProjectMember(projectTeamId, request.managerId());
+        validateChecklistManager(checklistItem, currentUserId);
 
-        User manager = findUser(request.managerId());
-
-        checklistItem.update(
-                request.title(),
-                request.dueDate(),
-                manager
-        );
+        checklistItem.updateContent(request.title(), request.dueDate());
 
         return ChecklistConverter.toResponse(checklistItem);
     }
@@ -159,6 +153,12 @@ public class ChecklistServiceImpl implements ChecklistService {
 
         if (!exists) {
             throw new ChecklistException(ChecklistErrorCode.NOT_PROJECT_MEMBER);
+        }
+    }
+
+    private void validateChecklistManager(ChecklistItem checklistItem, Long userId) {
+        if (!checklistItem.getManager().getId().equals(userId)) {
+            throw new ChecklistException(ChecklistErrorCode.ONLY_MANAGER_CAN_UPDATE_CHECKLIST);
         }
     }
 
