@@ -43,7 +43,7 @@ public class CourseCardResponseDTO {
                 .courseId(profile.getCourse().getId())
                 .courseName(profile.getCourse().getCourseName())
                 .semester(profile.getCourse().getSemester())
-                .importance(profile.getImportanceLevel().name())
+                .importance(profile.getImportanceLevel() != null ? profile.getImportanceLevel().name() : null)
                 .traits(traits.stream().map(TraitInfo::from).toList())
                 .build();
     }
