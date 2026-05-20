@@ -68,7 +68,6 @@ public class ChecklistServiceImpl implements ChecklistService {
                 .title(request.title())
                 .dueDate(request.dueDate())
                 .createdByUser(createdByUser)
-                .status(ChecklistStatus.TODO)
                 .build();
 
         ChecklistItem savedChecklistItem = checklistItemRepository.save(checklistItem);
