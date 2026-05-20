@@ -35,7 +35,7 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             tr.respondedAt = :now,
             tr.pendingUniqueFlag = null
         WHERE tr.teamRequestStatus = 'PENDING'
-          AND tr.createdAt < :expiredBefore
+          AND tr.createdAt <= :expiredBefore
         """)
     int rejectExpiredPendingRequests(
             LocalDateTime expiredBefore,

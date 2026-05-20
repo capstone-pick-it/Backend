@@ -83,7 +83,8 @@ public class TeamRequest extends CreatedBaseEntity {
     }
 
     public boolean isExpired() {
-        return this.getCreatedAt().plusHours(24).isBefore(LocalDateTime.now(ZoneOffset.UTC));
+        LocalDateTime expiredAt = this.getCreatedAt().plusHours(24);
+        return !expiredAt.isAfter(LocalDateTime.now(ZoneOffset.UTC));
     }
 
     public boolean isReceiver(Long userId) {
