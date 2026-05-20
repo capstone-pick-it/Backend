@@ -22,12 +22,6 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             TeamRequestStatus teamRequestStatus
     );
 
-    boolean existsByChatRoomIdAndReceiverIdAndTeamRequestStatus(
-            Long chatRoomId,
-            Long receiverId,
-            TeamRequestStatus teamRequestStatus
-    );
-
     @Modifying(clearAutomatically = true)
     @Query("""
         UPDATE TeamRequest tr

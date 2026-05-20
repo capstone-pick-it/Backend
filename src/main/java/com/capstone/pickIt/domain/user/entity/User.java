@@ -62,6 +62,10 @@ public class User extends BaseEntity {
         this.onboardingStep = 2;
     }
 
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
     public void withdraw() {
         this.deletedAt = java.time.LocalDateTime.now();
     }

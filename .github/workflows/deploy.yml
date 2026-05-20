@@ -42,7 +42,7 @@ jobs:
           host: ${{ secrets.GCP_HOST }}
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
-          fingerprint: ${{ secrets.GCP_HOST_FINGERPRINT }}
+          # fingerprint: ${{ secrets.GCP_HOST_FINGERPRINT }}
           script: |
             cd /srv/pickit-backend
             docker compose -f docker-compose.prod.yml pull backend

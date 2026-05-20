@@ -1,7 +1,13 @@
 package com.capstone.pickIt.api.user.service;
 
+import com.capstone.pickIt.api.user.dto.request.PasswordResetRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UserRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.UserResponseDTO;
+import com.capstone.pickIt.domain.point.entity.Point;
+import com.capstone.pickIt.domain.point.entity.PointTransaction;
+import com.capstone.pickIt.domain.point.entity.PointTransactionType;
+import com.capstone.pickIt.domain.point.repository.PointRepository;
+import com.capstone.pickIt.domain.point.repository.PointTransactionRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.exception.UserErrorCode;
 import com.capstone.pickIt.domain.user.exception.UserException;
@@ -20,11 +26,33 @@ import java.time.Duration;
 public class UserServiceImpl implements UserService {
 
     private static final String EMAIL_VERIFIED_PREFIX = "email:verified:";
+    private static final String PASSWORD_RESET_VERIFIED_PREFIX = "password:reset:verified:";
     static final String WITHDRAWN_USER_PREFIX = "withdrawn:user:";
+    private static final int SIGNUP_REWARD_AMOUNT = 100;
 
     private final UserRepository userRepository;
+    private final PointRepository pointRepository;
+    private final PointTransactionRepository pointTransactionRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+
+    @Override
+    @Transactional
+    public void resetPassword(PasswordResetRequestDTO request) {
+        String email = request.getEmail();
+
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(PASSWORD_RESET_VERIFIED_PREFIX + email))) {
+            throw new UserException(UserErrorCode.PASSWORD_RESET_NOT_VERIFIED);
+        }
+
+        if (!userRepository.existsByEmail(email)) {
+            throw new UserException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        userRepository.updatePasswordByEmail(email, passwordEncoder.encode(request.getNewPassword()));
+
+        redisTemplate.delete(PASSWORD_RESET_VERIFIED_PREFIX + email);
+    }
 
     @Override
     @Transactional
@@ -67,6 +95,20 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        Point point = Point.builder()
+                .user(savedUser)
+                .balance(SIGNUP_REWARD_AMOUNT)
+                .build();
+        pointRepository.save(point);
+
+        pointTransactionRepository.save(PointTransaction.builder()
+                .user(savedUser)
+                .transactionType(PointTransactionType.SIGNUP_REWARD)
+                .amount(SIGNUP_REWARD_AMOUNT)
+                .balanceAfter(SIGNUP_REWARD_AMOUNT)
+                .description("회원가입 보상 포인트")
+                .build());
 
         redisTemplate.delete(EMAIL_VERIFIED_PREFIX + email);
 

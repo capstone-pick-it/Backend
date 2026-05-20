@@ -2,6 +2,8 @@ package com.capstone.pickIt.api.user.service;
 
 import com.capstone.pickIt.api.user.dto.request.EmailSendRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.EmailVerifyRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.PasswordResetSendRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.PasswordResetVerifyRequestDTO;
 import com.capstone.pickIt.domain.user.exception.UserErrorCode;
 import com.capstone.pickIt.domain.user.exception.UserException;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +22,11 @@ public class EmailServiceImpl implements EmailService {
 
     private static final String EMAIL_CODE_PREFIX = "email:code:";
     private static final String EMAIL_VERIFIED_PREFIX = "email:verified:";
+    private static final String PASSWORD_RESET_CODE_PREFIX = "password:reset:code:";
+    private static final String PASSWORD_RESET_VERIFIED_PREFIX = "password:reset:verified:";
     private static final long CODE_TTL_MINUTES = 5;
     private static final long VERIFIED_TTL_MINUTES = 30;
+    private static final long PASSWORD_RESET_VERIFIED_TTL_MINUTES = 10;
     private static final String UNIVERSITY_DOMAIN_SUFFIX = "ac.kr";
 
     private final JavaMailSender mailSender;
@@ -59,6 +64,53 @@ public class EmailServiceImpl implements EmailService {
                 VERIFIED_TTL_MINUTES,
                 TimeUnit.MINUTES
         );
+    }
+
+    @Override
+    public void sendPasswordResetCode(PasswordResetSendRequestDTO request) {
+        String email = request.getEmail();
+        String code = generateCode();
+
+        redisTemplate.opsForValue().set(
+                PASSWORD_RESET_CODE_PREFIX + email,
+                code,
+                CODE_TTL_MINUTES,
+                TimeUnit.MINUTES
+        );
+
+        sendPasswordResetEmail(email, code);
+    }
+
+    @Override
+    public void verifyPasswordResetCode(PasswordResetVerifyRequestDTO request) {
+        String email = request.getEmail();
+        String storedCode = redisTemplate.opsForValue().get(PASSWORD_RESET_CODE_PREFIX + email);
+
+        if (storedCode == null || !storedCode.equals(request.getCode())) {
+            throw new UserException(UserErrorCode.PASSWORD_RESET_CODE_INVALID);
+        }
+
+        redisTemplate.delete(PASSWORD_RESET_CODE_PREFIX + email);
+        redisTemplate.opsForValue().set(
+                PASSWORD_RESET_VERIFIED_PREFIX + email,
+                "true",
+                PASSWORD_RESET_VERIFIED_TTL_MINUTES,
+                TimeUnit.MINUTES
+        );
+    }
+
+    @Async
+    protected void sendPasswordResetEmail(String to, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("[PickIt] 비밀번호 재설정 인증 코드");
+        message.setText(
+                "안녕하세요, PickIt입니다.\n\n" +
+                "비밀번호 재설정 인증 코드: " + code + "\n\n" +
+                "유효 시간은 5분입니다.\n" +
+                "본인이 요청하지 않은 경우 이 메일을 무시해주세요."
+        );
+        mailSender.send(message);
     }
 
     @Async
