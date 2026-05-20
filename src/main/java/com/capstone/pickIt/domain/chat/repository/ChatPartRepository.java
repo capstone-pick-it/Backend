@@ -21,4 +21,12 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
             Long chatRoomId,
             Long currentUserId
     );
+
+    @Query("""
+            SELECT COUNT(cp)
+            FROM ChatPart cp
+            WHERE cp.chatRoom.id = :chatRoomId
+              AND cp.deletedAt IS NULL
+            """)
+    int countActiveParticipants(Long chatRoomId);
 }

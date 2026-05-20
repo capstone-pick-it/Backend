@@ -1,8 +1,10 @@
 package com.capstone.pickIt.api.chat.service;
 
 import com.capstone.pickIt.api.chat.converter.ChatMessageConverter;
+import com.capstone.pickIt.api.chat.converter.ChatRoomEventConverter;
 import com.capstone.pickIt.api.chat.dto.request.ChatMessageSendRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatMessageResponseDTO;
+import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
 import com.capstone.pickIt.domain.chat.entity.*;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.domain.chat.exception.ChatException;
@@ -56,8 +58,16 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
 
         chatRoom.updateLastMessage(message);
 
-        ChatMessageResponseDTO.MessageBroadcast response =
-                ChatMessageConverter.toBroadcastResponse(message, files);
+        int unreadMemberCount = chatPartRepository
+                .countActiveParticipants(chatRoom.getId()) - 1;
+
+        ChatRoomEventResponseDTO.ChatRoomEvent response =
+                ChatRoomEventConverter.toMessageEvent(
+                        chatRoom,
+                        message,
+                        files,
+                        unreadMemberCount
+                );
 
         messagingTemplate.convertAndSend(
                 "/topic/chatrooms/" + chatRoom.getId(),
