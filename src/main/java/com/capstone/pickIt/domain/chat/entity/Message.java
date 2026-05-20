@@ -58,4 +58,29 @@ public class Message extends CreatedBaseEntity {
             throw new IllegalArgumentException("FILE 메시지는 content를 가질 수 없습니다.");
         }
     }
+
+    public static Message createTextMessage(
+            ChatRoom chatRoom,
+            User sender,
+            String content
+    ) {
+        return Message.builder()
+                .chatRoom(chatRoom)
+                .user(sender)
+                .messageType(MessageType.TEXT)
+                .content(content)
+                .build();
+    }
+
+    public static Message createFileMessage(
+            ChatRoom chatRoom,
+            User sender
+    ) {
+        return Message.builder()
+                .chatRoom(chatRoom)
+                .user(sender)
+                .messageType(MessageType.FILE)
+                .content(null)
+                .build();
+    }
 }
