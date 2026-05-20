@@ -42,7 +42,7 @@ public class ChecklistServiceImpl implements ChecklistService {
         validateActiveProjectMember(projectTeamId, currentUserId);
 
         List<ChecklistItemResponseDTO> checklists = checklistItemRepository
-                .findAllByProjectTeamAndDeletedAtIsNullOrderByIdAsc(projectTeam)
+                .findActiveItemsOrderByTodoFirstDueDateAscCreatedAtAsc(projectTeam)
                 .stream()
                 .map(ChecklistConverter::toResponse)
                 .toList();
@@ -104,6 +104,7 @@ public class ChecklistServiceImpl implements ChecklistService {
         Long projectTeamId = checklistItem.getProjectTeam().getId();
 
         validateActiveProjectMember(projectTeamId, currentUserId);
+        validateChecklistManager(checklistItem, currentUserId);
 
         User completedByUser = findUser(currentUserId);
 
@@ -125,6 +126,7 @@ public class ChecklistServiceImpl implements ChecklistService {
         Long projectTeamId = checklistItem.getProjectTeam().getId();
 
         validateActiveProjectMember(projectTeamId, currentUserId);
+        validateChecklistManager(checklistItem, currentUserId);
 
         checklistItem.softDelete();
     }
