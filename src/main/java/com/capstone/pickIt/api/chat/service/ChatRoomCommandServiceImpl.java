@@ -272,6 +272,10 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
                 .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.USER_COURSE_PROFILE_NOT_FOUND));
 
+        if (userCourseProfile.getRecruitmentStatus() != RecruitmentStatus.RECRUITING) {
+            throw new ChatException(ChatErrorCode.INVALID_RECRUITMENT_STATUS);
+        }
+
         userCourseProfile.changeRecruitmentStatus(RecruitmentStatus.CONFIRM_PENDING);
     }
 }

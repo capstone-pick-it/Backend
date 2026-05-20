@@ -93,6 +93,11 @@ public enum ChatErrorCode implements BaseCode {
             HttpStatus.CONFLICT,
         "CHAT409_3",
             "대기 중인 팀원 요청이 이미 존재합니다."
+    ),
+    INVALID_RECRUITMENT_STATUS(
+            HttpStatus.CONFLICT,
+            "CHAT409_4",
+            "현재 모집 가능한 상태가 아닙니다."
     );
 
     private final HttpStatus httpStatus;
