@@ -52,9 +52,6 @@ public class ChecklistItem extends CreatedUpdatedDeletedBaseEntity {
 
     public void updateContent(String title, LocalDate dueDate) {
         if (title != null) {
-            if (title.isBlank()) {
-                throw new IllegalArgumentException("제목은 공백일 수 없습니다.");
-            }
             this.title = title;
         }
 

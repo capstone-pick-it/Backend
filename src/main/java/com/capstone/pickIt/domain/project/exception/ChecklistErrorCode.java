@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 public enum ChecklistErrorCode implements BaseCode {
 
     MANAGER_NOT_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "CHECKLIST400_1", "담당자는 해당 프로젝트 팀의 멤버여야 합니다."),
+    INVALID_UPDATE_REQUEST(HttpStatus.BAD_REQUEST, "CHECKLIST400_2", "수정할 제목 또는 마감일 중 하나는 반드시 입력해야 합니다."),
+    INVALID_TITLE(HttpStatus.BAD_REQUEST, "CHECKLIST400_3", "체크리스트 제목은 공백일 수 없습니다."),
 
     NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN, "CHECKLIST403_1", "해당 프로젝트 팀의 멤버만 체크리스트에 접근할 수 있습니다."),
     ONLY_MANAGER_CAN_UPDATE_CHECKLIST(HttpStatus.FORBIDDEN, "CHECKLIST403_2", "체크리스트 담당자만 수정할 수 있습니다."),

@@ -81,6 +81,8 @@ public class ChecklistServiceImpl implements ChecklistService {
     public ChecklistItemResponseDTO updateChecklist(Long checklistItemId, ChecklistUpdateRequestDTO request) {
         Long currentUserId = SecurityUtil.requireUserId();
 
+        validateUpdateRequest(request);
+
         ChecklistItem checklistItem = findChecklistItem(checklistItemId);
         Long projectTeamId = checklistItem.getProjectTeam().getId();
 
@@ -144,6 +146,16 @@ public class ChecklistServiceImpl implements ChecklistService {
     private User findUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ChecklistException(ChecklistErrorCode.USER_NOT_FOUND));
+    }
+
+    private void validateUpdateRequest(ChecklistUpdateRequestDTO request) {
+        if (request.title() == null && request.dueDate() == null) {
+            throw new ChecklistException(ChecklistErrorCode.INVALID_UPDATE_REQUEST);
+        }
+
+        if (request.title() != null && request.title().isBlank()) {
+            throw new ChecklistException(ChecklistErrorCode.INVALID_TITLE);
+        }
     }
 
     private void validateActiveProjectMember(Long projectTeamId, Long userId) {
