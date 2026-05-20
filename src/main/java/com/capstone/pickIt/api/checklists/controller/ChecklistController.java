@@ -56,6 +56,7 @@ public class ChecklistController {
     }
 
     @DeleteMapping("/checklists/{checklistItemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ApiResponse<Void> deleteChecklist(
             @PathVariable Long checklistItemId
     ) {
