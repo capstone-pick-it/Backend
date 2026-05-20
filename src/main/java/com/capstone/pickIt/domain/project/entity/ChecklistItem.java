@@ -50,16 +50,6 @@ public class ChecklistItem extends CreatedUpdatedDeletedBaseEntity {
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdByUser;
 
-    public void update(String title, LocalDate dueDate, User manager) {
-        if (title == null || manager == null) {
-            throw new IllegalArgumentException("제목과 담당자는 필수입니다.");
-        }
-
-        this.title = title;
-        this.dueDate = dueDate;
-        this.manager = manager;
-    }
-
     public void updateContent(String title, LocalDate dueDate) {
         if (title != null) {
             if (title.isBlank()) {
