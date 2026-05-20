@@ -249,11 +249,18 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         boolean existsMember = projectTeamMemberRepository
                 .existsByProjectTeamIdAndUserId(projectTeam.getId(), user.getId());
 
-        if (!existsMember) {
+        if (existsMember) {
+            return;
+        }
+
+        try {
             ProjectTeamMember projectTeamMember =
                     ProjectTeamMember.createPendingMember(projectTeam, user);
 
-            projectTeamMemberRepository.save(projectTeamMember);
+            projectTeamMemberRepository.saveAndFlush(projectTeamMember);
+
+        } catch (DataIntegrityViolationException e) {
+            // 동시에 같은 팀 멤버가 추가된 경우 무시
         }
     }
 
