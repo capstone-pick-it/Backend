@@ -55,6 +55,10 @@ public class ChecklistServiceImpl implements ChecklistService {
     public ChecklistItemResponseDTO createChecklist(Long projectTeamId, ChecklistCreateRequestDTO request) {
         Long currentUserId = SecurityUtil.requireUserId();
 
+        if (request.title() == null || request.title().isBlank()) {
+            throw new ChecklistException(ChecklistErrorCode.INVALID_TITLE);
+        }
+
         ProjectTeam projectTeam = findProjectTeam(projectTeamId);
         validateActiveProjectMember(projectTeamId, currentUserId);
         validateManagerIsActiveProjectMember(projectTeamId, request.managerId());
