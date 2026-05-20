@@ -45,6 +45,10 @@ jwt:
   access-token-expire-ms: 3600000
   refresh-token-expire-ms: 86400000
 
+app:
+  cors:
+    allowed-origins: http://127.0.0.1:5500,http://localhost:5500
+
 logging:
   level:
     org.hibernate.SQL: debug

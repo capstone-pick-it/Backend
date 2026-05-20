@@ -13,6 +13,8 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+
 @Component
 @RequiredArgsConstructor
 public class StompAuthChannelInterceptor implements ChannelInterceptor {
@@ -43,10 +45,13 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
                     new UsernamePasswordAuthenticationToken(
                             principal,
                             null,
-                            null
+                            Collections.emptyList()
                     );
 
             accessor.setUser(authentication);
+
+            accessor.getSessionAttributes().put("userId", userId);
+            accessor.getSessionAttributes().put("email", email);
         }
 
         return message;

@@ -2,12 +2,12 @@ package com.capstone.pickIt.api.chat.controller;
 
 import com.capstone.pickIt.api.chat.dto.request.ChatMessageSendRequestDTO;
 import com.capstone.pickIt.api.chat.service.ChatMessageCommandService;
-import com.capstone.pickIt.global.config.security.AuthPrincipal;
+import com.capstone.pickIt.global.apiPayload.exception.CustomException;
+import com.capstone.pickIt.global.apiPayload.response.ErrorCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -21,15 +21,14 @@ public class ChatMessageSocketController {
             @Valid ChatMessageSendRequestDTO request,
             StompHeaderAccessor accessor
     ) {
-        UsernamePasswordAuthenticationToken authentication =
-                (UsernamePasswordAuthenticationToken) accessor.getUser();
+        Long currentUserId = (Long) accessor.getSessionAttributes().get("userId");
 
-        AuthPrincipal principal =
-                (AuthPrincipal) authentication.getPrincipal();
-
+        if (currentUserId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
 
         chatMessageCommandService.sendMessage(
-                principal.getUserId(),
+                currentUserId,
                 request
         );
     }
