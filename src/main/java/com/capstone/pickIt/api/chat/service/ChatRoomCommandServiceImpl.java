@@ -201,7 +201,11 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         User receiver = teamRequest.getReceiver();
 
         ProjectTeam projectTeam = projectTeamRepository
-                .findFirstByCourseIdAndStatus(course.getId(), ProjectTeamStatus.RECRUITING)
+                .findRecruitingTeamByCourseAndMember(
+                        course.getId(),
+                        sender.getId(),
+                        receiver.getId()
+                )
                 .orElseGet(() -> projectTeamRepository.save(
                         ProjectTeam.createRecruitingTeam(course)
                 ));
