@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface PointTransactionRepository extends JpaRepository<PointTransaction, Long> {
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("DELETE FROM PointTransaction pt WHERE pt.user.id IN :userIds")
     void deleteAllByUserIdIn(@Param("userIds") List<Long> userIds);
 }

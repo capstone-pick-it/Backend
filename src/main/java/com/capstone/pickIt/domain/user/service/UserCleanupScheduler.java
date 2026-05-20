@@ -27,6 +27,8 @@ public class UserCleanupScheduler {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
         List<User> targets = userRepository.findByDeletedAtBeforeAndDeletedAtIsNotNull(threshold);
 
+        if (targets.isEmpty()) return;
+
         List<Long> userIds = targets.stream().map(User::getId).toList();
         pointTransactionRepository.deleteAllByUserIdIn(userIds);
         pointRepository.deleteAllByUserIdIn(userIds);
