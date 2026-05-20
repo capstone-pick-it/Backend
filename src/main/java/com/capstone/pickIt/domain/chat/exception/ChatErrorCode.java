@@ -74,6 +74,11 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT404_6",
             "팀원 요청을 찾을 수 없습니다."
     ),
+    USER_COURSE_PROFILE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "CHAT404_7",
+            "사용자 과목 프로필을 찾을 수 없습니다."
+    ),
     PENDING_REQUEST_EXISTS_FOR_COURSE(
             HttpStatus.CONFLICT,
             "CHAT409_1",

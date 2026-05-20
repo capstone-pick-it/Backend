@@ -63,4 +63,11 @@ public class ProjectTeam extends BaseEntity {
             this.status = ProjectTeamStatus.RECRUITING;
         }
     }
+
+    public static ProjectTeam createRecruitingTeam(Course course) {
+        return ProjectTeam.builder()
+                .course(course)
+                .status(ProjectTeamStatus.RECRUITING)
+                .build();
+    }
 }
