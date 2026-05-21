@@ -6,6 +6,8 @@ import com.capstone.pickIt.domain.project.entity.TeamRequest;
 import com.capstone.pickIt.domain.project.entity.TeamRequestStatus;
 import com.capstone.pickIt.domain.project.repository.TeamRequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -13,16 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class TeamRequestScheduler {
 
+    private static final long ONE_HOUR = 60 * 60 * 1000L;
+    private static final int BATCH_SIZE = 200;
+
     private final TeamRequestRepository teamRequestRepository;
     private final SimpMessagingTemplate messagingTemplate;
-
-    private static final long ONE_HOUR = 60 * 60 * 1000L;
 
     @Scheduled(fixedDelay = ONE_HOUR)
     @Transactional
@@ -30,22 +32,30 @@ public class TeamRequestScheduler {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         LocalDateTime expiredBefore = now.minusHours(24);
 
-        List<TeamRequest> expiredTeamRequests =
-                teamRequestRepository.findAllByTeamRequestStatusAndCreatedAtLessThanEqual(
-                        TeamRequestStatus.PENDING,
-                        expiredBefore
+
+        while (true) {
+            Page<TeamRequest> expiredTeamRequests =
+                    teamRequestRepository.findByTeamRequestStatusAndCreatedAtLessThanEqual(
+                            TeamRequestStatus.PENDING,
+                            expiredBefore,
+                            PageRequest.of(0, BATCH_SIZE)
+                    );
+
+            if (expiredTeamRequests.isEmpty()) {
+                break;
+            }
+
+            expiredTeamRequests.forEach(teamRequest -> {
+                teamRequest.expire();
+
+                ChatRoomEventResponseDTO.ChatRoomEvent event =
+                        ChatRoomEventConverter.toTeamRequestRejectedEvent(teamRequest);
+
+                messagingTemplate.convertAndSend(
+                        "/topic/chatrooms/" + teamRequest.getChatRoom().getId(),
+                        event
                 );
-
-        expiredTeamRequests.forEach(teamRequest -> {
-            teamRequest.expire();
-
-            ChatRoomEventResponseDTO.ChatRoomEvent event =
-                    ChatRoomEventConverter.toTeamRequestRejectedEvent(teamRequest);
-
-            messagingTemplate.convertAndSend(
-                    "/topic/chatrooms/" + teamRequest.getChatRoom().getId(),
-                    event
-            );
-        });
+            });
+        }
     }
 }
