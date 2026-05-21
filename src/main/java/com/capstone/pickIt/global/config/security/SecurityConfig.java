@@ -47,7 +47,9 @@ public class SecurityConfig {
                                 "/api/users/password/reset",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/actuator/**"
+                                "/actuator/health",
+                                "/actuator/info",
+                                "/ws-chat/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

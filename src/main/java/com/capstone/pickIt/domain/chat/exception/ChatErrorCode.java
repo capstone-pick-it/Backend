@@ -34,6 +34,31 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT400_5",
             "24시간이 지나 만료된 팀원 요청입니다."
     ),
+    INVALID_MESSAGE_CONTENT(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_6",
+            "텍스트 메시지는 content가 필요합니다."
+    ),
+    MESSAGE_FILE_NOT_ALLOWED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_7",
+            "텍스트 메시지는 파일을 함께 보낼 수 없습니다."
+    ),
+    MESSAGE_CONTENT_NOT_ALLOWED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_8",
+            "파일 메시지는 content를 함께 보낼 수 없습니다."
+    ),
+    MESSAGE_FILE_REQUIRED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_9",
+            "파일 메시지는 파일 정보가 필요합니다."
+    ),
+    INVALID_MESSAGE_TYPE(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_10",
+            "지원하지 않는 메시지 타입입니다."
+    ),
     NOT_CHAT_ROOM_PARTICIPANT(
             HttpStatus.FORBIDDEN,
             "CHAT403_1",
