@@ -6,5 +6,5 @@ public interface PointService {
 
     PointResponseDTO getMyPoint();
 
-    PointResponseDTO calculatePoint(Long userId);
+    PointResponseDTO refreshAndGetPoint(Long userId);
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -34,28 +35,28 @@ public class PointServiceImpl implements PointService {
     @Transactional
     public PointResponseDTO getMyPoint() {
         Long currentUserId = SecurityUtil.requireUserId();
-        return calculatePoint(currentUserId);
+        return refreshAndGetPoint(currentUserId);
     }
 
     @Override
     @Transactional
-    public PointResponseDTO calculatePoint(Long userId) {
-        Point point = findPoint(userId);
+    public PointResponseDTO refreshAndGetPoint(Long userId) {
+        Point point = findPointForUpdate(userId);
         LocalDateTime lastRecoveredAt = findLastRecoveredAt(userId);
 
-        boolean recoveryApplied = false;
-        int recoveredPoint = 0;
+        RecoveryResult recovery = calculateRecovery(point, lastRecoveredAt);
+        boolean recoveryApplied = recovery.recoveredPoint() > 0;
 
-        if (isRecoveryAvailable(point, lastRecoveredAt)) {
-            recoveredPoint = Math.min(
-                    WEEKLY_RECOVERY_POINT,
-                    PROJECT_REQUIRED_POINT - point.getBalance()
+        if (recoveryApplied) {
+            point.add(recovery.recoveredPoint());
+
+            saveRecoveryTransaction(
+                    userId,
+                    point,
+                    recovery.recoveredPoint(),
+                    recovery.elapsedWeeks()
             );
 
-            point.add(recoveredPoint);
-            saveRecoveryTransaction(userId, point, recoveredPoint);
-
-            recoveryApplied = true;
             lastRecoveredAt = LocalDateTime.now();
         }
 
@@ -63,32 +64,50 @@ public class PointServiceImpl implements PointService {
                 userId,
                 point.getBalance(),
                 recoveryApplied,
-                recoveredPoint,
+                recovery.recoveredPoint(),
                 lastRecoveredAt
         );
     }
 
-    private boolean isRecoveryAvailable(Point point, LocalDateTime lastRecoveredAt) {
+    private RecoveryResult calculateRecovery(Point point, LocalDateTime lastRecoveredAt) {
         if (point.getBalance() >= PROJECT_REQUIRED_POINT) {
-            return false;
+            return new RecoveryResult(0, 0);
         }
 
-        if (lastRecoveredAt == null) {
-            return true;
+        long elapsedWeeks = calculateElapsedWeeks(lastRecoveredAt);
+
+        if (elapsedWeeks <= 0) {
+            return new RecoveryResult(0, elapsedWeeks);
         }
 
-        return !lastRecoveredAt
-                .plusDays(RECOVERY_INTERVAL_DAYS)
-                .isAfter(LocalDateTime.now());
+        int recoverablePoint = Math.toIntExact(elapsedWeeks * WEEKLY_RECOVERY_POINT);
+        int shortagePoint = PROJECT_REQUIRED_POINT - point.getBalance();
+        int recoveredPoint = Math.min(recoverablePoint, shortagePoint);
+
+        return new RecoveryResult(recoveredPoint, elapsedWeeks);
     }
 
-    private void saveRecoveryTransaction(Long userId, Point point, int recoveredPoint) {
+    private long calculateElapsedWeeks(LocalDateTime lastRecoveredAt) {
+        if (lastRecoveredAt == null) {
+            return 1;
+        }
+
+        long elapsedDays = ChronoUnit.DAYS.between(lastRecoveredAt, LocalDateTime.now());
+        return elapsedDays / RECOVERY_INTERVAL_DAYS;
+    }
+
+    private void saveRecoveryTransaction(
+            Long userId,
+            Point point,
+            int recoveredPoint,
+            long elapsedWeeks
+    ) {
         PointTransaction transaction = PointTransaction.builder()
                 .user(findUser(userId))
                 .transactionType(PointTransactionType.WEEKLY_RECOVERY)
                 .amount(recoveredPoint)
                 .balanceAfter(point.getBalance())
-                .description("주간 포인트 자동 회복")
+                .description("주간 포인트 자동 회복 (%d주 누적)".formatted(elapsedWeeks))
                 .build();
 
         pointTransactionRepository.save(transaction);
@@ -104,13 +123,19 @@ public class PointServiceImpl implements PointService {
                 .orElse(null);
     }
 
-    private Point findPoint(Long userId) {
-        return pointRepository.findByUserId(userId)
+    private Point findPointForUpdate(Long userId) {
+        return pointRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new PointException(PointErrorCode.POINT_NOT_FOUND));
     }
 
     private User findUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new PointException(PointErrorCode.USER_NOT_FOUND));
+    }
+
+    private record RecoveryResult(
+            int recoveredPoint,
+            long elapsedWeeks
+    ) {
     }
 }

@@ -22,7 +22,7 @@ public class ProjectEligibilityServiceImpl implements ProjectEligibilityService 
     public ProjectEligibilityResponseDTO getMyProjectEligibility() {
         Long currentUserId = SecurityUtil.requireUserId();
 
-        PointResponseDTO point = pointService.calculatePoint(currentUserId);
+        PointResponseDTO point = pointService.refreshAndGetPoint(currentUserId);
 
         boolean eligible = point.balance() >= PROJECT_REQUIRED_POINT;
         int shortagePoint = Math.max(PROJECT_REQUIRED_POINT - point.balance(), 0);
