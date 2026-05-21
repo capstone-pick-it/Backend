@@ -10,6 +10,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
+import java.util.Map;
+
 @Controller
 @RequiredArgsConstructor
 public class ChatMessageSocketController {
@@ -21,7 +23,11 @@ public class ChatMessageSocketController {
             @Valid ChatMessageSendRequestDTO request,
             StompHeaderAccessor accessor
     ) {
-        Long currentUserId = (Long) accessor.getSessionAttributes().get("userId");
+        Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+
+        Long currentUserId = sessionAttributes == null
+                ? null
+                : (Long) sessionAttributes.get("userId");
 
         if (currentUserId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);

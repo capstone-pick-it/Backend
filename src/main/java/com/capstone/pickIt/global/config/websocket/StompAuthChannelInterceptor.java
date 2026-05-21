@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -50,8 +51,12 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
             accessor.setUser(authentication);
 
-            accessor.getSessionAttributes().put("userId", userId);
-            accessor.getSessionAttributes().put("email", email);
+            Map<String, Object> sessionAttrs = accessor.getSessionAttributes();
+
+            if (sessionAttrs != null) {
+                sessionAttrs.put("userId", userId);
+                sessionAttrs.put("email", email);
+            }
         }
 
         return message;
