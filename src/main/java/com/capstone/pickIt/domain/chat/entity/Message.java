@@ -5,6 +5,8 @@ import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 @Entity
 @Getter
 @Builder
@@ -64,6 +66,13 @@ public class Message extends CreatedBaseEntity {
             User sender,
             String content
     ) {
+        Objects.requireNonNull(chatRoom, "chatRoom은 필수입니다.");
+        Objects.requireNonNull(sender, "sender는 필수입니다.");
+
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("TEXT 메시지는 content가 필요합니다.");
+        }
+
         return Message.builder()
                 .chatRoom(chatRoom)
                 .user(sender)
@@ -76,6 +85,9 @@ public class Message extends CreatedBaseEntity {
             ChatRoom chatRoom,
             User sender
     ) {
+        Objects.requireNonNull(chatRoom, "chatRoom은 필수입니다.");
+        Objects.requireNonNull(sender, "sender는 필수입니다.");
+
         return Message.builder()
                 .chatRoom(chatRoom)
                 .user(sender)
