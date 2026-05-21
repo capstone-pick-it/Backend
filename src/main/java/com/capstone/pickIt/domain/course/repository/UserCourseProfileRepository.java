@@ -45,4 +45,6 @@ public interface UserCourseProfileRepository extends JpaRepository<UserCoursePro
             Long userId,
             Long courseId
     );
+
+    List<UserCourseProfile> findAllByUserIdAndDeletedAtIsNull(Long userId);
 }
