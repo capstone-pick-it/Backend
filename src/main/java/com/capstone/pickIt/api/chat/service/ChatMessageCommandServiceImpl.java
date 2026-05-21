@@ -5,6 +5,7 @@ import com.capstone.pickIt.api.chat.converter.ChatRoomEventConverter;
 import com.capstone.pickIt.api.chat.dto.request.ChatMessageSendRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatMessageResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
+import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
 import com.capstone.pickIt.domain.chat.entity.*;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.domain.chat.exception.ChatException;
@@ -15,7 +16,7 @@ import com.capstone.pickIt.domain.chat.repository.MessageRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,7 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
     private final MessageFileRepository messageFileRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void sendMessage(Long currentUserId, ChatMessageSendRequestDTO request) {
@@ -69,9 +70,8 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                         unreadMemberCount
                 );
 
-        messagingTemplate.convertAndSend(
-                "/topic/chatrooms/" + chatRoom.getId(),
-                response
+        eventPublisher.publishEvent(
+                new ChatRoomBroadcastEvent(chatRoom.getId(), response)
         );
     }
 

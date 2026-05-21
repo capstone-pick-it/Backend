@@ -5,6 +5,7 @@ import com.capstone.pickIt.api.chat.converter.TeamRequestConverter;
 import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
+import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
 import com.capstone.pickIt.domain.chat.entity.ChatType;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.api.chat.converter.ChatRoomConverter;
@@ -28,8 +29,8 @@ import com.capstone.pickIt.domain.project.repository.TeamRequestRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +50,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
     private final ProjectTeamRepository projectTeamRepository;
     private final ProjectTeamMemberRepository projectTeamMemberRepository;
     private final UserCourseProfileRepository userCourseProfileRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public DirectChatRoomResponseDTO.CreateOrEnter createOrEnterDirectChatRoom(
@@ -173,9 +174,8 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             ChatRoomEventResponseDTO.ChatRoomEvent event =
                     ChatRoomEventConverter.toTeamRequestCreatedEvent(teamRequest);
 
-            messagingTemplate.convertAndSend(
-                    "/topic/chatrooms/" + chatRoom.getId(),
-                    event
+            eventPublisher.publishEvent(
+                    new ChatRoomBroadcastEvent(chatRoom.getId(), event)
             );
 
             return TeamRequestConverter.toCreateResponse(teamRequest, currentUserId);
@@ -231,9 +231,8 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         ChatRoomEventResponseDTO.ChatRoomEvent event =
                 ChatRoomEventConverter.toTeamRequestAcceptedEvent(teamRequest);
 
-        messagingTemplate.convertAndSend(
-                "/topic/chatrooms/" + chatRoomId,
-                event
+        eventPublisher.publishEvent(
+                new ChatRoomBroadcastEvent(chatRoomId, event)
         );
 
         return TeamRequestConverter.toRespondResponse(teamRequest);

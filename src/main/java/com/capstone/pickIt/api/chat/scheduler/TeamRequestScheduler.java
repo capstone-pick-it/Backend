@@ -2,13 +2,14 @@ package com.capstone.pickIt.api.chat.scheduler;
 
 import com.capstone.pickIt.api.chat.converter.ChatRoomEventConverter;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
+import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
 import com.capstone.pickIt.domain.project.entity.TeamRequest;
 import com.capstone.pickIt.domain.project.entity.TeamRequestStatus;
 import com.capstone.pickIt.domain.project.repository.TeamRequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ public class TeamRequestScheduler {
     private static final int BATCH_SIZE = 200;
 
     private final TeamRequestRepository teamRequestRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Scheduled(fixedDelay = ONE_HOUR)
     @Transactional
@@ -51,9 +52,8 @@ public class TeamRequestScheduler {
                 ChatRoomEventResponseDTO.ChatRoomEvent event =
                         ChatRoomEventConverter.toTeamRequestRejectedEvent(teamRequest);
 
-                messagingTemplate.convertAndSend(
-                        "/topic/chatrooms/" + teamRequest.getChatRoom().getId(),
-                        event
+                eventPublisher.publishEvent(
+                        new ChatRoomBroadcastEvent(teamRequest.getChatRoom().getId(), event)
                 );
             });
         }
