@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.capstone.pickIt.api.point.service.PointServiceImpl.PROJECT_REQUIRED_POINT;
+import static com.capstone.pickIt.domain.point.policy.PointPolicy.PROJECT_REQUIRED_POINT;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +33,7 @@ public class ProjectEligibilityServiceImpl implements ProjectEligibilityService 
                 point.balance(),
                 PROJECT_REQUIRED_POINT,
                 shortagePoint,
-                eligible ? null : "프로젝트 참여를 위해 최소 20포인트가 필요합니다."
+                eligible ? null : "프로젝트 참여를 위해 최소 %d포인트가 필요합니다.".formatted(PROJECT_REQUIRED_POINT)
         );
     }
 }

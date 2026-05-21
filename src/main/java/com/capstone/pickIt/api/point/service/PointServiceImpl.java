@@ -18,14 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static com.capstone.pickIt.domain.point.policy.PointPolicy.PROJECT_REQUIRED_POINT;
+import static com.capstone.pickIt.domain.point.policy.PointPolicy.RECOVERY_INTERVAL_DAYS;
+import static com.capstone.pickIt.domain.point.policy.PointPolicy.WEEKLY_RECOVERY_POINT;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PointServiceImpl implements PointService {
-
-    public static final int PROJECT_REQUIRED_POINT = 20;
-    private static final int WEEKLY_RECOVERY_POINT = 2;
-    private static final int RECOVERY_INTERVAL_DAYS = 7;
 
     private final PointRepository pointRepository;
     private final PointTransactionRepository pointTransactionRepository;
