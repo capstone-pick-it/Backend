@@ -76,24 +76,30 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
     }
 
     private void validateMessagePayload(ChatMessageSendRequestDTO request) {
-        if (request.messageType() == MessageType.TEXT) {
-            if (request.content() == null || request.content().isBlank()) {
-                throw new ChatException(ChatErrorCode.INVALID_MESSAGE_CONTENT);
+        switch (request.messageType()) {
+
+            case TEXT -> {
+                if (request.content() == null || request.content().isBlank()) {
+                    throw new ChatException(ChatErrorCode.INVALID_MESSAGE_CONTENT);
+                }
+
+                if (request.files() != null && !request.files().isEmpty()) {
+                    throw new ChatException(ChatErrorCode.MESSAGE_FILE_NOT_ALLOWED);
+                }
             }
 
-            if (request.files() != null && !request.files().isEmpty()) {
-                throw new ChatException(ChatErrorCode.MESSAGE_FILE_NOT_ALLOWED);
-            }
-        }
+            case FILE -> {
+                if (request.content() != null && !request.content().isBlank()) {
+                    throw new ChatException(ChatErrorCode.MESSAGE_CONTENT_NOT_ALLOWED);
+                }
 
-        if (request.messageType() == MessageType.FILE) {
-            if (request.content() != null && !request.content().isBlank()) {
-                throw new ChatException(ChatErrorCode.MESSAGE_CONTENT_NOT_ALLOWED);
+                if (request.files() == null || request.files().isEmpty()) {
+                    throw new ChatException(ChatErrorCode.MESSAGE_FILE_REQUIRED);
+                }
             }
 
-            if (request.files() == null || request.files().isEmpty()) {
-                throw new ChatException(ChatErrorCode.MESSAGE_FILE_REQUIRED);
-            }
+            default ->
+                    throw new ChatException(ChatErrorCode.INVALID_MESSAGE_TYPE);
         }
     }
 
@@ -102,15 +108,24 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
             User sender,
             ChatMessageSendRequestDTO request
     ) {
-        if (request.messageType() == MessageType.TEXT) {
-            return Message.createTextMessage(
-                    chatRoom,
-                    sender,
-                    request.content()
-            );
-        }
+        return switch (request.messageType()) {
 
-        return Message.createFileMessage(chatRoom, sender);
+            case TEXT ->
+                    Message.createTextMessage(
+                            chatRoom,
+                            sender,
+                            request.content()
+                    );
+
+            case FILE ->
+                    Message.createFileMessage(
+                            chatRoom,
+                            sender
+                    );
+
+            default ->
+                    throw new ChatException(ChatErrorCode.INVALID_MESSAGE_TYPE);
+        };
     }
 
     private List<MessageFile> saveMessageFiles(

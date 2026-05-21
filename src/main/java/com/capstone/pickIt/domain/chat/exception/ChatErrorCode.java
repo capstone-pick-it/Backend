@@ -54,6 +54,11 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT400_9",
             "파일 메시지는 파일 정보가 필요합니다."
     ),
+    INVALID_MESSAGE_TYPE(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_10",
+            "지원하지 않는 메시지 타입입니다."
+    ),
     NOT_CHAT_ROOM_PARTICIPANT(
             HttpStatus.FORBIDDEN,
             "CHAT403_1",
