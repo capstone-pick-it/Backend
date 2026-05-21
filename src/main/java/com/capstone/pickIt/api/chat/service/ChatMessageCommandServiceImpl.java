@@ -57,8 +57,10 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
 
         chatRoom.updateLastMessage(message);
 
-        int unreadMemberCount = chatPartRepository
-                .countActiveParticipants(chatRoom.getId()) - 1;
+        int unreadMemberCount = Math.max(
+                0,
+                chatPartRepository.countActiveParticipants(chatRoom.getId()) - 1
+        );
 
         ChatRoomEventResponseDTO.ChatRoomEvent response =
                 ChatRoomEventConverter.toMessageEvent(
