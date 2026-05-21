@@ -14,10 +14,14 @@ import com.capstone.pickIt.domain.chat.entity.ChatRoom;
 import com.capstone.pickIt.domain.chat.repository.ChatPartRepository;
 import com.capstone.pickIt.domain.chat.repository.ChatRoomRepository;
 import com.capstone.pickIt.domain.course.entity.Course;
+import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
+import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
 import com.capstone.pickIt.domain.course.repository.CourseRepository;
+import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
 import com.capstone.pickIt.domain.course.repository.UserCourseRepository;
-import com.capstone.pickIt.domain.project.entity.TeamRequest;
-import com.capstone.pickIt.domain.project.entity.TeamRequestStatus;
+import com.capstone.pickIt.domain.project.entity.*;
+import com.capstone.pickIt.domain.project.repository.ProjectTeamMemberRepository;
+import com.capstone.pickIt.domain.project.repository.ProjectTeamRepository;
 import com.capstone.pickIt.domain.project.repository.TeamRequestRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
@@ -39,6 +43,9 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
     private final CourseRepository courseRepository;
     private final UserCourseRepository userCourseRepository;
     private final TeamRequestRepository teamRequestRepository;
+    private final ProjectTeamRepository projectTeamRepository;
+    private final ProjectTeamMemberRepository projectTeamMemberRepository;
+    private final UserCourseProfileRepository userCourseProfileRepository;
 
     @Override
     public DirectChatRoomResponseDTO.CreateOrEnter createOrEnterDirectChatRoom(
@@ -168,6 +175,58 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         }
     }
 
+    @Override
+    public TeamRequestResponseDTO.Respond acceptTeamRequest(
+            Long currentUserId,
+            Long chatRoomId,
+            Long teamRequestId
+    ) {
+        TeamRequest teamRequest = teamRequestRepository.findById(teamRequestId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_FOUND));
+
+        if (!teamRequest.getChatRoom().getId().equals(chatRoomId)) {
+            throw new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_FOUND);
+        }
+
+        if (!teamRequest.isReceiver(currentUserId)) {
+            throw new ChatException(ChatErrorCode.NOT_TEAM_REQUEST_RECEIVER);
+        }
+
+        if (!teamRequest.isPending()) {
+            throw new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_PENDING);
+        }
+
+        Course course = teamRequest.getCourse();
+        User sender = teamRequest.getSender();
+        User receiver = teamRequest.getReceiver();
+
+        ProjectTeam projectTeam = projectTeamRepository
+                .findRecruitingTeamByCourseAndMember(
+                        course.getId(),
+                        sender.getId(),
+                        receiver.getId()
+                )
+                .orElseGet(() -> projectTeamRepository.save(
+                        ProjectTeam.createRecruitingTeam(course)
+                ));
+
+        addPendingTeamMemberIfNotExists(projectTeam, sender);
+        addPendingTeamMemberIfNotExists(projectTeam, receiver);
+
+        updateCourseProfileToConfirmPending(sender.getId(), course.getId());
+        updateCourseProfileToConfirmPending(receiver.getId(), course.getId());
+
+        teamRequest.accept();
+
+        // TODO: WebSocket 연결 후 TEAM_REQUEST_ACCEPTED 이벤트 브로드캐스트 구현
+        // messagingTemplate.convertAndSend(
+        //        "/topic/chatrooms/" + chatRoomId,
+        //        TeamRequestAcceptedEvent.from(teamRequest)
+        // );
+
+        return TeamRequestConverter.toRespondResponse(teamRequest);
+    }
+
     private DirectChatRoomResponseDTO.CreateOrEnter restoreAndConvert(
             ChatRoom chatRoom,
             Long currentUserId,
@@ -181,5 +240,42 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         currentChatPart.restore();
 
         return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, isNew);
+    }
+
+    private void addPendingTeamMemberIfNotExists(
+            ProjectTeam projectTeam,
+            User user
+    ) {
+        boolean existsMember = projectTeamMemberRepository
+                .existsByProjectTeamIdAndUserId(projectTeam.getId(), user.getId());
+
+        if (existsMember) {
+            return;
+        }
+
+        try {
+            ProjectTeamMember projectTeamMember =
+                    ProjectTeamMember.createPendingMember(projectTeam, user);
+
+            projectTeamMemberRepository.saveAndFlush(projectTeamMember);
+
+        } catch (DataIntegrityViolationException e) {
+            // 동시에 같은 팀 멤버가 추가된 경우 무시
+        }
+    }
+
+    private void updateCourseProfileToConfirmPending(
+            Long userId,
+            Long courseId
+    ) {
+        UserCourseProfile userCourseProfile = userCourseProfileRepository
+                .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.USER_COURSE_PROFILE_NOT_FOUND));
+
+        if (userCourseProfile.getRecruitmentStatus() != RecruitmentStatus.RECRUITING) {
+            throw new ChatException(ChatErrorCode.INVALID_RECRUITMENT_STATUS);
+        }
+
+        userCourseProfile.changeRecruitmentStatus(RecruitmentStatus.CONFIRM_PENDING);
     }
 }

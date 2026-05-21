@@ -1,10 +1,12 @@
 package com.capstone.pickIt.domain.project.entity;
 
+import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -106,5 +108,20 @@ public class ProjectTeamMember extends CreatedBaseEntity {
         if (this.recruitmentConfirmStatus == null) {
             this.recruitmentConfirmStatus = RecruitmentConfirmStatus.PENDING;
         }
+    }
+
+    public static ProjectTeamMember createPendingMember(
+            ProjectTeam projectTeam,
+            User user
+    ) {
+        LocalDateTime now = LocalDateTime.now();
+
+        return ProjectTeamMember.builder()
+                .projectTeam(projectTeam)
+                .user(user)
+                .role(ProjectTeamMemberRole.MEMBER)
+                .joinedAt(now)
+                .recruitmentConfirmStatus(RecruitmentConfirmStatus.PENDING)
+                .build();
     }
 }

@@ -16,6 +16,14 @@ public class TeamRequestResponseDTO {
     ) {
     }
 
+    public record Respond(
+            Long teamRequestId,
+            Long chatRoomId,
+            String status,
+            LocalDateTime respondedAt
+    ) {
+    }
+
     public record CourseInfo(
             Long courseId,
             String courseName

@@ -9,11 +9,19 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "project_team")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(
+        name = "project_team",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_project_team_course_status",
+                        columnNames = {"course_id", "status"}
+                )
+        }
+)
 public class ProjectTeam extends BaseEntity {
 
     @Id
@@ -62,5 +70,12 @@ public class ProjectTeam extends BaseEntity {
         if (this.status == null) {
             this.status = ProjectTeamStatus.RECRUITING;
         }
+    }
+
+    public static ProjectTeam createRecruitingTeam(Course course) {
+        return ProjectTeam.builder()
+                .course(course)
+                .status(ProjectTeamStatus.RECRUITING)
+                .build();
     }
 }
