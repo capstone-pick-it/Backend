@@ -1,9 +1,7 @@
 package com.capstone.pickIt.api.chat.service;
 
-import com.capstone.pickIt.api.chat.converter.ChatMessageConverter;
 import com.capstone.pickIt.api.chat.converter.ChatRoomEventConverter;
 import com.capstone.pickIt.api.chat.dto.request.ChatMessageSendRequestDTO;
-import com.capstone.pickIt.api.chat.dto.response.ChatMessageResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
 import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
 import com.capstone.pickIt.domain.chat.entity.*;
