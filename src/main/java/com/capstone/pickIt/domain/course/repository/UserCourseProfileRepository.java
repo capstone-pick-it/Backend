@@ -10,7 +10,11 @@ import java.util.Optional;
 
 public interface UserCourseProfileRepository extends JpaRepository<UserCourseProfile, Long> {
 
+    List<UserCourseProfile> findByUserIdAndDeletedAtIsNull(Long userId);
+
     Optional<UserCourseProfile> findByUserIdAndCourseId(Long userId, Long courseId);
+
+    boolean existsByUserIdAndCourseId(Long userId, Long courseId);
 
     @Query("""
         SELECT ucp1.course
@@ -36,4 +40,11 @@ public interface UserCourseProfileRepository extends JpaRepository<UserCoursePro
             Long currentUserId,
             Long opponentUserId
     );
+
+    Optional<UserCourseProfile> findByUserIdAndCourseIdAndDeletedAtIsNull(
+            Long userId,
+            Long courseId
+    );
+
+    List<UserCourseProfile> findAllByUserIdAndDeletedAtIsNull(Long userId);
 }
