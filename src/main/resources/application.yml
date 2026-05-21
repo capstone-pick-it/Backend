@@ -53,7 +53,11 @@ management:
 
 app:
   cors:
-    allowed-origins: http://127.0.0.1:5500,http://localhost:5500
+    allowed-origins: >
+      http://127.0.0.1:5500,
+      http://localhost:5500,
+      https://pick-it.site,
+      https://www.pick-it.site
 
 logging:
   level:
