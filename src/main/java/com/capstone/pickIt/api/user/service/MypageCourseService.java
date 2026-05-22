@@ -77,6 +77,17 @@ public class MypageCourseService {
     }
 
     @Transactional
+    public void deleteCourse(Long userId, Long courseId) {
+        UserCourseProfile profile = userCourseProfileRepository
+                .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
+                .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
+
+        userCourseTraitRepository.deleteByUserCourseProfileId(profile.getId());
+        userCourseRepository.deleteByUserIdAndCourseId(userId, courseId);
+        profile.softDelete();
+    }
+
+    @Transactional
     public void addCourse(Long userId, AddCourseRequestDTO request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));

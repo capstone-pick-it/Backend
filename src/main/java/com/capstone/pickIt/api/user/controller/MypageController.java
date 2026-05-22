@@ -39,6 +39,14 @@ public class MypageController {
         return ApiResponse.onSuccess(SuccessCode.OK, "강의 수정이 완료되었습니다.");
     }
 
+    @Operation(summary = "강의 삭제", description = "마이페이지에서 강의를 삭제합니다.")
+    @DeleteMapping("/me/courses/{courseId}")
+    public ApiResponse<String> deleteCourse(@PathVariable Long courseId) {
+        Long userId = SecurityUtil.requireUserId();
+        mypageCourseService.deleteCourse(userId, courseId);
+        return ApiResponse.onSuccess(SuccessCode.OK, "강의 삭제가 완료되었습니다.");
+    }
+
     @Operation(summary = "강의 추가", description = "마이페이지에서 강의를 추가합니다.")
     @PostMapping("/me/courses")
     public ApiResponse<String> addCourse(@RequestBody @Valid AddCourseRequestDTO request) {
