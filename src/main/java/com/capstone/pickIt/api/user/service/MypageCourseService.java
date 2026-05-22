@@ -52,6 +52,31 @@ public class MypageCourseService {
     }
 
     @Transactional
+    public void updateCourse(Long userId, Long courseId, AddCourseRequestDTO request) {
+        UserCourseProfile profile = userCourseProfileRepository
+                .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
+                .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
+
+        profile.getCourse().update(request.getCourseName(), request.getSemester());
+        profile.updateImportanceLevel(request.getImportance());
+
+        userCourseTraitRepository.deleteByUserCourseProfileId(profile.getId());
+
+        for (AddCourseRequestDTO.TraitDTO traitDTO : request.getTraits()) {
+            TraitItem traitItem = traitItemRepository.findById(traitDTO.getTraitItemId())
+                    .orElseThrow(() -> new TraitException(TraitErrorCode.TRAIT_NOT_FOUND));
+
+            userCourseTraitRepository.save(
+                    UserCourseTrait.builder()
+                            .userCourseProfile(profile)
+                            .traitItem(traitItem)
+                            .selectedSide(traitDTO.getSelectedType())
+                            .build()
+            );
+        }
+    }
+
+    @Transactional
     public void addCourse(Long userId, AddCourseRequestDTO request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
