@@ -1,6 +1,7 @@
 package com.capstone.pickIt.api.user.controller;
 
 import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.UpdateCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseListResponseDTO;
 import com.capstone.pickIt.api.user.service.MypageCourseService;
@@ -41,7 +42,7 @@ public class MypageController {
     @PostMapping("/me/courses/{courseId}")
     public ApiResponse<String> updateCourse(
             @PathVariable Long courseId,
-            @RequestBody @Valid AddCourseRequestDTO request) {
+            @RequestBody @Valid UpdateCourseRequestDTO request) {
         Long userId = SecurityUtil.requireUserId();
         mypageCourseService.updateCourse(userId, courseId, request);
         return ApiResponse.onSuccess(SuccessCode.OK, "강의 수정이 완료되었습니다.");

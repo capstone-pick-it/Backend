@@ -1,6 +1,7 @@
 package com.capstone.pickIt.api.user.service;
 
 import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
+import com.capstone.pickIt.api.user.dto.request.UpdateCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseListResponseDTO;
 import com.capstone.pickIt.domain.course.entity.Course;
@@ -62,41 +63,16 @@ public class MypageCourseService {
     }
 
     @Transactional
-    public void updateCourse(Long userId, Long courseId, AddCourseRequestDTO request) {
+    public void updateCourse(Long userId, Long courseId, UpdateCourseRequestDTO request) {
         UserCourseProfile profile = userCourseProfileRepository
                 .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
                 .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
-
-        Course newCourse = courseRepository
-                .findByCourseNameAndSemester(request.getCourseName(), request.getSemester())
-                .orElseGet(() -> courseRepository.save(
-                        Course.builder()
-                                .courseName(request.getCourseName())
-                                .semester(request.getSemester())
-                                .build()
-                ));
-
-        if (!courseId.equals(newCourse.getId())) {
-            if (userCourseProfileRepository.existsByUserIdAndCourseIdAndDeletedAtIsNull(userId, newCourse.getId())) {
-                throw new ProfileException(ProfileErrorCode.PROFILE_ALREADY_EXISTS);
-            }
-            userCourseRepository.deleteByUserIdAndCourseId(userId, courseId);
-            if (!userCourseRepository.existsByUserIdAndCourseId(userId, newCourse.getId())) {
-                userCourseRepository.save(
-                        UserCourse.builder()
-                                .user(profile.getUser())
-                                .course(newCourse)
-                                .build()
-                );
-            }
-            profile.updateCourse(newCourse);
-        }
 
         profile.updateImportanceLevel(request.getImportance());
 
         userCourseTraitRepository.deleteByUserCourseProfileId(profile.getId());
 
-        for (AddCourseRequestDTO.TraitDTO traitDTO : request.getTraits()) {
+        for (UpdateCourseRequestDTO.TraitDTO traitDTO : request.getTraits()) {
             TraitItem traitItem = traitItemRepository.findById(traitDTO.getTraitItemId())
                     .orElseThrow(() -> new TraitException(TraitErrorCode.TRAIT_NOT_FOUND));
 
