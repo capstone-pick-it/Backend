@@ -8,6 +8,8 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
 
     boolean existsByUserIdAndCourseId(Long userId, Long courseId);
 
+    void deleteByUserIdAndCourseId(Long userId, Long courseId);
+
     @Query("""
             SELECT COUNT(uc)
             FROM UserCourse uc

@@ -42,6 +42,10 @@ public class UserCourseProfile extends CreatedUpdatedDeletedBaseEntity {
     @Column(name = "recruitment_status", nullable = false, length = 30)
     private RecruitmentStatus recruitmentStatus;
 
+    public void updateCourse(Course course) {
+        this.course = course;
+    }
+
     public void updateImportanceLevel(ImportanceLevel importanceLevel) {
         this.importanceLevel = importanceLevel;
     }

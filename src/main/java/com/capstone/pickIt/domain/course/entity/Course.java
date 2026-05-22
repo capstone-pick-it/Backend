@@ -22,4 +22,9 @@ public class Course extends BaseEntity {
 
     @Column(name = "semester", nullable = false, length = 20)
     private String semester;
+
+    public void update(String courseName, String semester) {
+        this.courseName = courseName;
+        this.semester = semester;
+    }
 }
