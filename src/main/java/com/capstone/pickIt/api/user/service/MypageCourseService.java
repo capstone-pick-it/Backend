@@ -4,12 +4,14 @@ import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
 import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
+import com.capstone.pickIt.domain.course.entity.UserCourse;
 import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
 import com.capstone.pickIt.domain.course.entity.UserCourseTrait;
 import com.capstone.pickIt.domain.course.exception.ProfileErrorCode;
 import com.capstone.pickIt.domain.course.exception.ProfileException;
 import com.capstone.pickIt.domain.course.repository.CourseRepository;
 import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
+import com.capstone.pickIt.domain.course.repository.UserCourseRepository;
 import com.capstone.pickIt.domain.course.repository.UserCourseTraitRepository;
 import com.capstone.pickIt.domain.trait.entity.TraitItem;
 import com.capstone.pickIt.domain.trait.exception.TraitErrorCode;
@@ -31,6 +33,7 @@ public class MypageCourseService {
 
     private final UserCourseProfileRepository userCourseProfileRepository;
     private final UserCourseTraitRepository userCourseTraitRepository;
+    private final UserCourseRepository userCourseRepository;
     private final CourseRepository courseRepository;
     private final TraitItemRepository traitItemRepository;
     private final UserRepository userRepository;
@@ -64,6 +67,15 @@ public class MypageCourseService {
 
         if (userCourseProfileRepository.existsByUserIdAndCourseId(userId, course.getId())) {
             throw new ProfileException(ProfileErrorCode.PROFILE_ALREADY_EXISTS);
+        }
+
+        if (!userCourseRepository.existsByUserIdAndCourseId(userId, course.getId())) {
+            userCourseRepository.save(
+                    UserCourse.builder()
+                            .user(user)
+                            .course(course)
+                            .build()
+            );
         }
 
         UserCourseProfile profile = userCourseProfileRepository.save(

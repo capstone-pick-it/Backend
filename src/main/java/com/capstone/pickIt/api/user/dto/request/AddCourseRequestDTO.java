@@ -32,7 +32,7 @@ public class AddCourseRequestDTO {
 
     @NotEmpty(message = "성향 목록은 비어 있을 수 없습니다.")
     @Valid
-    @Schema(description = "성향 선택 목록")
+    @Schema(description = "성향 선택 목록", example = "[{\"traitItemId\": 1, \"selectedType\": \"A\"}, {\"traitItemId\": 2, \"selectedType\": \"B\"}, {\"traitItemId\": 3, \"selectedType\": \"A\"}]")
     private List<TraitDTO> traits;
 
     @AssertTrue(message = "중복된 traitItemId는 허용되지 않습니다.")
