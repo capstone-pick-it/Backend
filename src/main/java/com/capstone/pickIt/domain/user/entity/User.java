@@ -62,6 +62,11 @@ public class User extends BaseEntity {
         this.onboardingStep = 2;
     }
 
+    public void completeOnboarding() {
+        this.onboardingStep = 3;
+        this.onboardingCompleted = true;
+    }
+
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
