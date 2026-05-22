@@ -2,6 +2,7 @@ package com.capstone.pickIt.api.user.controller;
 
 import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
+import com.capstone.pickIt.api.user.dto.response.CourseListResponseDTO;
 import com.capstone.pickIt.api.user.service.MypageCourseService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
 import com.capstone.pickIt.global.apiPayload.response.SuccessCode;
@@ -21,6 +22,13 @@ import java.util.List;
 public class MypageController {
 
     private final MypageCourseService mypageCourseService;
+
+    @Operation(summary = "강의 목록 조회", description = "마이페이지 진입 시 사용자의 강의 목록을 최신순으로 조회합니다.")
+    @GetMapping("/me/courses")
+    public ApiResponse<List<CourseListResponseDTO>> getCourseList() {
+        Long userId = SecurityUtil.requireUserId();
+        return ApiResponse.onSuccess(SuccessCode.OK, mypageCourseService.getCourseList(userId));
+    }
 
     @Operation(summary = "과목 카드 전체 조회", description = "마이페이지에서 본인의 모든 과목 팀플 카드를 조회합니다.")
     @GetMapping("/me/courses/card")

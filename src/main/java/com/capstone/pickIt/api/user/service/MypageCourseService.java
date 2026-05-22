@@ -2,6 +2,7 @@ package com.capstone.pickIt.api.user.service;
 
 import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
+import com.capstone.pickIt.api.user.dto.response.CourseListResponseDTO;
 import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
 import com.capstone.pickIt.domain.course.entity.UserCourse;
@@ -37,6 +38,15 @@ public class MypageCourseService {
     private final CourseRepository courseRepository;
     private final TraitItemRepository traitItemRepository;
     private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    public List<CourseListResponseDTO> getCourseList(Long userId) {
+        return userCourseProfileRepository
+                .findAllByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(CourseListResponseDTO::from)
+                .toList();
+    }
 
     @Transactional(readOnly = true)
     public List<CourseCardResponseDTO> getCourseCards(Long userId) {
