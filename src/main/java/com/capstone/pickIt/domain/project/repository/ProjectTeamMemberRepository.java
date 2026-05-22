@@ -15,6 +15,11 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
     boolean existsByProjectTeamIdAndUserId(Long projectTeamId, Long userId);
 
 
+    List<ProjectTeamMember> findAllByUserIdAndRecruitmentConfirmStatusAndLeftAtIsNullOrderByJoinedAtDesc(
+            Long userId,
+            RecruitmentConfirmStatus recruitmentConfirmStatus
+    );
+
     @Query("""
     SELECT COUNT(ptm) > 0
     FROM ProjectTeamMember ptm
@@ -28,4 +33,23 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
             @Param("userId") Long userId,
             @Param("status") RecruitmentConfirmStatus status
     );
+
+    @Query("""
+            SELECT COUNT(ptm)
+            FROM ProjectTeamMember ptm
+            WHERE ptm.user.id = :userId
+              AND ptm.recruitmentConfirmStatus = 'CONFIRMED'
+              AND ptm.leftAt IS NULL
+            """)
+    long countConfirmedByUserId(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT COUNT(ptm)
+            FROM ProjectTeamMember ptm
+            WHERE ptm.user.id = :userId
+              AND ptm.recruitmentConfirmStatus = 'CONFIRMED'
+              AND ptm.leftAt IS NULL
+              AND ptm.projectTeam.status = 'DONE'
+            """)
+    long countDoneConfirmedByUserId(@Param("userId") Long userId);
 }
