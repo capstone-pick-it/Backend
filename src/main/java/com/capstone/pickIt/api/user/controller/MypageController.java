@@ -4,6 +4,7 @@ import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UpdateCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseListResponseDTO;
+import com.capstone.pickIt.api.user.dto.response.ProjectHistoryDetailResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.ProjectHistorySummaryResponseDTO;
 import com.capstone.pickIt.api.user.service.MypageCourseService;
 import com.capstone.pickIt.api.user.service.MypageProjectHistoryService;
@@ -26,6 +27,13 @@ public class MypageController {
 
     private final MypageCourseService mypageCourseService;
     private final MypageProjectHistoryService mypageProjectHistoryService;
+
+    @Operation(summary = "프로젝트 이력 상세 조회", description = "사용자의 프로젝트별 완수율 및 상호평가 점수를 최신순으로 조회합니다.")
+    @GetMapping("/me/project-history")
+    public ApiResponse<ProjectHistoryDetailResponseDTO> getProjectHistoryDetail() {
+        Long userId = SecurityUtil.requireUserId();
+        return ApiResponse.onSuccess(SuccessCode.OK, mypageProjectHistoryService.getProjectHistoryDetail(userId));
+    }
 
     @Operation(summary = "프로젝트 이력 요약 조회", description = "사용자의 프로젝트 참여 수, 완수율, 상호 평가 평균을 조회합니다.")
     @GetMapping("/me/project-history/summary")
