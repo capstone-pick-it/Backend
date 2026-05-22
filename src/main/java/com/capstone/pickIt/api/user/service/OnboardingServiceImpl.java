@@ -88,6 +88,9 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Override
     @Transactional
     public void savePersonality(Long userId, OnboardingPersonalityRequestDTO request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
         List<UserDefaultTraitRequestDTO> traits = request.getTraits().stream()
                 .map(item -> new UserDefaultTraitRequestDTO(item.getTraitItemId(), item.getSelectedType().name()))
                 .toList();
@@ -109,5 +112,7 @@ public class OnboardingServiceImpl implements OnboardingService {
                     .toList();
             userCourseTraitRepository.saveAll(courseTraits);
         }
+
+        user.completeOnboarding();
     }
 }
