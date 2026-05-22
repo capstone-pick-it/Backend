@@ -67,7 +67,31 @@ public class MypageCourseService {
                 .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
                 .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
 
-        profile.getCourse().update(request.getCourseName(), request.getSemester());
+        Course newCourse = courseRepository
+                .findByCourseNameAndSemester(request.getCourseName(), request.getSemester())
+                .orElseGet(() -> courseRepository.save(
+                        Course.builder()
+                                .courseName(request.getCourseName())
+                                .semester(request.getSemester())
+                                .build()
+                ));
+
+        if (!courseId.equals(newCourse.getId())) {
+            if (userCourseProfileRepository.existsByUserIdAndCourseIdAndDeletedAtIsNull(userId, newCourse.getId())) {
+                throw new ProfileException(ProfileErrorCode.PROFILE_ALREADY_EXISTS);
+            }
+            userCourseRepository.deleteByUserIdAndCourseId(userId, courseId);
+            if (!userCourseRepository.existsByUserIdAndCourseId(userId, newCourse.getId())) {
+                userCourseRepository.save(
+                        UserCourse.builder()
+                                .user(profile.getUser())
+                                .course(newCourse)
+                                .build()
+                );
+            }
+            profile.updateCourse(newCourse);
+        }
+
         profile.updateImportanceLevel(request.getImportance());
 
         userCourseTraitRepository.deleteByUserCourseProfileId(profile.getId());
@@ -111,7 +135,7 @@ public class MypageCourseService {
                                 .build()
                 ));
 
-        if (userCourseProfileRepository.existsByUserIdAndCourseId(userId, course.getId())) {
+        if (userCourseProfileRepository.existsByUserIdAndCourseIdAndDeletedAtIsNull(userId, course.getId())) {
             throw new ProfileException(ProfileErrorCode.PROFILE_ALREADY_EXISTS);
         }
 
