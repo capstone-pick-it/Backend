@@ -39,4 +39,20 @@ public class MessageFile {
             throw new IllegalArgumentException("fileSize는 0 이상이어야 합니다.");
         }
     }
+
+    public static MessageFile create(
+            Message message,
+            String fileUrl,
+            String fileName,
+            Long fileSize,
+            String contentType
+    ) {
+        return MessageFile.builder()
+                .message(message)
+                .fileUrl(fileUrl)
+                .fileName(fileName)
+                .fileSize(fileSize)
+                .contentType(contentType)
+                .build();
+    }
 }
