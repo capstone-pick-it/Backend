@@ -16,7 +16,7 @@ import java.util.List;
 
 @Tag(name = "Mypage", description = "마이페이지 API")
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MypageController {
 
@@ -27,6 +27,16 @@ public class MypageController {
     public ApiResponse<List<CourseCardResponseDTO>> getCourseCards() {
         Long userId = SecurityUtil.requireUserId();
         return ApiResponse.onSuccess(SuccessCode.OK, mypageCourseService.getCourseCards(userId));
+    }
+
+    @Operation(summary = "강의 수정", description = "마이페이지에서 강의 정보 및 성향을 수정합니다.")
+    @PostMapping("/me/courses/{courseId}")
+    public ApiResponse<String> updateCourse(
+            @PathVariable Long courseId,
+            @RequestBody @Valid AddCourseRequestDTO request) {
+        Long userId = SecurityUtil.requireUserId();
+        mypageCourseService.updateCourse(userId, courseId, request);
+        return ApiResponse.onSuccess(SuccessCode.OK, "강의 수정이 완료되었습니다.");
     }
 
     @Operation(summary = "강의 추가", description = "마이페이지에서 강의를 추가합니다.")
