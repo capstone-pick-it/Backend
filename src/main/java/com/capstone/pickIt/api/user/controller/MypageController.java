@@ -4,7 +4,9 @@ import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UpdateCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseListResponseDTO;
+import com.capstone.pickIt.api.user.dto.response.ProjectHistorySummaryResponseDTO;
 import com.capstone.pickIt.api.user.service.MypageCourseService;
+import com.capstone.pickIt.api.user.service.MypageProjectHistoryService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
 import com.capstone.pickIt.global.apiPayload.response.SuccessCode;
 import com.capstone.pickIt.global.config.security.SecurityUtil;
@@ -23,6 +25,14 @@ import java.util.List;
 public class MypageController {
 
     private final MypageCourseService mypageCourseService;
+    private final MypageProjectHistoryService mypageProjectHistoryService;
+
+    @Operation(summary = "프로젝트 이력 요약 조회", description = "사용자의 프로젝트 참여 수, 완수율, 상호 평가 평균을 조회합니다.")
+    @GetMapping("/me/project-history/summary")
+    public ApiResponse<ProjectHistorySummaryResponseDTO> getProjectHistorySummary() {
+        Long userId = SecurityUtil.requireUserId();
+        return ApiResponse.onSuccess(SuccessCode.OK, mypageProjectHistoryService.getProjectHistorySummary(userId));
+    }
 
     @Operation(summary = "강의 목록 조회", description = "마이페이지 진입 시 사용자의 강의 목록을 최신순으로 조회합니다.")
     @GetMapping("/me/courses")
