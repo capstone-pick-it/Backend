@@ -8,6 +8,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,6 +24,7 @@ public class AddCourseRequestDTO {
     private String courseName;
 
     @NotBlank(message = "학기는 필수입니다.")
+    @Pattern(regexp = "^\\d{4}-(1|2)$", message = "학기 형식은 'YYYY-1' 또는 'YYYY-2'이어야 합니다.")
     @Schema(description = "학기", example = "2026-1")
     private String semester;
 
