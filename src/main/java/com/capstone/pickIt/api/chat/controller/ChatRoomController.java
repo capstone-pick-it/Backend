@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Chat", description = "채팅 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/chats")
+@RequestMapping("/api/chats")
 public class ChatRoomController {
 
     private final ChatRoomCommandService chatRoomCommandService;
