@@ -11,11 +11,13 @@ import com.capstone.pickIt.domain.user.exception.UserErrorCode;
 import com.capstone.pickIt.domain.user.exception.UserException;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 
 import static com.capstone.pickIt.domain.teamlevel.policy.TeamLevelPolicy.*;
 
@@ -34,7 +36,11 @@ public class TeamLevelServiceImpl implements TeamLevelService {
     public void recalculate(Long userId) {
         long completedCount = projectTeamMemberRepository.countDoneConfirmedByUserId(userId);
         long totalCount = projectTeamMemberRepository.countConfirmedByUserId(userId);
-        BigDecimal avgReviewScore = peerReviewRepository.findAverageScoreByRevieweeId(userId);
+        // COALESCE로 null 방어되지만 null-safe 처리로 이중 보호
+        BigDecimal avgReviewScore = Objects.requireNonNullElse(
+                peerReviewRepository.findAverageScoreByRevieweeId(userId),
+                BigDecimal.ZERO
+        );
         long penaltyCount = pointTransactionRepository.countByUserIdAndTransactionType(
                 userId, PointTransactionType.PROJECT_PENALTY
         );
@@ -42,14 +48,23 @@ public class TeamLevelServiceImpl implements TeamLevelService {
         int score = calculateScore(completedCount, totalCount, avgReviewScore, penaltyCount);
         int level = convertToLevel(score);
 
-        TeamLevel teamLevel = teamLevelRepository.findByUserId(userId)
+        TeamLevel teamLevel = findOrCreateTeamLevel(userId);
+        teamLevel.updateLevel(level);
+    }
+
+    // find → save 경합(TOCTOU) 방어: unique 제약 충돌 시 재조회
+    private TeamLevel findOrCreateTeamLevel(Long userId) {
+        return teamLevelRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId)
                             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-                    return teamLevelRepository.save(TeamLevel.builder().user(user).build());
+                    try {
+                        return teamLevelRepository.save(TeamLevel.builder().user(user).build());
+                    } catch (DataIntegrityViolationException e) {
+                        return teamLevelRepository.findByUserId(userId)
+                                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+                    }
                 });
-
-        teamLevel.updateLevel(level);
     }
 
     // ── 점수 계산 ─────────────────────────────────────────────────────────────
