@@ -8,6 +8,8 @@ import com.capstone.pickIt.domain.point.entity.PointTransaction;
 import com.capstone.pickIt.domain.point.entity.PointTransactionType;
 import com.capstone.pickIt.domain.point.repository.PointRepository;
 import com.capstone.pickIt.domain.point.repository.PointTransactionRepository;
+import com.capstone.pickIt.domain.teamlevel.entity.TeamLevel;
+import com.capstone.pickIt.domain.teamlevel.repository.TeamLevelRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.exception.UserErrorCode;
 import com.capstone.pickIt.domain.user.exception.UserException;
@@ -33,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PointRepository pointRepository;
     private final PointTransactionRepository pointTransactionRepository;
+    private final TeamLevelRepository teamLevelRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -108,6 +111,10 @@ public class UserServiceImpl implements UserService {
                 .amount(SIGNUP_REWARD_AMOUNT)
                 .balanceAfter(SIGNUP_REWARD_AMOUNT)
                 .description("회원가입 보상 포인트")
+                .build());
+
+        teamLevelRepository.save(TeamLevel.builder()
+                .user(savedUser)
                 .build());
 
         redisTemplate.delete(EMAIL_VERIFIED_PREFIX + email);
