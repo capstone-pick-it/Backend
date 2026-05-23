@@ -34,26 +34,4 @@ public class ChatRoomConverter {
         );
     }
 
-    public static ChatMessageResponseDTO.MessageSummary toMessage(
-            Message message,
-            Long currentUserId,
-            Map<Long, Long> unreadCountMap
-    ) {
-        return new ChatMessageResponseDTO.MessageSummary(
-                message.getId(),
-                new ChatMessageResponseDTO.Sender(
-                        message.getUser().getId(),
-                        message.getUser().getNickname()
-                ),
-                message.getMessageType(),
-                message.getContent(),
-                List.of(),
-                message.getCreatedAt(),
-                message.getUser().getId().equals(currentUserId),
-                unreadCountMap.getOrDefault(
-                        message.getId(),
-                        0L
-                )
-        );
-    }
 }
