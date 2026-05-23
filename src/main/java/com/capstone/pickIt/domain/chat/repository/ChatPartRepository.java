@@ -55,5 +55,40 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
             Pageable pageable
     );
 
-    int countByChatRoomIdAndDeletedAtIsNull(Long chatRoomId);
+    public interface ParticipantCountProjection {
+        Long getChatRoomId();
+        Long getParticipantCount();
+    }
+
+    public interface OpponentProjection {
+        Long getChatRoomId();
+        Long getUserId();
+        String getNickname();
+    }
+
+    @Query("""
+        SELECT cp.chatRoom.id AS chatRoomId,
+               COUNT(cp) AS participantCount
+        FROM ChatPart cp
+        WHERE cp.chatRoom.id IN :chatRoomIds
+        AND cp.deletedAt IS NULL
+        GROUP BY cp.chatRoom.id
+    """)
+    List<ParticipantCountProjection> countParticipantsByChatRoomIds(
+            @Param("chatRoomIds") List<Long> chatRoomIds
+    );
+
+    @Query("""
+        SELECT cp.chatRoom.id AS chatRoomId,
+               cp.user.id AS userId,
+               cp.user.nickname AS nickname
+        FROM ChatPart cp
+        WHERE cp.chatRoom.id IN :chatRoomIds
+        AND cp.user.id <> :currentUserId
+        AND cp.deletedAt IS NULL
+    """)
+    List<OpponentProjection> findOpponentsByChatRoomIds(
+            @Param("chatRoomIds") List<Long> chatRoomIds,
+            @Param("currentUserId") Long currentUserId
+    );
 }

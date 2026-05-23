@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> {
@@ -33,13 +34,20 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             Pageable pageable
     );
 
-    boolean existsByChatRoomIdAndReceiverIdAndTeamRequestStatus(
-            Long chatRoomId,
-            Long receiverId,
-            TeamRequestStatus teamRequestStatus
-    );
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT tr FROM TeamRequest tr WHERE tr.id = :teamRequestId")
     Optional<TeamRequest> findByIdWithLock(@Param("teamRequestId") Long teamRequestId);
+
+    @Query("""
+        SELECT tr.chatRoom.id
+        FROM TeamRequest tr
+        WHERE tr.chatRoom.id IN :chatRoomIds
+        AND tr.receiver.id = :currentUserId
+        AND tr.teamRequestStatus = :status
+    """)
+    List<Long> findPendingRequestChatRoomIds(
+            @Param("chatRoomIds") List<Long> chatRoomIds,
+            @Param("currentUserId") Long currentUserId,
+            @Param("status") TeamRequestStatus status
+    );
 }

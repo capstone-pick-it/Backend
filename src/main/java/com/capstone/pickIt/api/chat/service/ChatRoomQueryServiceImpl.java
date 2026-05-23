@@ -22,7 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -111,8 +115,53 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
             chatParts = chatParts.subList(0, PAGE_SIZE);
         }
 
+        List<Long> chatRoomIds = chatParts.stream()
+                .map(chatPart -> chatPart.getChatRoom().getId())
+                .toList();
+
+        Map<Long, Long> unreadCountMap = messageRepository
+                .countUnreadMessagesByChatRoomIds(chatRoomIds, currentUserId)
+                .stream()
+                .collect(Collectors.toMap(
+                        MessageRepository.UnreadCountProjection::getChatRoomId,
+                        MessageRepository.UnreadCountProjection::getUnreadCount
+                ));
+
+        Map<Long, Long> participantCountMap = chatPartRepository
+                .countParticipantsByChatRoomIds(chatRoomIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        ChatPartRepository.ParticipantCountProjection::getChatRoomId,
+                        ChatPartRepository.ParticipantCountProjection::getParticipantCount
+                ));
+
+        Map<Long, ChatRoomResponseDTO.Opponent> opponentMap = chatPartRepository
+                .findOpponentsByChatRoomIds(chatRoomIds, currentUserId)
+                .stream()
+                .collect(Collectors.toMap(
+                        ChatPartRepository.OpponentProjection::getChatRoomId,
+                        opponent -> new ChatRoomResponseDTO.Opponent(
+                                opponent.getUserId(),
+                                opponent.getNickname()
+                        )
+                ));
+
+        Set<Long> pendingRequestChatRoomIds = new HashSet<>(
+                teamRequestRepository.findPendingRequestChatRoomIds(
+                        chatRoomIds,
+                        currentUserId,
+                        TeamRequestStatus.PENDING
+                )
+        );
+
         List<ChatRoomResponseDTO.ChatRoomSummary> chatRooms = chatParts.stream()
-                .map(chatPart -> toChatRoomSummary(chatPart, currentUserId))
+                .map(chatPart -> toChatRoomSummary(
+                        chatPart,
+                        unreadCountMap,
+                        participantCountMap,
+                        opponentMap,
+                        pendingRequestChatRoomIds
+                ))
                 .toList();
 
         Long nextCursor = hasNext
@@ -128,12 +177,19 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
 
     private ChatRoomResponseDTO.ChatRoomSummary toChatRoomSummary(
             ChatPart myChatPart,
-            Long currentUserId
+            Map<Long, Long> unreadCountMap,
+            Map<Long, Long> participantCountMap,
+            Map<Long, ChatRoomResponseDTO.Opponent> opponentMap,
+            Set<Long> pendingRequestChatRoomIds
     ) {
         ChatRoom chatRoom = myChatPart.getChatRoom();
+        Long chatRoomId = chatRoom.getId();
 
-        long unreadCount = getUnreadCount(chatRoom, myChatPart, currentUserId);
-        boolean hasPendingTeamRequest = hasPendingTeamRequest(chatRoom, currentUserId);
+        long unreadCount = unreadCountMap.getOrDefault(chatRoomId, 0L);
+
+        boolean hasPendingTeamRequest =
+                chatRoom.getChatType() == ChatType.DIRECT
+                        && pendingRequestChatRoomIds.contains(chatRoomId);
 
         ChatBadgeType badgeType = resolveBadgeType(
                 chatRoom,
@@ -141,24 +197,17 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 unreadCount
         );
 
-        ChatRoomResponseDTO.Opponent opponent = null;
+        ChatRoomResponseDTO.Opponent opponent =
+                chatRoom.getChatType() == ChatType.DIRECT
+                        ? opponentMap.get(chatRoomId)
+                        : null;
 
-        if (chatRoom.getChatType() == ChatType.DIRECT) {
-            ChatPart opponentChatPart = chatPartRepository
-                    .findOpponent(chatRoom.getId(), currentUserId)
-                    .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
-
-            opponent = new ChatRoomResponseDTO.Opponent(
-                    opponentChatPart.getUser().getId(),
-                    opponentChatPart.getUser().getNickname()
-            );
-        }
-
-        int participantCount = chatPartRepository
-                .countByChatRoomIdAndDeletedAtIsNull(chatRoom.getId());
+        int participantCount = participantCountMap
+                .getOrDefault(chatRoomId, 0L)
+                .intValue();
 
         return new ChatRoomResponseDTO.ChatRoomSummary(
-                chatRoom.getId(),
+                chatRoomId,
                 chatRoom.getChatType(),
                 opponent,
                 chatRoom.getRoomName(),
@@ -167,37 +216,6 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 chatRoom.getLastMessageAt(),
                 unreadCount,
                 badgeType
-        );
-    }
-
-    private long getUnreadCount(
-            ChatRoom chatRoom,
-            ChatPart myChatPart,
-            Long currentUserId
-    ) {
-        Long lastReadMessageId = myChatPart.getLastReadMessage() == null
-                ? null
-                : myChatPart.getLastReadMessage().getId();
-
-        return messageRepository.countUnreadMessages(
-                chatRoom.getId(),
-                currentUserId,
-                lastReadMessageId
-        );
-    }
-
-    private boolean hasPendingTeamRequest(
-            ChatRoom chatRoom,
-            Long currentUserId
-    ) {
-        if (chatRoom.getChatType() != ChatType.DIRECT) {
-            return false;
-        }
-
-        return teamRequestRepository.existsByChatRoomIdAndReceiverIdAndTeamRequestStatus(
-                chatRoom.getId(),
-                currentUserId,
-                TeamRequestStatus.PENDING
         );
     }
 
