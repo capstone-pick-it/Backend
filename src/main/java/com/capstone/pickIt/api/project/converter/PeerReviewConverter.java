@@ -5,9 +5,9 @@ import com.capstone.pickIt.api.project.dto.response.PeerReviewStatusResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.PeerReviewTargetListResponseDTO;
 import com.capstone.pickIt.domain.project.entity.PeerReview;
 import com.capstone.pickIt.domain.project.entity.ProjectTeamMember;
-import com.capstone.pickIt.domain.project.entity.ProjectTeamReviewStatus;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 
@@ -36,15 +36,13 @@ public class PeerReviewConverter {
         );
     }
 
-    public static PeerReviewResponseDTO toResponse(
-            PeerReview review
-    ) {
-        BigDecimal average =
-                BigDecimal.valueOf(
+    public static PeerReviewResponseDTO toResponse(PeerReview review) {
+        BigDecimal average = BigDecimal.valueOf(
                         review.getCompletionScore()
                                 + review.getProactivityScore()
                                 + review.getSatisfactionScore()
-                ).divide(BigDecimal.valueOf(3));
+                )
+                .divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP);
 
         return new PeerReviewResponseDTO(
                 review.getId(),
@@ -55,7 +53,7 @@ public class PeerReviewConverter {
                 review.getProactivityScore(),
                 review.getSatisfactionScore(),
                 average,
-                review.getCreatedAt()
+                review.getSubmittedAt()
         );
     }
 
