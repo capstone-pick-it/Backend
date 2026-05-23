@@ -52,4 +52,20 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
               AND ptm.projectTeam.status = 'DONE'
             """)
     long countDoneConfirmedByUserId(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT ptm
+        FROM ProjectTeamMember ptm
+        JOIN FETCH ptm.user
+        WHERE ptm.projectTeam.id = :projectTeamId
+          AND ptm.leftAt IS NULL
+          AND ptm.recruitmentConfirmStatus = :status
+        ORDER BY
+          CASE WHEN ptm.role = com.capstone.pickIt.domain.project.entity.ProjectTeamMemberRole.LEAD THEN 0 ELSE 1 END,
+          ptm.joinedAt ASC
+    """)
+    List<ProjectTeamMember> findActiveConfirmedMembersWithUser(
+            @Param("projectTeamId") Long projectTeamId,
+            @Param("status") RecruitmentConfirmStatus status
+    );
 }
