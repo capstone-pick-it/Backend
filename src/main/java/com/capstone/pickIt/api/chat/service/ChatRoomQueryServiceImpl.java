@@ -89,14 +89,14 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
     @Override
     public ChatRoomResponseDTO.ListResponse getMyChatRooms(
             Long currentUserId,
-            LocalDateTime cursorLastMessageAt,
+            LocalDateTime cursorSortAt,
             Long cursorChatRoomId
     ) {
-        validateCursor(cursorLastMessageAt, cursorChatRoomId);
+        validateCursor(cursorSortAt, cursorChatRoomId);
 
         List<ChatPart> chatParts = chatPartRepository.findMyChatRooms(
                 currentUserId,
-                cursorLastMessageAt,
+                cursorSortAt,
                 cursorChatRoomId,
                 PageRequest.of(0, ROOM_PAGE_SIZE + 1)
         );
@@ -175,10 +175,12 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 ))
                 .toList();
 
+        ChatRoom lastChatRoom = chatParts.get(chatParts.size() - 1).getChatRoom();
+
         ChatRoomResponseDTO.Cursor nextCursor = hasNext
                 ? new ChatRoomResponseDTO.Cursor(
-                chatRooms.get(chatRooms.size() - 1).lastMessageAt(),
-                chatRooms.get(chatRooms.size() - 1).chatRoomId()
+                    getSortAt(lastChatRoom),
+                    lastChatRoom.getId()
                 )
                 : null;
 
@@ -287,6 +289,12 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
         if ((cursorLastMessageAt == null) != (cursorChatRoomId == null)) {
             throw new ChatException(ChatErrorCode.INVALID_CURSOR);
         }
+    }
+
+    private LocalDateTime getSortAt(ChatRoom chatRoom) {
+        return chatRoom.getLastMessageAt() != null
+                ? chatRoom.getLastMessageAt()
+                : chatRoom.getCreatedAt();
     }
 
     private ChatRoomResponseDTO.ChatRoomSummary toChatRoomSummary(
