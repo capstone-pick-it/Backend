@@ -19,4 +19,7 @@ public record ProjectMemberSummaryDTO(
         String importanceLevel,
         List<String> traits
 ) {
+    public ProjectMemberSummaryDTO {
+        traits = (traits == null) ? List.of() : List.copyOf(traits);
+    }
 }
