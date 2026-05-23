@@ -132,7 +132,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         User sender = currentChatPart.getUser();
         User receiver = receiverChatPart.getUser();
 
-        Course course = courseRepository.findById(request.courseId())
+        Course course = courseRepository.findByIdForUpdate(request.courseId())
                 .orElseThrow(() -> new ChatException(ChatErrorCode.COURSE_NOT_FOUND));
 
         boolean isCommonCourse = userCourseRepository.existsCommonCourse(
@@ -225,11 +225,13 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             throw new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_PENDING);
         }
 
-        Course course = teamRequest.getCourse();
+        Course course = courseRepository.findByIdForUpdate(teamRequest.getCourse().getId())
+                .orElseThrow(() -> new ChatException(ChatErrorCode.COURSE_NOT_FOUND));
+
         User sender = teamRequest.getSender();
         User receiver = teamRequest.getReceiver();
 
-        // 동일 과목 활성 팀 중복 참여 방지 검증
+        // 동일 과목 활성 팀(RECRUITING, IN_PROGRESS) 중복 참여 방지 검증
         validateNotJoinedActiveTeam(course.getId(), sender.getId());
         validateNotJoinedActiveTeam(course.getId(), receiver.getId());
 
