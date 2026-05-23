@@ -6,4 +6,7 @@ public record ProjectMemberListResponseDTO(
         Long projectTeamId,
         List<ProjectMemberSummaryDTO> members
 ) {
+    public ProjectMemberListResponseDTO {
+        members = (members == null) ? List.of() : List.copyOf(members);
+    }
 }
