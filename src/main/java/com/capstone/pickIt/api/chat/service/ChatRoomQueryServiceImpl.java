@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
 
-    private static final int PAGE_SIZE = 15;
-    private static final int MESSAGE_PAGE_SIZE = 15;
+    private static final int ROOM_PAGE_SIZE = 15;
+    private static final int MESSAGE_PAGE_SIZE = 20;
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatPartRepository chatPartRepository;
@@ -106,13 +106,13 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 currentUserId,
                 cursor,
                 cursorLastMessageAt,
-                PageRequest.of(0, PAGE_SIZE + 1)
+                PageRequest.of(0, ROOM_PAGE_SIZE + 1)
         );
 
-        boolean hasNext = chatParts.size() > PAGE_SIZE;
+        boolean hasNext = chatParts.size() > ROOM_PAGE_SIZE;
 
         if (hasNext) {
-            chatParts = chatParts.subList(0, PAGE_SIZE);
+            chatParts = chatParts.subList(0, ROOM_PAGE_SIZE);
         }
 
         // 조회 결과가 없으면, 배치 조회를 수행하지 않고 빈 응답 반환
@@ -226,13 +226,13 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
         List<Message> messages = messageRepository.findMessages(
                 chatRoomId,
                 cursor,
-                PageRequest.of(0, PAGE_SIZE + 1)
+                PageRequest.of(0, MESSAGE_PAGE_SIZE + 1)
         );
 
-        boolean hasNext = messages.size() > PAGE_SIZE;
+        boolean hasNext = messages.size() > MESSAGE_PAGE_SIZE;
 
         if (hasNext) {
-            messages = messages.subList(0, PAGE_SIZE);
+            messages = messages.subList(0, MESSAGE_PAGE_SIZE);
         }
 
         if (messages.isEmpty()) {
