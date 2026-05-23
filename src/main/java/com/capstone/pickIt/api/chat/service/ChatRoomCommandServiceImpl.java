@@ -112,7 +112,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             Long chatRoomId
     ) {
         ChatPart chatPart = chatPartRepository
-                .findByChatRoomIdAndUserId(chatRoomId, currentUserId)
+                .findByChatRoomIdAndUserIdWithLock(chatRoomId, currentUserId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT));
 
         if (chatPart.isDeleted()) {

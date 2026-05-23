@@ -71,12 +71,12 @@ public enum ChatErrorCode implements BaseCode {
     ),
     CANNOT_LEAVE_IN_PROGRESS_GROUP_CHAT(
             HttpStatus.BAD_REQUEST,
-            "CHAT400_X",
+            "CHAT400_13",
             "진행 중인 팀 채팅방은 나갈 수 없습니다."
     ),
     ALREADY_LEFT_CHAT_ROOM(
             HttpStatus.BAD_REQUEST,
-            "CHAT400_X",
+            "CHAT400_14",
             "이미 나간 채팅방입니다."
     ),
     NOT_CHAT_ROOM_PARTICIPANT(
