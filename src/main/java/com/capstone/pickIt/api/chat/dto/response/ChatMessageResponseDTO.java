@@ -14,7 +14,7 @@ public class ChatMessageResponseDTO {
             Long chatRoomId,
             ChatType chatType,
             String roomName,
-            int participantCount,
+            Integer participantCount,
             ChatRoomResponseDTO.Opponent opponent,
             TeamRequestInfo teamRequest,
             List<MessageSummary> messages,
