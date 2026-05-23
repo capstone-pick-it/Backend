@@ -90,9 +90,12 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
         LocalDateTime cursorLastMessageAt = null;
 
         if (cursor != null) {
-            cursorLastMessageAt = chatRoomRepository.findById(cursor)
-                    .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_ROOM_NOT_FOUND))
-                    .getLastMessageAt();
+            ChatPart cursorChatPart = chatPartRepository
+                    .findByChatRoomIdAndUserId(cursor, currentUserId)
+                    .filter(chatPart -> !chatPart.isDeleted())
+                    .orElseThrow(() -> new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT));
+
+            cursorLastMessageAt = cursorChatPart.getChatRoom().getLastMessageAt();
         }
 
         List<ChatPart> chatParts = chatPartRepository.findMyChatRooms(
