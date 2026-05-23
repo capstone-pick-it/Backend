@@ -29,7 +29,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
 
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 15;
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatPartRepository chatPartRepository;

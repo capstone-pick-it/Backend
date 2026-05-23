@@ -11,7 +11,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         SELECT COUNT(m)
         FROM Message m
         WHERE m.chatRoom.id = :chatRoomId
-        AND m.sender.id <> :currentUserId
+        AND m.user.id <> :currentUserId
         AND (
           :lastReadMessageId IS NULL
           OR m.id > :lastReadMessageId
