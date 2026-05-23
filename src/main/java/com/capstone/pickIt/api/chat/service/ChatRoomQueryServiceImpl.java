@@ -115,6 +115,16 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
             chatParts = chatParts.subList(0, PAGE_SIZE);
         }
 
+        // 조회 결과가 없으면, 배치 조회를 수행하지 않고 빈 응답 반환
+        if (chatParts.isEmpty()) {
+            return new ChatRoomResponseDTO.ListResponse(
+                    List.of(),
+                    null,
+                    false
+            );
+        }
+
+        // 배치 조회를 위한 채팅방 ID 목록 추출
         List<Long> chatRoomIds = chatParts.stream()
                 .map(chatPart -> chatPart.getChatRoom().getId())
                 .toList();
@@ -154,6 +164,7 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 )
         );
 
+        // 배치 조회 결과를 조합하여 채팅방 응답 DTO 생성
         List<ChatRoomResponseDTO.ChatRoomSummary> chatRooms = chatParts.stream()
                 .map(chatPart -> toChatRoomSummary(
                         chatPart,
