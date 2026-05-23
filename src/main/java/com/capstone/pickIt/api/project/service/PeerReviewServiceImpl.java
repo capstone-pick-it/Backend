@@ -56,11 +56,7 @@ public class PeerReviewServiceImpl implements PeerReviewService {
                 .filter(member -> !member.getUser().getId().equals(currentUserId))
                 .toList();
 
-        Set<Long> reviewedUserIds = peerReviewRepository
-                .findAllByProjectTeamIdAndReviewerId(projectTeamId, currentUserId)
-                .stream()
-                .map(review -> review.getReviewee().getId())
-                .collect(Collectors.toSet());
+        Set<Long> reviewedUserIds = getReviewedUserIds(projectTeamId, currentUserId);
 
         return PeerReviewConverter.toTargetListResponse(
                 projectTeamId,
@@ -120,14 +116,7 @@ public class PeerReviewServiceImpl implements PeerReviewService {
         validateProjectCompleted(projectTeam);
         validateActiveProjectMember(projectTeamId, currentUserId);
 
-        List<ProjectTeamMember> targets = projectTeamMemberRepository
-                .findActiveConfirmedMembersWithUser(
-                        projectTeamId,
-                        RecruitmentConfirmStatus.CONFIRMED
-                )
-                .stream()
-                .filter(member -> !member.getUser().getId().equals(currentUserId))
-                .toList();
+        List<ProjectTeamMember> targets = getOtherActiveMembers(projectTeamId, currentUserId);
 
         Set<Long> submittedRevieweeIds = peerReviewRepository
                 .findAllByProjectTeamIdAndReviewerId(projectTeamId, currentUserId)
@@ -175,5 +164,30 @@ public class PeerReviewServiceImpl implements PeerReviewService {
         if (!exists) {
             throw new PeerReviewException(PeerReviewErrorCode.NOT_PROJECT_MEMBER);
         }
+    }
+
+    private List<ProjectTeamMember> getOtherActiveMembers(
+            Long projectTeamId,
+            Long currentUserId
+    ) {
+        return projectTeamMemberRepository
+                .findActiveConfirmedMembersWithUser(
+                        projectTeamId,
+                        RecruitmentConfirmStatus.CONFIRMED
+                )
+                .stream()
+                .filter(member -> !member.getUser().getId().equals(currentUserId))
+                .toList();
+    }
+
+    private Set<Long> getReviewedUserIds(
+            Long projectTeamId,
+            Long reviewerId
+    ) {
+        return peerReviewRepository
+                .findAllByProjectTeamIdAndReviewerId(projectTeamId, reviewerId)
+                .stream()
+                .map(review -> review.getReviewee().getId())
+                .collect(Collectors.toSet());
     }
 }
