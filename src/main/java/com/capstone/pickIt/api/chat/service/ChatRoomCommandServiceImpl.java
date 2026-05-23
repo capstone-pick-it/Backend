@@ -4,6 +4,7 @@ import com.capstone.pickIt.api.chat.converter.ChatRoomEventConverter;
 import com.capstone.pickIt.api.chat.converter.TeamRequestConverter;
 import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
+import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
 import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
 import com.capstone.pickIt.api.point.dto.response.PointResponseDTO;
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.capstone.pickIt.domain.point.policy.PointPolicy.PROJECT_REQUIRED_POINT;
@@ -102,6 +104,32 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
 
             return restoreAndConvert(chatRoom, currentUserId, targetUser, false);
         }
+    }
+
+    @Override
+    public ChatRoomResponseDTO.LeaveResponse leaveChatRoom(
+            Long currentUserId,
+            Long chatRoomId
+    ) {
+        ChatPart chatPart = chatPartRepository
+                .findByChatRoomIdAndUserId(chatRoomId, currentUserId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT));
+
+        if (chatPart.isDeleted()) {
+            throw new ChatException(ChatErrorCode.ALREADY_LEFT_CHAT_ROOM);
+        }
+
+        ChatRoom chatRoom = chatPart.getChatRoom();
+
+        validateCanLeaveChatRoom(chatRoom);
+
+        chatPart.leave();
+
+        return new ChatRoomResponseDTO.LeaveResponse(
+                chatRoom.getId(),
+                chatRoom.getChatType(),
+                chatPart.getDeletedAt()
+        );
     }
 
     @Override
@@ -276,6 +304,21 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         currentChatPart.restore();
 
         return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, isNew);
+    }
+
+    private void validateCanLeaveChatRoom(ChatRoom chatRoom) {
+
+        if (chatRoom.getChatType() == ChatType.DIRECT) {
+            return;
+        }
+
+        if (chatRoom.getProjectTeam().getStatus()
+                == ProjectTeamStatus.IN_PROGRESS) {
+
+            throw new ChatException(
+                    ChatErrorCode.CANNOT_LEAVE_IN_PROGRESS_GROUP_CHAT
+            );
+        }
     }
 
     private void validateNotJoinedActiveTeam(
