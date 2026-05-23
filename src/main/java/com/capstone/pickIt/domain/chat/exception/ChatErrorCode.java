@@ -59,6 +59,11 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT400_10",
             "지원하지 않는 메시지 타입입니다."
     ),
+    INSUFFICIENT_POINT(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_11",
+            "팀원 요청에 필요한 포인트가 부족합니다."
+    ),
     NOT_CHAT_ROOM_PARTICIPANT(
             HttpStatus.FORBIDDEN,
             "CHAT403_1",
