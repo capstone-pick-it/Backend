@@ -139,10 +139,10 @@ public class ProjectCompletionServiceImpl implements ProjectCompletionService {
                 .count();
 
         long approvedCount = completionApprovalRepository
-                .findAllByCompletionRequestId(completionRequest.getId())
-                .stream()
-                .filter(approval -> approval.getDecision() == CompletionDecision.APPROVE)
-                .count();
+                .countByCompletionRequestIdAndDecision(
+                        completionRequest.getId(),
+                        CompletionDecision.APPROVE
+                );
 
         if (approvedCount >= requiredApprovalCount) {
             completionRequest.approve();
