@@ -8,7 +8,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
     Optional<ChatPart> findByChatRoomIdAndUserId(Long chatRoomId, Long userId);
@@ -60,12 +62,6 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
         Long getParticipantCount();
     }
 
-    public interface OpponentProjection {
-        Long getChatRoomId();
-        Long getUserId();
-        String getNickname();
-    }
-
     @Query("""
         SELECT cp.chatRoom.id AS chatRoomId,
                COUNT(cp) AS participantCount
@@ -77,6 +73,12 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
     List<ParticipantCountProjection> countParticipantsByChatRoomIds(
             @Param("chatRoomIds") List<Long> chatRoomIds
     );
+
+    public interface OpponentProjection {
+        Long getChatRoomId();
+        Long getUserId();
+        String getNickname();
+    }
 
     @Query("""
         SELECT cp.chatRoom.id AS chatRoomId,
@@ -90,5 +92,30 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
     List<OpponentProjection> findOpponentsByChatRoomIds(
             @Param("chatRoomIds") List<Long> chatRoomIds,
             @Param("currentUserId") Long currentUserId
+    );
+
+    public interface UnreadMemberCountProjection {
+        Long getMessageId();
+        Long getUnreadMemberCount();
+    }
+
+    @Query("""
+        SELECT m.id AS messageId,
+                COUNT(cp) AS unreadMemberCount
+        FROM Message m
+        JOIN ChatPart cp
+        ON cp.chatRoom.id=m.chatRoom.id
+        WHERE m.chatRoom.id = :chatRoomId
+        AND m.id IN :messageIds
+        AND (
+            cp.lastReadMessage IS NULL
+            OR cp.lastReadMessage.id < m.id
+        )
+        AND cp.deletedAt IS NULL
+        GROUP BY m.id
+    """)
+    List<UnreadMemberCountProjection> countUnreadMemberByMessages(
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("messageIds") List<Long> messageIds
     );
 }

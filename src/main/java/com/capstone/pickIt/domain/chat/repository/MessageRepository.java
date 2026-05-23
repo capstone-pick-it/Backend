@@ -1,6 +1,7 @@
 package com.capstone.pickIt.domain.chat.repository;
 
 import com.capstone.pickIt.domain.chat.entity.Message;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +33,22 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<UnreadCountProjection> countUnreadMessagesByChatRoomIds(
             @Param("chatRoomIds") List<Long> chatRoomIds,
             @Param("currentUserId") Long currentUserId
+    );
+
+    @Query("""
+        SELECT m
+        FROM Message m
+        JOIN FETCH m.user
+        WHERE m.chatRoom.id=:chatRoomId
+        AND (
+            :cursor IS NULL
+            OR m.id < :cursor
+        )
+        ORDER BY m.id DESC
+    """)
+    List<Message> findMessages(
+            Long chatRoomId,
+            Long cursor,
+            Pageable pageable
     );
 }
