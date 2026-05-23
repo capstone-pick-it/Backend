@@ -42,6 +42,10 @@ public class ChatRoomController {
         );
     }
 
+    @Operation(
+            summary = "채팅방 목록 조회",
+            description = "현재 사용자가 참여 중인 채팅방 목록을 최신 메시지 순으로 조회합니다."
+    )
     @GetMapping
     public ApiResponse<ChatRoomResponseDTO.ListResponse> getMyChatRooms(
             @RequestParam(required = false) Long cursor
