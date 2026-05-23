@@ -23,4 +23,20 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
             GROUP BY pr.projectTeam.id
             """)
     List<Object[]> findAverageScoresByRevieweeGroupByTeam(@Param("userId") Long userId);
+
+    boolean existsByProjectTeamIdAndReviewerIdAndRevieweeId(
+            Long projectTeamId,
+            Long reviewerId,
+            Long revieweeId
+    );
+
+    List<PeerReview> findAllByProjectTeamIdAndReviewerId(
+            Long projectTeamId,
+            Long reviewerId
+    );
+
+    long countByProjectTeamIdAndReviewerId(
+            Long projectTeamId,
+            Long reviewerId
+    );
 }

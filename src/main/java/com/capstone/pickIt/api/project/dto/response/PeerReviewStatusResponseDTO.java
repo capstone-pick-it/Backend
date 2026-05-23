@@ -12,7 +12,7 @@ public record PeerReviewStatusResponseDTO(
             String nickname,
             Integer expectedReviewCount,
             Integer submittedReviewCount,
-            boolean completed,
+            Boolean completed,
             LocalDateTime completedAt
     ) {
     }
