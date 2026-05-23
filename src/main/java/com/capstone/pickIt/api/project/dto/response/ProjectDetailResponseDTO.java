@@ -19,4 +19,8 @@ public record ProjectDetailResponseDTO(
         List<ProjectMemberSummaryDTO> members,
         List<ChecklistItemResponseDTO> checklists
 ) {
+    public ProjectDetailResponseDTO {
+        members = (members == null) ? List.of() : List.copyOf(members);
+        checklists = (checklists == null) ? List.of() : List.copyOf(checklists);
+    }
 }
