@@ -1,9 +1,13 @@
 package com.capstone.pickIt.api.chat.converter;
 
+import com.capstone.pickIt.api.chat.dto.response.ChatMessageResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.DirectChatRoomResponseDTO;
 import com.capstone.pickIt.domain.chat.entity.ChatRoom;
+import com.capstone.pickIt.domain.chat.entity.Message;
 import com.capstone.pickIt.domain.user.entity.User;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class ChatRoomConverter {
@@ -26,6 +30,29 @@ public class ChatRoomConverter {
                 new DirectChatRoomResponseDTO.Opponent(
                         opponent.getId(),
                         opponent.getNickname()
+                )
+        );
+    }
+
+    public static ChatMessageResponseDTO.MessageSummary toMessage(
+            Message message,
+            Long currentUserId,
+            Map<Long, Long> unreadCountMap
+    ) {
+        return new ChatMessageResponseDTO.MessageSummary(
+                message.getId(),
+                new ChatMessageResponseDTO.Sender(
+                        message.getUser().getId(),
+                        message.getUser().getNickname()
+                ),
+                message.getMessageType(),
+                message.getContent(),
+                List.of(),
+                message.getCreatedAt(),
+                message.getUser().getId().equals(currentUserId),
+                unreadCountMap.getOrDefault(
+                        message.getId(),
+                        0L
                 )
         );
     }
