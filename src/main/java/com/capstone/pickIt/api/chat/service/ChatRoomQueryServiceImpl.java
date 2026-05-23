@@ -145,8 +145,16 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                         ChatPartRepository.ParticipantCountProjection::getParticipantCount
                 ));
 
-        Map<Long, ChatRoomResponseDTO.Opponent> opponentMap = chatPartRepository
-                .findOpponentsByChatRoomIds(chatRoomIds, currentUserId)
+        List<Long> directChatRoomIds = chatParts.stream()
+                .map(ChatPart::getChatRoom)
+                .filter(chatRoom -> chatRoom.getChatType() == ChatType.DIRECT)
+                .map(ChatRoom::getId)
+                .toList();
+
+        Map<Long, ChatRoomResponseDTO.Opponent> opponentMap = directChatRoomIds.isEmpty()
+                ? Map.of()
+                : chatPartRepository
+                .findOpponentsByChatRoomIds(directChatRoomIds, currentUserId)
                 .stream()
                 .collect(Collectors.toMap(
                         ChatPartRepository.OpponentProjection::getChatRoomId,
