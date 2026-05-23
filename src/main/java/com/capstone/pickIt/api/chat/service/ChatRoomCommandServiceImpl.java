@@ -6,6 +6,8 @@ import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
 import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
+import com.capstone.pickIt.api.point.dto.response.PointResponseDTO;
+import com.capstone.pickIt.api.point.service.PointService;
 import com.capstone.pickIt.domain.chat.entity.ChatType;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.api.chat.converter.ChatRoomConverter;
@@ -36,6 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static com.capstone.pickIt.domain.point.policy.PointPolicy.PROJECT_REQUIRED_POINT;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -51,6 +55,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
     private final ProjectTeamMemberRepository projectTeamMemberRepository;
     private final UserCourseProfileRepository userCourseProfileRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final PointService pointService;
 
     @Override
     public DirectChatRoomResponseDTO.CreateOrEnter createOrEnterDirectChatRoom(
@@ -159,6 +164,12 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
 
         if (existsPendingForReceiver) {
             throw new ChatException(ChatErrorCode.PENDING_REQUEST_EXISTS_FOR_RECEIVER);
+        }
+
+        PointResponseDTO point = pointService.refreshAndGetPoint(currentUserId);
+
+        if (point.balance() < PROJECT_REQUIRED_POINT) {
+            throw new ChatException(ChatErrorCode.INSUFFICIENT_POINT);
         }
 
         try {
