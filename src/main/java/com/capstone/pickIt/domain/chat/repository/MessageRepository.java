@@ -48,8 +48,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         ORDER BY m.id DESC
     """)
     List<Message> findMessages(
-            Long chatRoomId,
-            Long cursor,
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("cursor") Long cursor,
             Pageable pageable
     );
 }
