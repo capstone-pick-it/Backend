@@ -27,4 +27,10 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             LocalDateTime createdAt,
             Pageable pageable
     );
+
+    boolean existsByChatRoomIdAndReceiverIdAndTeamRequestStatus(
+            Long chatRoomId,
+            Long receiverId,
+            TeamRequestStatus teamRequestStatus
+    );
 }
