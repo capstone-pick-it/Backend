@@ -84,6 +84,22 @@ public class ChatRoomController {
     }
 
     @Operation(
+            summary = "채팅방 나가기",
+            description = "현재 사용자를 해당 채팅방에서 나간 상태로 변경합니다."
+    )
+    @PatchMapping("/{chatRoomId}/leave")
+    public ApiResponse<ChatRoomResponseDTO.LeaveResponse> leaveChatRoom(
+            @PathVariable Long chatRoomId
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.CHAT_ROOM_LEFT,
+                chatRoomCommandService.leaveChatRoom(currentUserId, chatRoomId)
+        );
+    }
+
+    @Operation(
             summary = "팀원 요청 보내기",
             description = "현재 사용자가 1:1 채팅방의 상대 사용자에게 팀원 요청을 보냅니다."
     )
