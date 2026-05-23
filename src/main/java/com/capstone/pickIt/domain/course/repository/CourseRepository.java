@@ -15,5 +15,5 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM Course c WHERE c.id = :courseId")
-    Optional<Course> findByIdForUpdate(@Param("courseId") Long courseId);
+    Optional<Course> findByIdWithLock(@Param("courseId") Long courseId);
 }
