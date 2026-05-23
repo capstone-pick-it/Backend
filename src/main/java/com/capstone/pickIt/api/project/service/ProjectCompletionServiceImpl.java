@@ -3,6 +3,7 @@ package com.capstone.pickIt.api.project.service;
 import com.capstone.pickIt.api.project.converter.ProjectCompletionConverter;
 import com.capstone.pickIt.api.project.dto.request.CompletionDecisionRequestDTO;
 import com.capstone.pickIt.api.project.dto.response.CompletionRequestResponseDTO;
+import com.capstone.pickIt.api.teamlevel.service.TeamLevelService;
 import com.capstone.pickIt.domain.project.entity.*;
 import com.capstone.pickIt.domain.project.exception.ProjectCompletionErrorCode;
 import com.capstone.pickIt.domain.project.exception.ProjectCompletionException;
@@ -26,6 +27,7 @@ public class ProjectCompletionServiceImpl implements ProjectCompletionService {
     private final ProjectTeamCompletionRequestRepository completionRequestRepository;
     private final ProjectTeamCompletionApprovalRepository completionApprovalRepository;
     private final UserRepository userRepository;
+    private final TeamLevelService teamLevelService;
 
     @Override
     @Transactional
@@ -147,6 +149,8 @@ public class ProjectCompletionServiceImpl implements ProjectCompletionService {
         if (approvedCount >= requiredApprovalCount) {
             completionRequest.approve();
             completionRequest.getProjectTeam().complete();
+
+            members.forEach(member -> teamLevelService.recalculate(member.getUser().getId()));
         }
     }
 

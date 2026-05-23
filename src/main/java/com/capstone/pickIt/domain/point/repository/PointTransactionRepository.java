@@ -19,4 +19,6 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
             Long userId,
             PointTransactionType transactionType
     );
+
+    long countByUserIdAndTransactionType(Long userId, PointTransactionType transactionType);
 }

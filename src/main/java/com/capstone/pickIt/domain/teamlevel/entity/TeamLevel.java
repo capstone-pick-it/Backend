@@ -31,7 +31,7 @@ public class TeamLevel extends BaseEntity {
     @Column(name = "level", nullable = false)
     private int level = 0;
 
-    public void levelUp() {
-        this.level++;
+    public void updateLevel(int level) {
+        this.level = level;
     }
 }

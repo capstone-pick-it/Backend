@@ -41,4 +41,11 @@ public class MypageProfileServiceImpl implements MypageProfileService {
                 point
         );
     }
+
+    @Override
+    public int getTeamLevel(Long userId) {
+        return teamLevelRepository.findByUserId(userId)
+                .map(t -> t.getLevel())
+                .orElse(0);
+    }
 }
