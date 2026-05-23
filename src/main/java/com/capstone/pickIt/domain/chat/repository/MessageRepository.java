@@ -23,6 +23,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         ON cp.chatRoom.id = m.chatRoom.id
         AND cp.user.id = :currentUserId
         WHERE m.chatRoom.id IN :chatRoomIds
+        AND cp.deletedAt IS NULL
         AND m.user.id <> :currentUserId
         AND (
             cp.lastReadMessage IS NULL
