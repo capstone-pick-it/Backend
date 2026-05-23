@@ -61,21 +61,25 @@ public class PeerReviewConverter {
 
     public static PeerReviewStatusResponseDTO toStatusResponse(
             Long projectTeamId,
-            List<ProjectTeamReviewStatus> statuses
+            int requiredCount,
+            int submittedCount,
+            boolean isCompleted,
+            List<ProjectTeamMember> targets,
+            Set<Long> submittedRevieweeIds
     ) {
         return new PeerReviewStatusResponseDTO(
                 projectTeamId,
-                statuses.stream()
-                        .map(status ->
-                                new PeerReviewStatusResponseDTO.MemberReviewStatusResponseDTO(
-                                        status.getUser().getId(),
-                                        status.getUser().getNickname(),
-                                        status.getExpectedReviewCount(),
-                                        status.getSubmittedReviewCount(),
-                                        status.isCompleted(),
-                                        status.getCompletedAt()
-                                )
-                        )
+                new PeerReviewStatusResponseDTO.MyReviewStatusDTO(
+                        requiredCount,
+                        submittedCount,
+                        isCompleted
+                ),
+                targets.stream()
+                        .map(target -> new PeerReviewStatusResponseDTO.PeerReviewStatusTargetDTO(
+                                target.getUser().getId(),
+                                target.getUser().getNickname(),
+                                submittedRevieweeIds.contains(target.getUser().getId())
+                        ))
                         .toList()
         );
     }

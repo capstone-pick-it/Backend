@@ -1,19 +1,23 @@
 package com.capstone.pickIt.api.project.dto.response;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record PeerReviewStatusResponseDTO(
         Long projectTeamId,
-        List<MemberReviewStatusResponseDTO> members
+        MyReviewStatusDTO myReviewStatus,
+        List<PeerReviewStatusTargetDTO> targets
 ) {
-    public record MemberReviewStatusResponseDTO(
-            Long userId,
-            String nickname,
-            Integer expectedReviewCount,
-            Integer submittedReviewCount,
-            Boolean completed,
-            LocalDateTime completedAt
+    public record MyReviewStatusDTO(
+            Integer requiredCount,
+            Integer submittedCount,
+            Boolean isCompleted
+    ) {
+    }
+
+    public record PeerReviewStatusTargetDTO(
+            Long revieweeUserId,
+            String name,
+            Boolean isSubmitted
     ) {
     }
 }

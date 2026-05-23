@@ -120,10 +120,33 @@ public class PeerReviewServiceImpl implements PeerReviewService {
         validateProjectCompleted(projectTeam);
         validateActiveProjectMember(projectTeamId, currentUserId);
 
-        List<ProjectTeamReviewStatus> statuses =
-                projectTeamReviewStatusRepository.findAllByProjectTeamId(projectTeamId);
+        List<ProjectTeamMember> targets = projectTeamMemberRepository
+                .findActiveConfirmedMembersWithUser(
+                        projectTeamId,
+                        RecruitmentConfirmStatus.CONFIRMED
+                )
+                .stream()
+                .filter(member -> !member.getUser().getId().equals(currentUserId))
+                .toList();
 
-        return PeerReviewConverter.toStatusResponse(projectTeamId, statuses);
+        Set<Long> submittedRevieweeIds = peerReviewRepository
+                .findAllByProjectTeamIdAndReviewerId(projectTeamId, currentUserId)
+                .stream()
+                .map(review -> review.getReviewee().getId())
+                .collect(Collectors.toSet());
+
+        int requiredCount = targets.size();
+        int submittedCount = submittedRevieweeIds.size();
+        boolean isCompleted = submittedCount >= requiredCount;
+
+        return PeerReviewConverter.toStatusResponse(
+                projectTeamId,
+                requiredCount,
+                submittedCount,
+                isCompleted,
+                targets,
+                submittedRevieweeIds
+        );
     }
 
     private ProjectTeam findProjectTeam(Long projectTeamId) {
