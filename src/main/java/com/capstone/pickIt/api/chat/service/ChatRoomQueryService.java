@@ -4,6 +4,8 @@ import com.capstone.pickIt.api.chat.dto.response.ChatMessageResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.CommonCourseResponseDTO;
 
+import java.time.LocalDateTime;
+
 public interface ChatRoomQueryService {
 
     CommonCourseResponseDTO.CommonCourseList getCommonCourses(
@@ -13,7 +15,8 @@ public interface ChatRoomQueryService {
 
     ChatRoomResponseDTO.ListResponse getMyChatRooms(
             Long currentUserId,
-            Long cursor
+            LocalDateTime cursorLastMessageAt,
+            Long cursorChatRoomId
     );
 
     ChatMessageResponseDTO.ListResponse getChatMessages(

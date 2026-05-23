@@ -89,23 +89,15 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
     @Override
     public ChatRoomResponseDTO.ListResponse getMyChatRooms(
             Long currentUserId,
-            Long cursor
+            LocalDateTime cursorLastMessageAt,
+            Long cursorChatRoomId
     ) {
-        LocalDateTime cursorLastMessageAt = null;
-
-        if (cursor != null) {
-            ChatPart cursorChatPart = chatPartRepository
-                    .findByChatRoomIdAndUserId(cursor, currentUserId)
-                    .filter(chatPart -> !chatPart.isDeleted())
-                    .orElseThrow(() -> new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT));
-
-            cursorLastMessageAt = cursorChatPart.getChatRoom().getLastMessageAt();
-        }
+        validateCursor(cursorLastMessageAt, cursorChatRoomId);
 
         List<ChatPart> chatParts = chatPartRepository.findMyChatRooms(
                 currentUserId,
-                cursor,
                 cursorLastMessageAt,
+                cursorChatRoomId,
                 PageRequest.of(0, ROOM_PAGE_SIZE + 1)
         );
 
@@ -183,8 +175,11 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 ))
                 .toList();
 
-        Long nextCursor = hasNext
-                ? chatRooms.get(chatRooms.size() - 1).chatRoomId()
+        ChatRoomResponseDTO.Cursor nextCursor = hasNext
+                ? new ChatRoomResponseDTO.Cursor(
+                chatRooms.get(chatRooms.size() - 1).lastMessageAt(),
+                chatRooms.get(chatRooms.size() - 1).chatRoomId()
+                )
                 : null;
 
         return new ChatRoomResponseDTO.ListResponse(
@@ -283,6 +278,15 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 nextCursor,
                 hasNext
         );
+    }
+
+    private void validateCursor(
+            LocalDateTime cursorLastMessageAt,
+            Long cursorChatRoomId
+    ) {
+        if ((cursorLastMessageAt == null) != (cursorChatRoomId == null)) {
+            throw new ChatException(ChatErrorCode.INVALID_CURSOR);
+        }
     }
 
     private ChatRoomResponseDTO.ChatRoomSummary toChatRoomSummary(

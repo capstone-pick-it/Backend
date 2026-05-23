@@ -14,6 +14,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @Tag(name = "Chat", description = "채팅 API")
 @RestController
 @RequiredArgsConstructor
@@ -45,13 +47,18 @@ public class ChatRoomController {
     )
     @GetMapping
     public ApiResponse<ChatRoomResponseDTO.ListResponse> getMyChatRooms(
-            @RequestParam(required = false) Long cursor
+            @RequestParam(required = false) LocalDateTime cursorLastMessageAt,
+            @RequestParam(required = false) Long cursorChatRoomId
     ) {
         Long currentUserId = SecurityUtil.requireUserId();
 
         return ApiResponse.onSuccess(
                 ChatSuccessCode.CHAT_ROOM_LIST_FOUND,
-                chatRoomQueryService.getMyChatRooms(currentUserId, cursor)
+                chatRoomQueryService.getMyChatRooms(
+                        currentUserId,
+                        cursorLastMessageAt,
+                        cursorChatRoomId
+                )
         );
     }
 

@@ -44,16 +44,16 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
         WHERE cp.user.id = :userId
         AND cp.deletedAt IS NULL
         AND (
-          :cursor IS NULL
+          :cursorLastMessageAt IS NULL
           OR cr.lastMessageAt < :cursorLastMessageAt
-          OR (cr.lastMessageAt = :cursorLastMessageAt AND cr.id < :cursor)
+          OR (cr.lastMessageAt = :cursorLastMessageAt AND cr.id < :cursorChatRoomId)
         )
         ORDER BY cr.lastMessageAt DESC, cr.id DESC
     """)
     List<ChatPart> findMyChatRooms(
             @Param("userId") Long userId,
-            @Param("cursor") Long cursor,
             @Param("cursorLastMessageAt") LocalDateTime cursorLastMessageAt,
+            @Param("cursorChatRoomId") Long cursorChatRoomId,
             Pageable pageable
     );
 
