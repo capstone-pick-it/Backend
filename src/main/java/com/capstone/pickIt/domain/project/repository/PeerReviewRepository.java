@@ -34,9 +34,4 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
             Long projectTeamId,
             Long reviewerId
     );
-
-    long countByProjectTeamIdAndReviewerId(
-            Long projectTeamId,
-            Long reviewerId
-    );
 }
