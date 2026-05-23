@@ -38,6 +38,13 @@ public class MypageController {
         return ApiResponse.onSuccess(SuccessCode.OK, mypageProfileService.getProfile(userId));
     }
 
+    @Operation(summary = "팀플 레벨 조회", description = "로그인한 사용자의 팀플 레벨을 조회합니다.")
+    @GetMapping("/me/team-level")
+    public ApiResponse<Integer> getTeamLevel() {
+        Long userId = SecurityUtil.requireUserId();
+        return ApiResponse.onSuccess(SuccessCode.OK, mypageProfileService.getTeamLevel(userId));
+    }
+
     @Operation(summary = "프로젝트 이력 상세 조회", description = "사용자의 프로젝트별 완수율 및 상호평가 점수를 최신순으로 조회합니다.")
     @GetMapping("/me/project-history")
     public ApiResponse<ProjectHistoryDetailResponseDTO> getProjectHistoryDetail() {

@@ -1,6 +1,7 @@
 package com.capstone.pickIt.api.project.service;
 
 import com.capstone.pickIt.api.project.converter.PeerReviewConverter;
+import com.capstone.pickIt.api.teamlevel.service.TeamLevelService;
 import com.capstone.pickIt.api.project.dto.request.PeerReviewCreateRequestDTO;
 import com.capstone.pickIt.api.project.dto.response.PeerReviewResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.PeerReviewStatusResponseDTO;
@@ -38,6 +39,7 @@ public class PeerReviewServiceImpl implements PeerReviewService {
     private final PeerReviewRepository peerReviewRepository;
     private final ProjectTeamReviewStatusRepository projectTeamReviewStatusRepository;
     private final UserRepository userRepository;
+    private final TeamLevelService teamLevelService;
 
     @Override
     public PeerReviewTargetListResponseDTO getPeerReviewTargets(Long projectTeamId) {
@@ -104,6 +106,8 @@ public class PeerReviewServiceImpl implements PeerReviewService {
         projectTeamReviewStatusRepository
                 .findByProjectTeamIdAndUserId(projectTeamId, currentUserId)
                 .ifPresent(ProjectTeamReviewStatus::increaseSubmittedCount);
+
+        teamLevelService.recalculate(request.revieweeUserId());
 
         return PeerReviewConverter.toResponse(saved);
     }
