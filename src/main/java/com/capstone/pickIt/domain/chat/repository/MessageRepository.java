@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
@@ -37,6 +38,24 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     );
 
     @Query("""
+        SELECT COUNT(m)
+        FROM Message m
+        JOIN ChatPart cp ON cp.chatRoom.id = m.chatRoom.id
+        WHERE m.chatRoom.id = :chatRoomId
+            AND cp.user.id = :userId
+            AND cp.deletedAt IS NULL
+            AND m.user.id <> :userId
+            AND (
+                cp.lastReadMessage IS NULL
+                OR m.id > cp.lastReadMessage.id
+            )
+    """)
+    Long countUnreadMessagesByChatRoomId(
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("userId") Long userId
+    );
+
+    @Query("""
         SELECT m
         FROM Message m
         JOIN FETCH m.user
@@ -52,4 +71,16 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("cursor") Long cursor,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT m
+        FROM Message m
+        WHERE m.id = :messageId
+            AND m.chatRoom.id = :chatRoomId
+    """)
+    Optional<Message> findByIdAndChatRoomId(
+            @Param("messageId") Long messageId,
+            @Param("chatRoomId") Long chatRoomId
+    );
+
 }

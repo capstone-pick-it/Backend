@@ -56,4 +56,11 @@ public class ChatMessageResponseDTO {
             String contentType
     ) {
     }
+
+    public record ReadUpdateResponse(
+            Long chatRoomId,
+            Long lastReadMessageId,
+            Long unreadCount
+    ) {
+    }
 }
