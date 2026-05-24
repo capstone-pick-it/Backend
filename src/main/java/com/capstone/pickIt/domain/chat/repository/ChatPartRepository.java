@@ -1,8 +1,10 @@
 package com.capstone.pickIt.domain.chat.repository;
 
 import com.capstone.pickIt.domain.chat.entity.ChatPart;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -44,34 +46,38 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
         WHERE cp.user.id = :userId
         AND cp.deletedAt IS NULL
         AND (
-          :cursorChatRoomId IS NULL
-          OR (
-              :cursorLastMessageAt IS NOT NULL
-              AND (
-                  cr.lastMessageAt < :cursorLastMessageAt
-                  OR (
-                      cr.lastMessageAt = :cursorLastMessageAt
-                      AND cr.id < :cursorChatRoomId
-                  )
-                  OR cr.lastMessageAt IS NULL
-              )
-          )
-          OR (
-              :cursorLastMessageAt IS NULL
-              AND cr.lastMessageAt IS NULL
-              AND cr.id < :cursorChatRoomId
-          )
+            :cursorChatRoomId IS NULL
+            OR (
+                COALESCE(cr.lastMessageAt, cr.createdAt) < :cursorSortAt
+                OR (
+                    COALESCE(cr.lastMessageAt, cr.createdAt) = :cursorSortAt
+                    AND cr.id < :cursorChatRoomId
+                )
+            )
         )
         ORDER BY
-            CASE WHEN cr.lastMessageAt IS NULL THEN 1 ELSE 0 END ASC,
-            cr.lastMessageAt DESC,
+            COALESCE(cr.lastMessageAt, cr.createdAt) DESC,
             cr.id DESC
     """)
     List<ChatPart> findMyChatRooms(
             @Param("userId") Long userId,
-            @Param("cursorLastMessageAt") LocalDateTime cursorLastMessageAt,
+            @Param("cursorSortAt") LocalDateTime cursorSortAt,
             @Param("cursorChatRoomId") Long cursorChatRoomId,
             Pageable pageable
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT cp
+        FROM ChatPart cp
+        JOIN FETCH cp.chatRoom cr
+        LEFT JOIN FETCH cr.projectTeam
+        WHERE cr.id = :chatRoomId
+          AND cp.user.id = :userId
+        """)
+    Optional<ChatPart> findByChatRoomIdAndUserIdWithLock(
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("userId") Long userId
     );
 
     public interface ParticipantCountProjection {

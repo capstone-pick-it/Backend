@@ -3,7 +3,6 @@ package com.capstone.pickIt.api.chat.dto.response;
 import com.capstone.pickIt.domain.chat.entity.ChatBadgeType;
 import com.capstone.pickIt.domain.chat.entity.ChatType;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,6 +37,13 @@ public class ChatRoomResponseDTO {
     public record Cursor(
             LocalDateTime lastMessageAt,
             Long chatRoomId
+    ) {
+    }
+
+    public record LeaveResponse(
+            Long chatRoomId,
+            ChatType chatType,
+            LocalDateTime deletedAt
     ) {
     }
 }
