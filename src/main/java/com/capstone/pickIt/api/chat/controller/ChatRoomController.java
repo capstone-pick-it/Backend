@@ -3,6 +3,7 @@ package com.capstone.pickIt.api.chat.controller;
 import com.capstone.pickIt.api.chat.code.ChatSuccessCode;
 import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
+import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.CommonCourseResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.DirectChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
@@ -38,6 +39,22 @@ public class ChatRoomController {
         return ApiResponse.onSuccess(
                 ChatSuccessCode.DIRECT_CHAT_ROOM_CREATED_OR_ENTERED,
                 result
+        );
+    }
+
+    @Operation(
+            summary = "채팅방 목록 조회",
+            description = "현재 사용자가 참여 중인 채팅방 목록을 최신 메시지 순으로 조회합니다."
+    )
+    @GetMapping
+    public ApiResponse<ChatRoomResponseDTO.ListResponse> getMyChatRooms(
+            @RequestParam(required = false) Long cursor
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.CHAT_ROOM_LIST_FOUND,
+                chatRoomQueryService.getMyChatRooms(currentUserId, cursor)
         );
     }
 

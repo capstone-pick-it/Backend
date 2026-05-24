@@ -28,6 +28,11 @@ public enum ChatSuccessCode implements BaseCode {
             HttpStatus.OK,
             "CHAT200_4",
             "팀원 요청 응답 처리에 성공했습니다."
+    ),
+    CHAT_ROOM_LIST_FOUND(
+            HttpStatus.OK,
+            "CHAT200_5",
+            "채팅방 목록 조회에 성공했습니다."
     );
 
     private final HttpStatus httpStatus;
