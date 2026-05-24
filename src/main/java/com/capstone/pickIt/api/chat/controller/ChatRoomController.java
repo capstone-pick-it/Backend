@@ -140,9 +140,14 @@ public class ChatRoomController {
     public ApiResponse<FileResponseDTO.UploadResponse> uploadChatFiles(
             @RequestPart("files") List<MultipartFile> files
     ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
         return ApiResponse.onSuccess(
                 ChatSuccessCode.CHAT_FILES_UPLOADED,
-                chatFileService.uploadFiles(files)
+                chatFileService.uploadFiles(
+                        currentUserId,
+                        files
+                )
         );
     }
 

@@ -6,6 +6,7 @@ import com.capstone.pickIt.domain.chat.exception.ChatException;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatFileServiceImpl implements ChatFileService {
@@ -26,6 +28,7 @@ public class ChatFileServiceImpl implements ChatFileService {
 
     @Override
     public FileResponseDTO.UploadResponse uploadFiles(
+            Long currentUserId,
             List<MultipartFile> files
     ) {
         if (files == null || files.isEmpty()) {
@@ -36,16 +39,19 @@ public class ChatFileServiceImpl implements ChatFileService {
 
         try {
             List<FileResponseDTO.FileInfo> uploadedFiles = files.stream()
-                    .map(file -> uploadSingleFile(file, uploadedObjectNames))
+                    .map(file -> uploadSingleFile(currentUserId, file, uploadedObjectNames))
                     .toList();
 
             return new FileResponseDTO.UploadResponse(uploadedFiles);
 
         } catch (Exception e) {
+            log.error("GCS 파일 업로드 실패", e);
+
             uploadedObjectNames.forEach(objectName -> {
                 try {
                     storage.delete(bucketName, objectName);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             });
 
             throw new ChatException(ChatErrorCode.FILE_UPLOAD_FAILED);
@@ -53,6 +59,7 @@ public class ChatFileServiceImpl implements ChatFileService {
     }
 
     private FileResponseDTO.FileInfo uploadSingleFile(
+            Long currentUserId,
             MultipartFile file,
             List<String> uploadedObjectNames
     ) {
@@ -62,7 +69,7 @@ public class ChatFileServiceImpl implements ChatFileService {
 
         String originalFileName = file.getOriginalFilename();
         String extension = getExtension(originalFileName);
-        String storedFileName = "chat/" + UUID.randomUUID() + extension;
+        String storedFileName = "chat/" + currentUserId + "/" + UUID.randomUUID() + extension;
 
         try {
             BlobInfo blobInfo = BlobInfo.newBuilder(
@@ -83,8 +90,8 @@ public class ChatFileServiceImpl implements ChatFileService {
             return new FileResponseDTO.FileInfo(
                     originalFileName,
                     getFileUrl(storedFileName),
-                    file.getContentType(),
-                    file.getSize()
+                    file.getSize(),
+                    file.getContentType()
             );
 
         } catch (IOException e) {

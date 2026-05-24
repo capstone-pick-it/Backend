@@ -8,6 +8,7 @@ import java.util.List;
 public interface ChatFileService {
 
     FileResponseDTO.UploadResponse uploadFiles(
+            Long currentUserId,
             List<MultipartFile> files
     );
 }

@@ -12,8 +12,8 @@ public class FileResponseDTO {
     public record FileInfo(
             String fileName,
             String fileUrl,
-            String contentType,
-            Long size
+            Long fileSize,
+            String contentType
     ) {
     }
 }
