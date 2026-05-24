@@ -87,14 +87,15 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
     );
 
     @Query("""
-        SELECT ptm.projectTeam.id, COUNT(ptm)
+        SELECT ptm
         FROM ProjectTeamMember ptm
+        JOIN FETCH ptm.user
         WHERE ptm.projectTeam.id IN :projectTeamIds
           AND ptm.leftAt IS NULL
           AND ptm.recruitmentConfirmStatus = 'CONFIRMED'
-        GROUP BY ptm.projectTeam.id
+        ORDER BY ptm.projectTeam.id, ptm.joinedAt ASC
     """)
-    List<Object[]> countActiveConfirmedMembersByProjectTeamIds(
+    List<ProjectTeamMember> findActiveConfirmedMembersWithUserByProjectTeamIds(
             @Param("projectTeamIds") List<Long> projectTeamIds
     );
 }
