@@ -14,12 +14,33 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatFileServiceImpl implements ChatFileService {
+
+    private static final long MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+    private static final int MAX_FILE_COUNT = 5;
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            // images
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/gif",
+
+            // documents
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-powerpoint",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/plain"
+    );
 
     @Value("${gcp.storage.bucket}")
     private String bucketName;
@@ -33,6 +54,10 @@ public class ChatFileServiceImpl implements ChatFileService {
     ) {
         if (files == null || files.isEmpty()) {
             throw new ChatException(ChatErrorCode.MESSAGE_FILE_REQUIRED);
+        }
+
+        if (files.size() > MAX_FILE_COUNT) {
+            throw new ChatException(ChatErrorCode.FILE_COUNT_EXCEEDED);
         }
 
         List<String> uploadedObjectNames = new ArrayList<>();
@@ -60,9 +85,7 @@ public class ChatFileServiceImpl implements ChatFileService {
             MultipartFile file,
             List<String> uploadedObjectNames
     ) {
-        if (file.isEmpty()) {
-            throw new ChatException(ChatErrorCode.MESSAGE_FILE_REQUIRED);
-        }
+        validateFile(file);
 
         String originalFileName = file.getOriginalFilename();
         String extension = getExtension(originalFileName);
@@ -93,6 +116,20 @@ public class ChatFileServiceImpl implements ChatFileService {
 
         } catch (IOException e) {
             throw new ChatException(ChatErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
+    private void validateFile(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new ChatException(ChatErrorCode.MESSAGE_FILE_REQUIRED);
+        }
+
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new ChatException(ChatErrorCode.FILE_SIZE_EXCEEDED);
+        }
+
+        if (!ALLOWED_CONTENT_TYPES.contains(file.getContentType())) {
+            throw new ChatException(ChatErrorCode.INVALID_FILE_TYPE);
         }
     }
 

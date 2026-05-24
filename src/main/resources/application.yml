@@ -23,6 +23,11 @@ spring:
             enable: true
             required: true
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
