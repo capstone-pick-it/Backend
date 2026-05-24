@@ -2,23 +2,23 @@ package com.capstone.pickIt.api.chat.service;
 
 import com.capstone.pickIt.api.chat.converter.ChatRoomEventConverter;
 import com.capstone.pickIt.api.chat.converter.TeamRequestConverter;
+import com.capstone.pickIt.api.chat.dto.request.ChatMessageRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
-import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
-import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
-import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
+import com.capstone.pickIt.api.chat.dto.response.*;
 import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
 import com.capstone.pickIt.api.point.dto.response.PointResponseDTO;
 import com.capstone.pickIt.api.point.service.PointService;
 import com.capstone.pickIt.domain.chat.entity.ChatType;
+import com.capstone.pickIt.domain.chat.entity.Message;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.api.chat.converter.ChatRoomConverter;
 import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
-import com.capstone.pickIt.api.chat.dto.response.DirectChatRoomResponseDTO;
 import com.capstone.pickIt.domain.chat.exception.ChatException;
 import com.capstone.pickIt.domain.chat.entity.ChatPart;
 import com.capstone.pickIt.domain.chat.entity.ChatRoom;
 import com.capstone.pickIt.domain.chat.repository.ChatPartRepository;
 import com.capstone.pickIt.domain.chat.repository.ChatRoomRepository;
+import com.capstone.pickIt.domain.chat.repository.MessageRepository;
 import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
 import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
@@ -50,6 +50,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatPartRepository chatPartRepository;
+    private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final UserCourseRepository userCourseRepository;
@@ -129,6 +130,38 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
                 chatRoom.getId(),
                 chatRoom.getChatType(),
                 chatPart.getDeletedAt()
+        );
+    }
+
+    @Override
+    public ChatMessageResponseDTO.ReadUpdateResponse updateLastReadMessage(
+            Long currentUserId,
+            Long chatRoomId,
+            ChatMessageRequestDTO.ReadUpdateRequest request
+    ) {
+        ChatPart chatPart = chatPartRepository
+                .findByChatRoomIdAndUserIdWithLock(chatRoomId, currentUserId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT));
+
+        if (chatPart.isDeleted()) {
+            throw new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT);
+        }
+
+        Message message = messageRepository
+                .findByIdAndChatRoomId(request.lastReadMessageId(), chatRoomId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.MESSAGE_NOT_FOUND));
+
+        if (chatPart.getLastReadMessage() == null
+                || chatPart.getLastReadMessage().getId() < message.getId()) {
+            chatPart.updateLastReadMessage(message);
+        }
+
+        Long unreadCount = messageRepository.countUnreadMessages(chatRoomId, currentUserId);
+
+        return new ChatMessageResponseDTO.ReadUpdateResponse(
+                chatRoomId,
+                chatPart.getLastReadMessage().getId(),
+                unreadCount
         );
     }
 
