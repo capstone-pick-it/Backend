@@ -5,6 +5,7 @@ import com.capstone.pickIt.api.chat.dto.request.ChatMessageRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.*;
+import com.capstone.pickIt.api.chat.service.ChatFileService;
 import com.capstone.pickIt.api.chat.service.ChatRoomCommandService;
 import com.capstone.pickIt.api.chat.service.ChatRoomQueryService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
@@ -13,9 +14,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Tag(name = "Chat", description = "채팅 API")
 @RestController
@@ -25,6 +29,7 @@ public class ChatRoomController {
 
     private final ChatRoomCommandService chatRoomCommandService;
     private final ChatRoomQueryService chatRoomQueryService;
+    private final ChatFileService chatFileService;
 
     @Operation(summary = "1:1 채팅방 생성/재입장", description = "상대 사용자와의 1:1 채팅방을 생성하거나, 기존 채팅방이 존재하면 재사용 및 재입장 처리합니다.")
     @PostMapping
@@ -121,6 +126,23 @@ public class ChatRoomController {
                         chatRoomId,
                         request
                 )
+        );
+    }
+
+    @Operation(
+            summary = "채팅 파일 업로드",
+            description = "채팅 메시지에 첨부할 파일을 Google Cloud Storage에 업로드하고, 파일 URL 목록을 반환합니다."
+    )
+    @PostMapping(
+            value = "/files",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ApiResponse<FileResponseDTO.UploadResponse> uploadChatFiles(
+            @RequestPart("files") List<MultipartFile> files
+    ) {
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.CHAT_FILES_UPLOADED,
+                chatFileService.uploadFiles(files)
         );
     }
 
