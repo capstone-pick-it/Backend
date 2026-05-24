@@ -2,6 +2,7 @@ package com.capstone.pickIt.api.project.converter;
 
 import com.capstone.pickIt.api.checklists.dto.response.ChecklistItemResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.ProjectDetailResponseDTO;
+import com.capstone.pickIt.api.project.dto.response.ProjectListItemResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.ProjectMemberListResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.ProjectMemberSummaryDTO;
 import com.capstone.pickIt.domain.point.entity.Point;
@@ -40,6 +41,22 @@ public class ProjectConverter {
             List<ProjectMemberSummaryDTO> members
     ) {
         return new ProjectMemberListResponseDTO(projectTeamId, members);
+    }
+
+    public static ProjectListItemResponseDTO toListItem(ProjectTeam projectTeam, List<String> memberNames) {
+        String projectName = projectTeam.getName() != null
+                ? projectTeam.getName()
+                : projectTeam.getCourse().getCourseName();
+        int memberCount = memberNames.size();
+        return new ProjectListItemResponseDTO(
+                projectTeam.getId(),
+                projectName,
+                projectTeam.getCourse().getCourseName(),
+                memberCount,
+                memberCount,
+                projectTeam.getStatus(),
+                memberNames
+        );
     }
 
     public static ProjectMemberSummaryDTO toMemberSummary(
