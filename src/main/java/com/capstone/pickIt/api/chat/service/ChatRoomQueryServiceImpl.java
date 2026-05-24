@@ -368,11 +368,17 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
     }
 
     private String getLastMessageContent(ChatRoom chatRoom) {
-        if (chatRoom.getLastMessage() == null) {
+        Message lastMessage = chatRoom.getLastMessage();
+
+        if (lastMessage == null) {
             return null;
         }
 
-        return chatRoom.getLastMessage().getContent();
+        if (lastMessage.getMessageType() == MessageType.FILE) {
+            return "파일을 보냈습니다.";
+        }
+
+        return lastMessage.getContent();
     }
 
     private ChatRoomResponseDTO.Opponent getOpponentOrNull(
