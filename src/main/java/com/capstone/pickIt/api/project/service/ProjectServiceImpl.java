@@ -4,12 +4,14 @@ import com.capstone.pickIt.api.checklists.converter.ChecklistConverter;
 import com.capstone.pickIt.api.checklists.dto.response.ChecklistItemResponseDTO;
 import com.capstone.pickIt.api.project.converter.ProjectConverter;
 import com.capstone.pickIt.api.project.dto.response.ProjectDetailResponseDTO;
+import com.capstone.pickIt.api.project.dto.response.ProjectListItemResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.ProjectMemberListResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.ProjectMemberSummaryDTO;
 import com.capstone.pickIt.domain.point.entity.Point;
 import com.capstone.pickIt.domain.point.repository.PointRepository;
 import com.capstone.pickIt.domain.project.entity.ProjectTeam;
 import com.capstone.pickIt.domain.project.entity.ProjectTeamMember;
+import com.capstone.pickIt.domain.project.entity.ProjectTeamStatus;
 import com.capstone.pickIt.domain.project.entity.RecruitmentConfirmStatus;
 import com.capstone.pickIt.domain.project.exception.ProjectErrorCode;
 import com.capstone.pickIt.domain.project.exception.ProjectException;
@@ -85,6 +87,38 @@ public class ProjectServiceImpl implements ProjectService {
 
         return members.stream()
                 .map(member -> ProjectConverter.toMemberSummary(member, pointMap))
+                .toList();
+    }
+
+    @Override
+    public List<ProjectListItemResponseDTO> getUserProjectList(ProjectTeamStatus status) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        List<ProjectTeamMember> memberships = projectTeamMemberRepository
+                .findActiveConfirmedMembershipsWithTeamAndCourse(currentUserId, status);
+
+        if (memberships.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> projectTeamIds = memberships.stream()
+                .map(m -> m.getProjectTeam().getId())
+                .toList();
+
+        Map<Long, List<String>> memberNamesMap = projectTeamMemberRepository
+                .findActiveConfirmedMembersWithUserByProjectTeamIds(projectTeamIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        m -> m.getProjectTeam().getId(),
+                        Collectors.mapping(m -> m.getUser().getNickname(), Collectors.toList())
+                ));
+
+        return memberships.stream()
+                .map(m -> {
+                    ProjectTeam team = m.getProjectTeam();
+                    List<String> names = memberNamesMap.getOrDefault(team.getId(), List.of());
+                    return ProjectConverter.toListItem(team, names);
+                })
                 .toList();
     }
 
