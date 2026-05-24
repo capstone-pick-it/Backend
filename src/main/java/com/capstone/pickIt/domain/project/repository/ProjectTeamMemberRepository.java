@@ -15,6 +15,20 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
 
     boolean existsByProjectTeamIdAndUserId(Long projectTeamId, Long userId);
 
+    @Query("""
+        SELECT COUNT(ptm) > 0
+        FROM ProjectTeamMember ptm
+        JOIN ptm.projectTeam pt
+        WHERE pt.course.id = :courseId
+        AND ptm.user.id = :userId
+        AND ptm.leftAt IS NULL
+        AND pt.status IN :statuses
+    """)
+    boolean existsActiveTeamByCourseAndUser(
+            @Param("courseId") Long courseId,
+            @Param("userId") Long userId,
+            @Param("statuses") List<ProjectTeamStatus> statuses
+    );
 
     List<ProjectTeamMember> findAllByUserIdAndRecruitmentConfirmStatusAndLeftAtIsNullOrderByJoinedAtDesc(
             Long userId,

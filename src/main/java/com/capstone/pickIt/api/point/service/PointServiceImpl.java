@@ -13,6 +13,7 @@ import com.capstone.pickIt.domain.user.repository.UserRepository;
 import com.capstone.pickIt.global.config.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -39,7 +40,7 @@ public class PointServiceImpl implements PointService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public PointResponseDTO refreshAndGetPoint(Long userId) {
         Point point = findPointForUpdate(userId);
         LocalDateTime lastRecoveredAt = findLastRecoveredAt(userId);

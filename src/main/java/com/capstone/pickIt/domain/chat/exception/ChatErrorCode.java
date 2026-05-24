@@ -59,6 +59,16 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT400_10",
             "지원하지 않는 메시지 타입입니다."
     ),
+    INSUFFICIENT_POINT(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_11",
+            "팀원 요청에 필요한 포인트가 부족합니다."
+    ),
+    INVALID_CURSOR(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_12",
+            "커서 값이 올바르지 않습니다."
+    ),
     NOT_CHAT_ROOM_PARTICIPANT(
             HttpStatus.FORBIDDEN,
             "CHAT403_1",
@@ -123,6 +133,11 @@ public enum ChatErrorCode implements BaseCode {
             HttpStatus.CONFLICT,
             "CHAT409_4",
             "현재 모집 가능한 상태가 아닙니다."
+    ),
+    ALREADY_JOINED_ACTIVE_TEAM(
+            HttpStatus.CONFLICT,
+            "CHAT409_5",
+            "이미 해당 과목의 모집 중이거나 진행 중인 팀에 참여 중입니다."
     );
 
     private final HttpStatus httpStatus;
