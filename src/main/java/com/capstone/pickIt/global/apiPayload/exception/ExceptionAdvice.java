@@ -6,6 +6,8 @@ import com.capstone.pickIt.global.apiPayload.response.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -110,5 +112,28 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
         );
     }
 
+    // Lock 관련 Exception
+    @ExceptionHandler({
+            PessimisticLockingFailureException.class,
+            CannotAcquireLockException.class
+    })
+    public ResponseEntity<Object> handleLockException(
+            Exception e,
+            WebRequest request
+    ) {
+        log.error("Lock exception 발생", e);
 
+        ApiResponse<Object> body = ApiResponse.onFailure(
+                ErrorCode.CONFLICT,
+                "다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요."
+        );
+
+        return handleExceptionInternal(
+                e,
+                body,
+                new HttpHeaders(),
+                ErrorCode.CONFLICT.getHttpStatus(),
+                request
+        );
+    }
 }

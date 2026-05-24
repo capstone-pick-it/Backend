@@ -24,10 +24,70 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT400_3",
             "두 사용자의 공통 과목이 아닙니다."
     ),
+    TEAM_REQUEST_NOT_PENDING(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_4",
+            "대기 중인 팀원 요청만 처리할 수 있습니다."
+    ),
+    TEAM_REQUEST_EXPIRED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_5",
+            "24시간이 지나 만료된 팀원 요청입니다."
+    ),
+    INVALID_MESSAGE_CONTENT(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_6",
+            "텍스트 메시지는 content가 필요합니다."
+    ),
+    MESSAGE_FILE_NOT_ALLOWED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_7",
+            "텍스트 메시지는 파일을 함께 보낼 수 없습니다."
+    ),
+    MESSAGE_CONTENT_NOT_ALLOWED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_8",
+            "파일 메시지는 content를 함께 보낼 수 없습니다."
+    ),
+    MESSAGE_FILE_REQUIRED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_9",
+            "파일 메시지는 파일 정보가 필요합니다."
+    ),
+    INVALID_MESSAGE_TYPE(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_10",
+            "지원하지 않는 메시지 타입입니다."
+    ),
+    INSUFFICIENT_POINT(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_11",
+            "팀원 요청에 필요한 포인트가 부족합니다."
+    ),
+    INVALID_CURSOR(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_12",
+            "커서 값이 올바르지 않습니다."
+    ),
+    CANNOT_LEAVE_IN_PROGRESS_GROUP_CHAT(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_13",
+            "진행 중인 팀 채팅방은 나갈 수 없습니다."
+    ),
+    ALREADY_LEFT_CHAT_ROOM(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_14",
+            "이미 나간 채팅방입니다."
+    ),
     NOT_CHAT_ROOM_PARTICIPANT(
             HttpStatus.FORBIDDEN,
             "CHAT403_1",
             "해당 채팅방의 참여자가 아닙니다."
+    ),
+    NOT_TEAM_REQUEST_RECEIVER(
+            HttpStatus.FORBIDDEN,
+            "CHAT403_2",
+            "해당 팀원 요청을 처리할 권한이 없습니다."
     ),
     CURRENT_USER_NOT_FOUND(
             HttpStatus.NOT_FOUND,
@@ -54,6 +114,21 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT404_5",
             "과목을 찾을 수 없습니다."
     ),
+    TEAM_REQUEST_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "CHAT404_6",
+            "팀원 요청을 찾을 수 없습니다."
+    ),
+    USER_COURSE_PROFILE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "CHAT404_7",
+            "사용자 과목 프로필을 찾을 수 없습니다."
+    ),
+    MESSAGE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "CHAT404_8",
+            "메시지를 찾을 수 없습니다."
+    ),
     PENDING_REQUEST_EXISTS_FOR_COURSE(
             HttpStatus.CONFLICT,
             "CHAT409_1",
@@ -68,6 +143,16 @@ public enum ChatErrorCode implements BaseCode {
             HttpStatus.CONFLICT,
         "CHAT409_3",
             "대기 중인 팀원 요청이 이미 존재합니다."
+    ),
+    INVALID_RECRUITMENT_STATUS(
+            HttpStatus.CONFLICT,
+            "CHAT409_4",
+            "현재 모집 가능한 상태가 아닙니다."
+    ),
+    ALREADY_JOINED_ACTIVE_TEAM(
+            HttpStatus.CONFLICT,
+            "CHAT409_5",
+            "이미 해당 과목의 모집 중이거나 진행 중인 팀에 참여 중입니다."
     );
 
     private final HttpStatus httpStatus;

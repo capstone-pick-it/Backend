@@ -16,6 +16,8 @@ public interface UserCourseProfileRepository extends JpaRepository<UserCoursePro
 
     boolean existsByUserIdAndCourseId(Long userId, Long courseId);
 
+    boolean existsByUserIdAndCourseIdAndDeletedAtIsNull(Long userId, Long courseId);
+
     @Query("""
         SELECT ucp1.course
         FROM UserCourseProfile ucp1
@@ -40,4 +42,13 @@ public interface UserCourseProfileRepository extends JpaRepository<UserCoursePro
             Long currentUserId,
             Long opponentUserId
     );
+
+    Optional<UserCourseProfile> findByUserIdAndCourseIdAndDeletedAtIsNull(
+            Long userId,
+            Long courseId
+    );
+
+    List<UserCourseProfile> findAllByUserIdAndDeletedAtIsNull(Long userId);
+
+    List<UserCourseProfile> findAllByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
 }

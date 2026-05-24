@@ -22,17 +22,18 @@ import java.util.List;
                     { "traitItemId": 1, "selectedType": "A" },
                     { "traitItemId": 2, "selectedType": "B" },
                     { "traitItemId": 3, "selectedType": "A" },
-                    { "traitItemId": 4, "selectedType": "A" }
+                    { "traitItemId": 4, "selectedType": "A" },
+                    { "traitItemId": 5, "selectedType": "B" }
                   ]
                 }
                 """
 )
 public class OnboardingPersonalityRequestDTO {
 
-    private static final int TRAIT_COUNT = 4;
+    private static final int TRAIT_COUNT = 5;
 
     @NotEmpty(message = "성향 목록은 비어 있을 수 없습니다.")
-    @Size(min = TRAIT_COUNT, max = TRAIT_COUNT, message = "성향 목록은 4개 항목을 모두 포함해야 합니다.")
+    @Size(min = TRAIT_COUNT, max = TRAIT_COUNT, message = "성향 목록은 5개 항목을 모두 포함해야 합니다.")
     @Valid
     @Schema(description = "팀플 성향 선택 목록 (전체 스탭 선택값을 한 번에 담아서 전송)")
     private List<TraitItem> traits;

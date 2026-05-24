@@ -49,6 +49,10 @@ public class UserCourseProfile extends CreatedUpdatedDeletedBaseEntity {
     @OneToMany(mappedBy = "userCourseProfile", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserCourseTrait> traits = new ArrayList<>();
 
+    public void updateCourse(Course course) {
+        this.course = course;
+    }
+
     public void updateImportanceLevel(ImportanceLevel importanceLevel) {
         this.importanceLevel = importanceLevel;
     }

@@ -30,4 +30,13 @@ public class TeamRequestConverter {
                 teamRequest.getCreatedAt()
         );
     }
+
+    public static TeamRequestResponseDTO.Respond toRespondResponse(TeamRequest teamRequest) {
+        return new TeamRequestResponseDTO.Respond(
+                teamRequest.getId(),
+                teamRequest.getChatRoom().getId(),
+                teamRequest.getTeamRequestStatus().name(),
+                teamRequest.getRespondedAt()
+        );
+    }
 }
