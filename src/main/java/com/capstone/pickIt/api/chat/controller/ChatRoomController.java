@@ -1,11 +1,10 @@
 package com.capstone.pickIt.api.chat.controller;
 
 import com.capstone.pickIt.api.chat.code.ChatSuccessCode;
+import com.capstone.pickIt.api.chat.dto.request.ChatMessageRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
-import com.capstone.pickIt.api.chat.dto.response.CommonCourseResponseDTO;
-import com.capstone.pickIt.api.chat.dto.response.DirectChatRoomResponseDTO;
-import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
+import com.capstone.pickIt.api.chat.dto.response.*;
 import com.capstone.pickIt.api.chat.service.ChatRoomCommandService;
 import com.capstone.pickIt.api.chat.service.ChatRoomQueryService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
@@ -16,10 +15,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @Tag(name = "Chat", description = "채팅 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/chats")
+@RequestMapping("/api/chats")
 public class ChatRoomController {
 
     private final ChatRoomCommandService chatRoomCommandService;
@@ -38,6 +39,88 @@ public class ChatRoomController {
         return ApiResponse.onSuccess(
                 ChatSuccessCode.DIRECT_CHAT_ROOM_CREATED_OR_ENTERED,
                 result
+        );
+    }
+
+    @Operation(
+            summary = "채팅방 목록 조회",
+            description = "현재 사용자가 참여 중인 채팅방 목록을 최신 메시지 순으로 조회합니다."
+    )
+    @GetMapping
+    public ApiResponse<ChatRoomResponseDTO.ListResponse> getMyChatRooms(
+            @RequestParam(required = false) LocalDateTime cursorLastMessageAt,
+            @RequestParam(required = false) Long cursorChatRoomId
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.CHAT_ROOM_LIST_FOUND,
+                chatRoomQueryService.getMyChatRooms(
+                        currentUserId,
+                        cursorLastMessageAt,
+                        cursorChatRoomId
+                )
+        );
+    }
+
+    @Operation(
+            summary = "채팅방 메시지 목록 조회",
+            description = "특정 채팅방의 메시지 목록을 커서 기반으로 조회합니다."
+    )
+    @GetMapping("/{chatRoomId}/messages")
+    public ApiResponse<ChatMessageResponseDTO.ListResponse> getChatMessages(
+            @PathVariable Long chatRoomId,
+            @RequestParam(required = false) Long cursor
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.CHAT_MESSAGE_LIST_FETCHED,
+                chatRoomQueryService.getChatMessages(
+                        currentUserId,
+                        chatRoomId,
+                        cursor
+                )
+        );
+    }
+
+    @Operation(
+            summary = "채팅방 나가기",
+            description = "현재 사용자를 해당 채팅방에서 나간 상태로 변경합니다."
+    )
+    @PatchMapping("/{chatRoomId}/leave")
+    public ApiResponse<ChatRoomResponseDTO.LeaveResponse> leaveChatRoom(
+            @PathVariable Long chatRoomId
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.CHAT_ROOM_LEFT,
+                chatRoomCommandService.leaveChatRoom(currentUserId, chatRoomId)
+        );
+    }
+
+    @Operation(
+            summary = "채팅 메시지 읽음 처리",
+            description = """
+                현재 사용자가 해당 채팅방의 특정 메시지까지 읽었다고 처리합니다.
+                - 현재 사용자의 마지막 읽은 메시지(`last_read_message_id`)를 갱신합니다.
+                """
+    )
+    @PatchMapping("/{chatRoomId}/read")
+    public ApiResponse<ChatMessageResponseDTO.ReadUpdateResponse> updateLastReadMessage(
+            @PathVariable Long chatRoomId,
+            @RequestBody @Valid ChatMessageRequestDTO.ReadUpdateRequest request
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.CHAT_MESSAGE_READ_UPDATED,
+                chatRoomCommandService.updateLastReadMessage(
+                        currentUserId,
+                        chatRoomId,
+                        request
+                )
         );
     }
 

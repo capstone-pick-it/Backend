@@ -4,9 +4,11 @@ import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UpdateCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseListResponseDTO;
+import com.capstone.pickIt.api.user.dto.response.MyPageProfileResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.ProjectHistoryDetailResponseDTO;
 import com.capstone.pickIt.api.user.dto.response.ProjectHistorySummaryResponseDTO;
 import com.capstone.pickIt.api.user.service.MypageCourseService;
+import com.capstone.pickIt.api.user.service.MypageProfileService;
 import com.capstone.pickIt.api.user.service.MypageProjectHistoryService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
 import com.capstone.pickIt.global.apiPayload.response.SuccessCode;
@@ -27,6 +29,21 @@ public class MypageController {
 
     private final MypageCourseService mypageCourseService;
     private final MypageProjectHistoryService mypageProjectHistoryService;
+    private final MypageProfileService mypageProfileService;
+
+    @Operation(summary = "마이페이지 프로필 조회", description = "로그인한 사용자의 닉네임, 학과, 학년, 팀플레벨, 포인트를 조회합니다.")
+    @GetMapping("/me/profile")
+    public ApiResponse<MyPageProfileResponseDTO> getProfile() {
+        Long userId = SecurityUtil.requireUserId();
+        return ApiResponse.onSuccess(SuccessCode.OK, mypageProfileService.getProfile(userId));
+    }
+
+    @Operation(summary = "팀플 레벨 조회", description = "로그인한 사용자의 팀플 레벨을 조회합니다.")
+    @GetMapping("/me/team-level")
+    public ApiResponse<Integer> getTeamLevel() {
+        Long userId = SecurityUtil.requireUserId();
+        return ApiResponse.onSuccess(SuccessCode.OK, mypageProfileService.getTeamLevel(userId));
+    }
 
     @Operation(summary = "프로젝트 이력 상세 조회", description = "사용자의 프로젝트별 완수율 및 상호평가 점수를 최신순으로 조회합니다.")
     @GetMapping("/me/project-history")

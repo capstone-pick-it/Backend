@@ -28,4 +28,6 @@ public interface PointRepository extends JpaRepository<Point, Long> {
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM Point p WHERE p.user.id IN :userIds")
     void deleteAllByUserIdIn(@Param("userIds") List<Long> userIds);
+
+    List<Point> findAllByUserIdIn(List<Long> userIds);
 }
