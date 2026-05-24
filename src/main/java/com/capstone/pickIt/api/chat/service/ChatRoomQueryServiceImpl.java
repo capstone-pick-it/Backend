@@ -1,12 +1,11 @@
 package com.capstone.pickIt.api.chat.service;
 
+import com.capstone.pickIt.api.chat.converter.ChatMessageConverter;
 import com.capstone.pickIt.api.chat.converter.CommonCourseConverter;
+import com.capstone.pickIt.api.chat.dto.response.ChatMessageResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.CommonCourseResponseDTO;
-import com.capstone.pickIt.domain.chat.entity.ChatBadgeType;
-import com.capstone.pickIt.domain.chat.entity.ChatPart;
-import com.capstone.pickIt.domain.chat.entity.ChatRoom;
-import com.capstone.pickIt.domain.chat.entity.ChatType;
+import com.capstone.pickIt.domain.chat.entity.*;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.domain.chat.exception.ChatException;
 import com.capstone.pickIt.domain.chat.repository.ChatPartRepository;
@@ -33,7 +32,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
 
-    private static final int PAGE_SIZE = 15;
+    private static final int ROOM_PAGE_SIZE = 15;
+    private static final int MESSAGE_PAGE_SIZE = 20;
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatPartRepository chatPartRepository;
@@ -89,30 +89,22 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
     @Override
     public ChatRoomResponseDTO.ListResponse getMyChatRooms(
             Long currentUserId,
-            Long cursor
+            LocalDateTime cursorLastMessageAt,
+            Long cursorChatRoomId
     ) {
-        LocalDateTime cursorLastMessageAt = null;
-
-        if (cursor != null) {
-            ChatPart cursorChatPart = chatPartRepository
-                    .findByChatRoomIdAndUserId(cursor, currentUserId)
-                    .filter(chatPart -> !chatPart.isDeleted())
-                    .orElseThrow(() -> new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT));
-
-            cursorLastMessageAt = cursorChatPart.getChatRoom().getLastMessageAt();
-        }
+        validateCursor(cursorLastMessageAt, cursorChatRoomId);
 
         List<ChatPart> chatParts = chatPartRepository.findMyChatRooms(
                 currentUserId,
-                cursor,
                 cursorLastMessageAt,
-                PageRequest.of(0, PAGE_SIZE + 1)
+                cursorChatRoomId,
+                PageRequest.of(0, ROOM_PAGE_SIZE + 1)
         );
 
-        boolean hasNext = chatParts.size() > PAGE_SIZE;
+        boolean hasNext = chatParts.size() > ROOM_PAGE_SIZE;
 
         if (hasNext) {
-            chatParts = chatParts.subList(0, PAGE_SIZE);
+            chatParts = chatParts.subList(0, ROOM_PAGE_SIZE);
         }
 
         // 조회 결과가 없으면, 배치 조회를 수행하지 않고 빈 응답 반환
@@ -183,8 +175,11 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 ))
                 .toList();
 
-        Long nextCursor = hasNext
-                ? chatRooms.get(chatRooms.size() - 1).chatRoomId()
+        ChatRoomResponseDTO.Cursor nextCursor = hasNext
+                ? new ChatRoomResponseDTO.Cursor(
+                chatRooms.get(chatRooms.size() - 1).lastMessageAt(),
+                chatRooms.get(chatRooms.size() - 1).chatRoomId()
+                )
                 : null;
 
         return new ChatRoomResponseDTO.ListResponse(
@@ -192,6 +187,106 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 nextCursor,
                 hasNext
         );
+    }
+
+    @Override
+    public ChatMessageResponseDTO.ListResponse getChatMessages(
+            Long currentUserId,
+            Long chatRoomId,
+            Long cursor
+    ) {
+        ChatPart myChatPart = chatPartRepository
+                .findByChatRoomIdAndUserId(chatRoomId, currentUserId)
+                .orElseThrow(() ->
+                        new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT)
+                );
+
+        if (myChatPart.isDeleted()) {
+            throw new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT);
+        }
+
+        ChatRoom chatRoom = myChatPart.getChatRoom();
+
+        ChatRoomResponseDTO.Opponent opponent =
+                getOpponentOrNull(chatRoom, chatRoomId, currentUserId);
+
+        ChatMessageResponseDTO.TeamRequestInfo teamRequest =
+                getTeamRequestOrNull(chatRoom, chatRoomId, currentUserId);
+
+        Integer participantCount =
+                chatRoom.getChatType() == ChatType.GROUP
+                        ? chatPartRepository.countActiveParticipants(chatRoomId)
+                        : null;
+
+        List<Message> messages = messageRepository.findMessages(
+                chatRoomId,
+                cursor,
+                PageRequest.of(0, MESSAGE_PAGE_SIZE + 1)
+        );
+
+        boolean hasNext = messages.size() > MESSAGE_PAGE_SIZE;
+
+        if (hasNext) {
+            messages = messages.subList(0, MESSAGE_PAGE_SIZE);
+        }
+
+        if (messages.isEmpty()) {
+            return ChatMessageConverter.toListResponse(
+                    chatRoom,
+                    participantCount,
+                    opponent,
+                    teamRequest,
+                    List.of(),
+                    null,
+                    false
+            );
+        }
+
+        List<Long> messageIds = messages.stream()
+                .map(Message::getId)
+                .toList();
+
+        Map<Long, Long> unreadCountMap = chatPartRepository
+                .countUnreadMemberByMessages(chatRoomId, messageIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        ChatPartRepository.UnreadMemberCountProjection::getMessageId,
+                        ChatPartRepository.UnreadMemberCountProjection::getUnreadMemberCount
+                ));
+
+        List<ChatMessageResponseDTO.MessageSummary> messageSummaries =
+                messages.stream()
+                        .map(message ->
+                                ChatMessageConverter.toMessageSummary(
+                                        message,
+                                        currentUserId,
+                                        unreadCountMap
+                                )
+                        )
+                        .toList();
+
+        Long nextCursor = hasNext
+                ? messages.get(messages.size() - 1).getId()
+                : null;
+
+        return ChatMessageConverter.toListResponse(
+                chatRoom,
+                participantCount,
+                opponent,
+                teamRequest,
+                messageSummaries,
+                nextCursor,
+                hasNext
+        );
+    }
+
+    private void validateCursor(
+            LocalDateTime cursorLastMessageAt,
+            Long cursorChatRoomId
+    ) {
+        if ((cursorLastMessageAt == null) != (cursorChatRoomId == null)) {
+            throw new ChatException(ChatErrorCode.INVALID_CURSOR);
+        }
     }
 
     private ChatRoomResponseDTO.ChatRoomSummary toChatRoomSummary(
@@ -260,5 +355,44 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
         }
 
         return chatRoom.getLastMessage().getContent();
+    }
+
+    private ChatRoomResponseDTO.Opponent getOpponentOrNull(
+            ChatRoom chatRoom,
+            Long chatRoomId,
+            Long currentUserId
+    ) {
+        if (chatRoom.getChatType() != ChatType.DIRECT) {
+            return null;
+        }
+
+        ChatPart opponentChatPart = chatPartRepository
+                .findOpponent(chatRoomId, currentUserId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
+
+        return ChatMessageConverter.toOpponent(opponentChatPart);
+    }
+
+    private ChatMessageResponseDTO.TeamRequestInfo getTeamRequestOrNull(
+            ChatRoom chatRoom,
+            Long chatRoomId,
+            Long currentUserId
+    ) {
+        if (chatRoom.getChatType() != ChatType.DIRECT) {
+            return null;
+        }
+
+        return teamRequestRepository
+                .findLatestByChatRoomId(
+                        chatRoomId,
+                        PageRequest.of(0, 1)
+                )
+                .stream()
+                .findFirst()
+                .map(teamRequest -> ChatMessageConverter.toTeamRequestInfo(
+                        teamRequest,
+                        currentUserId
+                ))
+                .orElse(null);
     }
 }

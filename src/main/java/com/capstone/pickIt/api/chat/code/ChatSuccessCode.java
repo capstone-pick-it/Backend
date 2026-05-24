@@ -33,6 +33,11 @@ public enum ChatSuccessCode implements BaseCode {
             HttpStatus.OK,
             "CHAT200_5",
             "채팅방 목록 조회에 성공했습니다."
+    ),
+    CHAT_MESSAGE_LIST_FETCHED(
+            HttpStatus.OK,
+            "CHAT200_6",
+            "채팅방 메시지 목록 조회에 성공했습니다."
     );
 
     private final HttpStatus httpStatus;

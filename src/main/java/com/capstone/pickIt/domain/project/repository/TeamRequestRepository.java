@@ -50,4 +50,17 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             @Param("currentUserId") Long currentUserId,
             @Param("status") TeamRequestStatus status
     );
+
+    @Query("""
+        SELECT tr
+        FROM TeamRequest tr
+        JOIN FETCH tr.sender
+        JOIN FETCH tr.receiver
+        WHERE tr.chatRoom.id = :chatRoomId
+        ORDER BY tr.createdAt DESC
+    """)
+    List<TeamRequest> findLatestByChatRoomId(
+            @Param("chatRoomId") Long chatRoomId,
+            Pageable pageable
+    );
 }
