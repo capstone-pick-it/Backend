@@ -5,6 +5,7 @@ import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
 import com.capstone.pickIt.domain.chat.entity.ChatPart;
 import com.capstone.pickIt.domain.chat.entity.ChatRoom;
 import com.capstone.pickIt.domain.chat.entity.Message;
+import com.capstone.pickIt.domain.chat.entity.MessageFile;
 import com.capstone.pickIt.domain.project.entity.TeamRequest;
 import com.capstone.pickIt.domain.project.entity.TeamRequestRole;
 
@@ -38,7 +39,8 @@ public class ChatMessageConverter {
     public static ChatMessageResponseDTO.MessageSummary toMessageSummary(
             Message message,
             Long currentUserId,
-            Map<Long, Long> unreadCountMap
+            Map<Long, Long> unreadCountMap,
+            Map<Long, List<MessageFile>> fileMap
     ) {
         return new ChatMessageResponseDTO.MessageSummary(
                 message.getId(),
@@ -48,7 +50,16 @@ public class ChatMessageConverter {
                 ),
                 message.getMessageType(),
                 message.getContent(),
-                List.of(),
+                fileMap.getOrDefault(message.getId(), List.of())
+                        .stream()
+                        .map(file -> new ChatMessageResponseDTO.FileInfo(
+                                file.getId(),
+                                file.getFileName(),
+                                file.getFileUrl(),
+                                file.getFileSize(),
+                                file.getContentType()
+                        ))
+                        .toList(),
                 message.getCreatedAt(),
                 message.getUser().getId().equals(currentUserId),
                 unreadCountMap.getOrDefault(message.getId(), 0L)
