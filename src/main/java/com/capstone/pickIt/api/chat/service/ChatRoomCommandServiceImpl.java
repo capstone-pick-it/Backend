@@ -156,7 +156,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             chatPart.updateLastReadMessage(message);
         }
 
-        Long unreadCount = messageRepository.countUnreadMessages(chatRoomId, currentUserId);
+        Long unreadCount = messageRepository.countUnreadMessagesByChatRoomId(chatRoomId, currentUserId);
 
         return new ChatMessageResponseDTO.ReadUpdateResponse(
                 chatRoomId,

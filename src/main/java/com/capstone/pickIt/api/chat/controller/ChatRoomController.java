@@ -1,6 +1,7 @@
 package com.capstone.pickIt.api.chat.controller;
 
 import com.capstone.pickIt.api.chat.code.ChatSuccessCode;
+import com.capstone.pickIt.api.chat.dto.request.ChatMessageRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.request.TeamRequestCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.*;
@@ -96,6 +97,30 @@ public class ChatRoomController {
         return ApiResponse.onSuccess(
                 ChatSuccessCode.CHAT_ROOM_LEFT,
                 chatRoomCommandService.leaveChatRoom(currentUserId, chatRoomId)
+        );
+    }
+
+    @Operation(
+            summary = "채팅 메시지 읽음 처리",
+            description = """
+                현재 사용자가 해당 채팅방의 특정 메시지까지 읽었다고 처리합니다.
+                - 현재 사용자의 마지막 읽은 메시지(`last_read_message_id`)를 갱신합니다.
+                """
+    )
+    @PatchMapping("/{chatRoomId}/read")
+    public ApiResponse<ChatMessageResponseDTO.ReadUpdateResponse> updateLastReadMessage(
+            @PathVariable Long chatRoomId,
+            @RequestBody @Valid ChatMessageRequestDTO.ReadUpdateRequest request
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.CHAT_MESSAGE_READ_UPDATED,
+                chatRoomCommandService.updateLastReadMessage(
+                        currentUserId,
+                        chatRoomId,
+                        request
+                )
         );
     }
 

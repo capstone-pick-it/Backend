@@ -38,6 +38,24 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     );
 
     @Query("""
+        SELECT COUNT(m)
+        FROM Message m
+        JOIN ChatPart cp ON cp.chatRoom.id = m.chatRoom.id
+        WHERE m.chatRoom.id = :chatRoomId
+            AND cp.user.id = :userId
+            AND cp.deletedAt IS NULL
+            AND m.user.id <> :userId
+            AND (
+                cp.lastReadMessage IS NULL
+                OR m.id > cp.lastReadMessage.id
+            )
+    """)
+    Long countUnreadMessagesByChatRoomId(
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("userId") Long userId
+    );
+
+    @Query("""
         SELECT m
         FROM Message m
         JOIN FETCH m.user
@@ -65,21 +83,4 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("chatRoomId") Long chatRoomId
     );
 
-    @Query("""
-        SELECT COUNT(m)
-        FROM Message m
-        JOIN ChatPart cp ON cp.chatRoom.id = m.chatRoom.id
-        WHERE m.chatRoom.id = :chatRoomId
-            AND cp.user.id = :userId
-            AND cp.deletedAt IS NULL
-            AND m.user.id <> :userId
-            AND (
-                cp.lastReadMessage IS NULL
-                OR m.id > cp.lastReadMessage.id
-            )
-    """)
-    Long countUnreadMessages(
-            @Param("chatRoomId") Long chatRoomId,
-            @Param("userId") Long userId
-    );
 }
