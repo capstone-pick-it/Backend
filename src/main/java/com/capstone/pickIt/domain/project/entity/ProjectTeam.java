@@ -33,6 +33,9 @@ public class ProjectTeam extends BaseEntity {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
+    @Column(name = "name", length = 100)
+    private String name;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private ProjectTeamStatus status;
@@ -75,6 +78,7 @@ public class ProjectTeam extends BaseEntity {
     public static ProjectTeam createRecruitingTeam(Course course) {
         return ProjectTeam.builder()
                 .course(course)
+                .name(course.getCourseName())
                 .status(ProjectTeamStatus.RECRUITING)
                 .build();
     }
