@@ -22,7 +22,7 @@ import java.util.List;
 
 @Tag(name = "Project", description = "프로젝트 워크스페이스 API")
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/api/projects")
 @RequiredArgsConstructor
 public class ProjectController {
 

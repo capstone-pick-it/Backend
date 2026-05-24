@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Peer Review", description = "팀플 종료 평가 API")
 @RestController
-@RequestMapping("/projects/{projectTeamId}/peer-reviews")
+@RequestMapping("/api/projects/{projectTeamId}/peer-reviews")
 @RequiredArgsConstructor
 public class PeerReviewController {
 
