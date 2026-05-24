@@ -57,7 +57,7 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
         JOIN FETCH tr.sender
         JOIN FETCH tr.receiver
         WHERE tr.chatRoom.id = :chatRoomId
-        ORDER BY tr.createdAt DESC
+        ORDER BY tr.createdAt DESC, tr.id DESC
     """)
     List<TeamRequest> findLatestByChatRoomId(
             @Param("chatRoomId") Long chatRoomId,
