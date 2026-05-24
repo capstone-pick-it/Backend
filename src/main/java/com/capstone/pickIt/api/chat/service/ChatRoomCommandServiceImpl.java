@@ -36,6 +36,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.capstone.pickIt.domain.point.policy.PointPolicy.PROJECT_REQUIRED_POINT;
@@ -131,7 +132,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         User sender = currentChatPart.getUser();
         User receiver = receiverChatPart.getUser();
 
-        Course course = courseRepository.findById(request.courseId())
+        Course course = courseRepository.findByIdForUpdate(request.courseId())
                 .orElseThrow(() -> new ChatException(ChatErrorCode.COURSE_NOT_FOUND));
 
         boolean isCommonCourse = userCourseRepository.existsCommonCourse(
@@ -144,6 +145,11 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             throw new ChatException(ChatErrorCode.NOT_COMMON_COURSE);
         }
 
+        // 동일 과목 활성 팀(RECRUITING, IN_PROGRESS) 중복 참여 방지 검증
+        validateNotJoinedActiveTeam(course.getId(), sender.getId());
+        validateNotJoinedActiveTeam(course.getId(), receiver.getId());
+
+        // 같은 과목에 대해 sender가 보낸 PENDING 팀 요청 존재 여부 검증
         boolean existsPendingForCourse =
                 teamRequestRepository.existsBySenderIdAndCourseIdAndTeamRequestStatus(
                         sender.getId(),
@@ -155,6 +161,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             throw new ChatException(ChatErrorCode.PENDING_REQUEST_EXISTS_FOR_COURSE);
         }
 
+        // 같은 receiver에게 보낸 PENDING 팀 요청 존재 여부 검증
         boolean existsPendingForReceiver =
                 teamRequestRepository.existsBySenderIdAndReceiverIdAndTeamRequestStatus(
                         sender.getId(),
@@ -166,6 +173,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             throw new ChatException(ChatErrorCode.PENDING_REQUEST_EXISTS_FOR_RECEIVER);
         }
 
+        // 프로젝트 참여 가능 포인트 보유 여부 검증
         PointResponseDTO point = pointService.refreshAndGetPoint(currentUserId);
 
         if (point.balance() < PROJECT_REQUIRED_POINT) {
@@ -217,9 +225,15 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
             throw new ChatException(ChatErrorCode.TEAM_REQUEST_NOT_PENDING);
         }
 
-        Course course = teamRequest.getCourse();
+        Course course = courseRepository.findByIdForUpdate(teamRequest.getCourse().getId())
+                .orElseThrow(() -> new ChatException(ChatErrorCode.COURSE_NOT_FOUND));
+
         User sender = teamRequest.getSender();
         User receiver = teamRequest.getReceiver();
+
+        // 동일 과목 활성 팀(RECRUITING, IN_PROGRESS) 중복 참여 방지 검증
+        validateNotJoinedActiveTeam(course.getId(), sender.getId());
+        validateNotJoinedActiveTeam(course.getId(), receiver.getId());
 
         ProjectTeam projectTeam = projectTeamRepository
                 .findRecruitingTeamByCourseAndMember(
@@ -262,6 +276,25 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         currentChatPart.restore();
 
         return ChatRoomConverter.toCreateOrEnterResponse(chatRoom, targetUser, isNew);
+    }
+
+    private void validateNotJoinedActiveTeam(
+            Long courseId,
+            Long userId
+    ) {
+        boolean existsActiveTeam = projectTeamMemberRepository
+                .existsActiveTeamByCourseAndUser(
+                        courseId,
+                        userId,
+                        List.of(
+                                ProjectTeamStatus.RECRUITING,
+                                ProjectTeamStatus.IN_PROGRESS
+                        )
+                );
+
+        if (existsActiveTeam) {
+            throw new ChatException(ChatErrorCode.ALREADY_JOINED_ACTIVE_TEAM);
+        }
     }
 
     private void addPendingTeamMemberIfNotExists(
