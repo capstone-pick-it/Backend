@@ -63,19 +63,19 @@ public class ProjectController {
                                       "result": [
                                         {
                                           "projectId": 1,
-                                          "projectName": "PickIT",
+                                          "projectName": "캡스톤디자인",
                                           "courseName": "캡스톤디자인",
-                                          "memberCount": 4,
                                           "currentMembers": 4,
-                                          "projectStatus": "IN_PROGRESS"
+                                          "projectStatus": "IN_PROGRESS",
+                                          "memberNames": ["김철수", "이영희", "박민준", "최수진"]
                                         },
                                         {
                                           "projectId": 2,
-                                          "projectName": "CloudMate",
+                                          "projectName": "클라우드컴퓨팅",
                                           "courseName": "클라우드컴퓨팅",
-                                          "memberCount": 5,
                                           "currentMembers": 3,
-                                          "projectStatus": "RECRUITING"
+                                          "projectStatus": "RECRUITING",
+                                          "memberNames": ["홍길동", "김영수", "이지은"]
                                         }
                                       ]
                                     }

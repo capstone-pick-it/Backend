@@ -47,13 +47,11 @@ public class ProjectConverter {
         String projectName = projectTeam.getName() != null
                 ? projectTeam.getName()
                 : projectTeam.getCourse().getCourseName();
-        int memberCount = memberNames.size();
         return new ProjectListItemResponseDTO(
                 projectTeam.getId(),
                 projectName,
                 projectTeam.getCourse().getCourseName(),
-                memberCount,
-                memberCount,
+                memberNames.size(),
                 projectTeam.getStatus(),
                 memberNames
         );

@@ -8,7 +8,6 @@ public record ProjectListItemResponseDTO(
         Long projectId,
         String projectName,
         String courseName,
-        int memberCount,
         int currentMembers,
         ProjectTeamStatus projectStatus,
         List<String> memberNames
