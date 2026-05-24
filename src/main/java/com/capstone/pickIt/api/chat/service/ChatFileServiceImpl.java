@@ -42,9 +42,11 @@ public class ChatFileServiceImpl implements ChatFileService {
             return new FileResponseDTO.UploadResponse(uploadedFiles);
 
         } catch (Exception e) {
-            uploadedObjectNames.forEach(objectName ->
-                    storage.delete(bucketName, objectName)
-            );
+            uploadedObjectNames.forEach(objectName -> {
+                try {
+                    storage.delete(bucketName, objectName);
+                } catch (Exception ignored) {}
+            });
 
             throw new ChatException(ChatErrorCode.FILE_UPLOAD_FAILED);
         }
