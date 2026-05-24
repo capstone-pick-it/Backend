@@ -44,16 +44,13 @@ public class ChatFileServiceImpl implements ChatFileService {
 
             return new FileResponseDTO.UploadResponse(uploadedFiles);
 
+        } catch (ChatException e) {
+            rollbackUploadedFiles(uploadedObjectNames);
+            throw e;
+
         } catch (Exception e) {
             log.error("GCS 파일 업로드 실패", e);
-
-            uploadedObjectNames.forEach(objectName -> {
-                try {
-                    storage.delete(bucketName, objectName);
-                } catch (Exception ignored) {
-                }
-            });
-
+            rollbackUploadedFiles(uploadedObjectNames);
             throw new ChatException(ChatErrorCode.FILE_UPLOAD_FAILED);
         }
     }
@@ -112,5 +109,15 @@ public class ChatFileServiceImpl implements ChatFileService {
                 + bucketName
                 + "/"
                 + storedFileName;
+    }
+
+    private void rollbackUploadedFiles(List<String> uploadedObjectNames) {
+        uploadedObjectNames.forEach(objectName -> {
+            try {
+                storage.delete(bucketName, objectName);
+            } catch (Exception cleanupEx) {
+                log.warn("업로드 롤백 삭제 실패: objectName={}", objectName, cleanupEx);
+            }
+        });
     }
 }
