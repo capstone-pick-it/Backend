@@ -146,7 +146,7 @@ public class PointServiceImpl implements PointService {
             String description
     ) {
         PointTransaction transaction = PointTransaction.builder()
-                .user(findUser(userId))
+                .user(point.getUser())
                 .transactionType(transactionType)
                 .amount(amount)
                 .balanceAfter(point.getBalance())
@@ -190,7 +190,7 @@ public class PointServiceImpl implements PointService {
             long elapsedWeeks
     ) {
         PointTransaction transaction = PointTransaction.builder()
-                .user(findUser(userId))
+                .user(point.getUser())
                 .transactionType(PointTransactionType.WEEKLY_RECOVERY)
                 .amount(recoveredPoint)
                 .balanceAfter(point.getBalance())
@@ -213,11 +213,6 @@ public class PointServiceImpl implements PointService {
     private Point findPointForUpdate(Long userId) {
         return pointRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new PointException(PointErrorCode.POINT_NOT_FOUND));
-    }
-
-    private User findUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new PointException(PointErrorCode.USER_NOT_FOUND));
     }
 
     private record RecoveryResult(
