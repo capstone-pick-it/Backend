@@ -90,13 +90,32 @@ public class ChatFileServiceImpl implements ChatFileService {
      */
     @Override
     public String createSignedUrl(String objectName) {
-        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, objectName).build();
 
-        return storage.signUrl(
-                blobInfo,
-                24, // 유효시간: 24시간
-                TimeUnit.HOURS
-        ).toString();
+        if (objectName == null || objectName.isBlank()) {
+            throw new ChatException(ChatErrorCode.INVALID_FILE_URL);
+        }
+
+        try {
+            BlobInfo blobInfo =
+                    BlobInfo.newBuilder(bucketName, objectName).build();
+
+            return storage.signUrl(
+                    blobInfo,
+                    24, // 유효시간: 24시간
+                    TimeUnit.HOURS
+            ).toString();
+
+        } catch (Exception e) {
+            log.error(
+                    "Signed URL 생성 실패: objectName={}",
+                    objectName,
+                    e
+            );
+
+            throw new ChatException(
+                    ChatErrorCode.FILE_URL_GENERATION_FAILED
+            );
+        }
     }
 
     private FileResponseDTO.FileInfo uploadSingleFile(
