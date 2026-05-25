@@ -125,7 +125,14 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
                 chatRoom.addParticipant(member.getUser())
         );
 
-        return chatRoomRepository.saveAndFlush(chatRoom);
+        try {
+            return chatRoomRepository.saveAndFlush(chatRoom);
+
+        } catch (DataIntegrityViolationException e) {
+            throw new ChatException(
+                    ChatErrorCode.GROUP_CHAT_ROOM_ALREADY_EXISTS
+            );
+        }
     }
 
     @Override
