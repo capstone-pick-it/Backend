@@ -70,6 +70,15 @@ public class PointServiceImpl implements PointService {
         );
     }
 
+    /**
+     * 사용자에게 포인트를 적립합니다.
+     *
+     * `@param` userId 포인트를 적립할 사용자 ID
+     * `@param` amount 적립할 포인트 금액 (1 이상)
+     * `@param` transactionType 거래 유형
+     * `@param` description 거래 설명
+     * `@throws` PointException amount가 0 이하인 경우
+     */
     @Override
     @Transactional
     public void earnPoint(
@@ -92,6 +101,15 @@ public class PointServiceImpl implements PointService {
         );
     }
 
+    /**
+     * 사용자의 포인트를 차감합니다. 서비스 정책상 잔액은 음수가 될 수 있습니다.
+     *
+     * `@param` userId 포인트를 차감할 사용자 ID
+     * `@param` amount 차감할 포인트 금액 (1 이상)
+     * `@param` transactionType 거래 유형
+     * `@param` description 거래 설명
+     * `@throws` PointException amount가 0 이하인 경우
+     */
     @Override
     @Transactional
     public void usePoint(
