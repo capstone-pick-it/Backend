@@ -79,6 +79,21 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT400_14",
             "이미 나간 채팅방입니다."
     ),
+    FILE_COUNT_EXCEEDED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_15",
+            "파일은 최대 5개까지 업로드할 수 있습니다."
+    ),
+    INVALID_FILE_TYPE(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_16",
+            "지원하지 않는 파일 형식입니다."
+    ),
+    FILE_SIZE_EXCEEDED(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_17",
+            "파일 크기는 20MB를 초과할 수 없습니다."
+    ),
     NOT_CHAT_ROOM_PARTICIPANT(
             HttpStatus.FORBIDDEN,
             "CHAT403_1",
@@ -153,6 +168,11 @@ public enum ChatErrorCode implements BaseCode {
             HttpStatus.CONFLICT,
             "CHAT409_5",
             "이미 해당 과목의 모집 중이거나 진행 중인 팀에 참여 중입니다."
+    ),
+    FILE_UPLOAD_FAILED(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "CHAT500_1",
+            "파일 업로드에 실패했습니다."
     );
 
     private final HttpStatus httpStatus;

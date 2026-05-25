@@ -10,6 +10,7 @@ import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.domain.chat.exception.ChatException;
 import com.capstone.pickIt.domain.chat.repository.ChatPartRepository;
 import com.capstone.pickIt.domain.chat.repository.ChatRoomRepository;
+import com.capstone.pickIt.domain.chat.repository.MessageFileRepository;
 import com.capstone.pickIt.domain.chat.repository.MessageRepository;
 import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
@@ -40,6 +41,7 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
     private final UserCourseProfileRepository userCourseProfileRepository;
     private final TeamRequestRepository teamRequestRepository;
     private final MessageRepository messageRepository;
+    private final MessageFileRepository messageFileRepository;
 
     @Override
     public CommonCourseResponseDTO.CommonCourseList getCommonCourses(
@@ -256,13 +258,21 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                         ChatPartRepository.UnreadMemberCountProjection::getUnreadMemberCount
                 ));
 
+        Map<Long, List<MessageFile>> fileMap = messageFileRepository
+                .findByMessageIdIn(messageIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        messageFile -> messageFile.getMessage().getId()
+                ));
+
         List<ChatMessageResponseDTO.MessageSummary> messageSummaries =
                 messages.stream()
                         .map(message ->
                                 ChatMessageConverter.toMessageSummary(
                                         message,
                                         currentUserId,
-                                        unreadCountMap
+                                        unreadCountMap,
+                                        fileMap
                                 )
                         )
                         .toList();
@@ -358,11 +368,17 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
     }
 
     private String getLastMessageContent(ChatRoom chatRoom) {
-        if (chatRoom.getLastMessage() == null) {
+        Message lastMessage = chatRoom.getLastMessage();
+
+        if (lastMessage == null) {
             return null;
         }
 
-        return chatRoom.getLastMessage().getContent();
+        if (lastMessage.getMessageType() == MessageType.FILE) {
+            return "파일을 보냈습니다.";
+        }
+
+        return lastMessage.getContent();
     }
 
     private ChatRoomResponseDTO.Opponent getOpponentOrNull(

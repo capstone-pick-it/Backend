@@ -48,6 +48,11 @@ public enum ChatSuccessCode implements BaseCode {
             HttpStatus.OK,
             "CHAT200_8",
             "메시지 읽음 처리에 성공했습니다."
+    ),
+    CHAT_FILES_UPLOADED(
+            HttpStatus.OK,
+            "CHAT_FILES_UPLOADED",
+            "채팅 파일 업로드에 성공했습니다."
     );
 
     private final HttpStatus httpStatus;
