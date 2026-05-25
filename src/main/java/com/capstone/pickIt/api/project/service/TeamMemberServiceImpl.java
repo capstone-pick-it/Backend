@@ -1,7 +1,9 @@
 package com.capstone.pickIt.api.project.service;
 
+import com.capstone.pickIt.api.chat.service.ChatRoomCommandService;
 import com.capstone.pickIt.api.project.dto.response.ConfirmResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.TeamLeaveRequestResponseDTO;
+import com.capstone.pickIt.domain.chat.entity.ChatRoom;
 import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
 import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
 import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
@@ -31,6 +33,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     private final TeamLeaveApprovalRepository teamLeaveApprovalRepository;
     private final UserCourseProfileRepository userCourseProfileRepository;
     private final UserRepository userRepository;
+    private final ChatRoomCommandService chatRoomCommandService;
 
 
      // 팀원 확정
@@ -75,6 +78,9 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         if (allConfirmed) {
             // 팀 IN_PROGRESS 전환
             team.start();
+
+            // 단체 채팅방 생성
+            chatRoomCommandService.createGroupChatRoom(team);
 
             // 모든 팀원 카드 RECRUITMENT_COMPLETED 처리
             Long courseId = team.getCourse().getId();
