@@ -3,7 +3,9 @@ package com.capstone.pickIt.api.course.controller;
 import com.capstone.pickIt.api.course.dto.request.ProfileCreateRequestDTO;
 import com.capstone.pickIt.api.course.dto.request.ProfileStatusUpdateRequestDTO;
 import com.capstone.pickIt.api.course.dto.request.ProfileUpdateRequestDTO;
+import com.capstone.pickIt.api.course.dto.response.RecruitProfileResponseDTO;
 import com.capstone.pickIt.api.course.dto.response.UserCourseProfileResponseDTO;
+import com.capstone.pickIt.api.course.service.RecruitService;
 import com.capstone.pickIt.api.course.service.UserCourseProfileService;
 import com.capstone.pickIt.global.apiPayload.response.ApiResponse;
 import com.capstone.pickIt.global.apiPayload.response.SuccessCode;
@@ -23,6 +25,15 @@ import java.util.List;
 public class UserCourseProfileController {
 
     private final UserCourseProfileService userCourseProfileService;
+    private final RecruitService recruitService;
+
+    @Operation(summary = "모집 탭 카드 목록 조회 (성향 유사순)", description = "특정 과목의 모집 중인 카드를 내 성향과의 유사도 순으로 조회합니다.")
+    @GetMapping("/recruit")
+    public ApiResponse<List<RecruitProfileResponseDTO>> getRecruitProfiles(
+            @RequestParam Long courseId) {
+        Long userId = SecurityUtil.requireUserId();
+        return ApiResponse.onSuccess(SuccessCode.OK, recruitService.getRecruitProfiles(userId, courseId));
+    }
 
     @Operation(summary = "모집 프로필 목록 조회", description = "로그인한 사용자의 모집 프로필 목록을 조회합니다.")
     @GetMapping
