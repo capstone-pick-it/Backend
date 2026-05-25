@@ -11,4 +11,6 @@ public interface ChatFileService {
             Long currentUserId,
             List<MultipartFile> files
     );
+
+    String createSignedUrl(String objectName);
 }

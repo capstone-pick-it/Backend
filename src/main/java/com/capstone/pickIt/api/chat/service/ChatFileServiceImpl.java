@@ -7,6 +7,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -24,6 +26,7 @@ public class ChatFileServiceImpl implements ChatFileService {
 
     private static final long MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
     private static final int MAX_FILE_COUNT = 5;
+    private static final Tika tika = new Tika();
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             // images
             "image/png",
@@ -80,13 +83,28 @@ public class ChatFileServiceImpl implements ChatFileService {
         }
     }
 
+    /**
+     * < 채팅방 메시지 목록 조회 시 사용 >
+     * GCS objectName을 일정 시간 동안 접근 가능한 Signed URL로 변환함
+     * 현재 MessageFile.fileUrl 컬럼에는 실제 URL이 아니라 objectName이 저장됨
+     */
+    @Override
+    public String createSignedUrl(String objectName) {
+        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, objectName).build();
+
+        return storage.signUrl(
+                blobInfo,
+                24, // 유효시간: 24시간
+                TimeUnit.HOURS
+        ).toString();
+    }
+
     private FileResponseDTO.FileInfo uploadSingleFile(
             Long currentUserId,
             MultipartFile file,
             List<String> uploadedObjectNames
     ) {
-        validateFile(file);
-
+        String detectedContentType = validateFile(file);
         String originalFileName = file.getOriginalFilename();
         String extension = getExtension(originalFileName);
         String storedFileName = "chat/" + currentUserId + "/" + UUID.randomUUID() + extension;
@@ -96,7 +114,7 @@ public class ChatFileServiceImpl implements ChatFileService {
                             bucketName,
                             storedFileName
                     )
-                    .setContentType(file.getContentType())
+                    .setContentType(detectedContentType)
                     .build();
 
             storage.create(
@@ -109,9 +127,9 @@ public class ChatFileServiceImpl implements ChatFileService {
 
             return new FileResponseDTO.FileInfo(
                     originalFileName,
-                    getFileUrl(storedFileName),
+                    storedFileName,
                     file.getSize(),
-                    file.getContentType()
+                    detectedContentType
             );
 
         } catch (IOException e) {
@@ -119,7 +137,7 @@ public class ChatFileServiceImpl implements ChatFileService {
         }
     }
 
-    private void validateFile(MultipartFile file) {
+    private String validateFile(MultipartFile file) {
         if (file.isEmpty()) {
             throw new ChatException(ChatErrorCode.MESSAGE_FILE_REQUIRED);
         }
@@ -128,8 +146,17 @@ public class ChatFileServiceImpl implements ChatFileService {
             throw new ChatException(ChatErrorCode.FILE_SIZE_EXCEEDED);
         }
 
-        if (!ALLOWED_CONTENT_TYPES.contains(file.getContentType())) {
-            throw new ChatException(ChatErrorCode.INVALID_FILE_TYPE);
+        try {
+            String detectedContentType = tika.detect(file.getInputStream());
+
+            if (!ALLOWED_CONTENT_TYPES.contains(detectedContentType)) {
+                throw new ChatException(ChatErrorCode.INVALID_FILE_TYPE);
+            }
+
+            return detectedContentType;
+
+        } catch (IOException e) {
+            throw new ChatException(ChatErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
@@ -139,13 +166,6 @@ public class ChatFileServiceImpl implements ChatFileService {
         }
 
         return fileName.substring(fileName.lastIndexOf("."));
-    }
-
-    private String getFileUrl(String storedFileName) {
-        return "https://storage.googleapis.com/"
-                + bucketName
-                + "/"
-                + storedFileName;
     }
 
     private void rollbackUploadedFiles(List<String> uploadedObjectNames) {
