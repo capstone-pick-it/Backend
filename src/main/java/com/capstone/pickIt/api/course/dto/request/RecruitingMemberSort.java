@@ -1,5 +1,7 @@
 package com.capstone.pickIt.api.course.dto.request;
 
+import java.util.Locale;
+
 public enum RecruitingMemberSort {
     TRAIT_SIMILARITY_DESC,
     IMPORTANCE_DESC,
@@ -12,7 +14,7 @@ public enum RecruitingMemberSort {
         }
 
         try {
-            return RecruitingMemberSort.valueOf(value.trim().toUpperCase());
+            return RecruitingMemberSort.valueOf(value.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             return TRAIT_SIMILARITY_DESC;
         }
