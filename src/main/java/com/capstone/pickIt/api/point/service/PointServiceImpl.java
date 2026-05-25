@@ -70,6 +70,74 @@ public class PointServiceImpl implements PointService {
         );
     }
 
+    @Override
+    @Transactional
+    public void earnPoint(
+            Long userId,
+            int amount,
+            PointTransactionType transactionType,
+            String description
+    ) {
+        validatePointAmount(amount);
+
+        Point point = findPointForUpdate(userId);
+        point.add(amount);
+
+        savePointTransaction(
+                userId,
+                point,
+                transactionType,
+                amount,
+                description
+        );
+    }
+
+    @Override
+    @Transactional
+    public void usePoint(
+            Long userId,
+            int amount,
+            PointTransactionType transactionType,
+            String description
+    ) {
+        validatePointAmount(amount);
+
+        Point point = findPointForUpdate(userId);
+        point.subtract(amount);
+
+        savePointTransaction(
+                userId,
+                point,
+                transactionType,
+                amount * -1,
+                description
+        );
+    }
+
+    private void validatePointAmount(int amount) {
+        if (amount <= 0) {
+            throw new PointException(PointErrorCode.INVALID_POINT_AMOUNT);
+        }
+    }
+
+    private void savePointTransaction(
+            Long userId,
+            Point point,
+            PointTransactionType transactionType,
+            int amount,
+            String description
+    ) {
+        PointTransaction transaction = PointTransaction.builder()
+                .user(findUser(userId))
+                .transactionType(transactionType)
+                .amount(amount)
+                .balanceAfter(point.getBalance())
+                .description(description)
+                .build();
+
+        pointTransactionRepository.save(transaction);
+    }
+
     private RecoveryResult calculateRecovery(Point point, LocalDateTime lastRecoveredAt) {
         if (point.getBalance() >= PROJECT_REQUIRED_POINT) {
             return new RecoveryResult(0, 0);
