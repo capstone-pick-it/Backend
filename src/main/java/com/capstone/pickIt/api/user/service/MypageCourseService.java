@@ -19,6 +19,8 @@ import com.capstone.pickIt.domain.trait.entity.TraitItem;
 import com.capstone.pickIt.domain.trait.exception.TraitErrorCode;
 import com.capstone.pickIt.domain.trait.exception.TraitException;
 import com.capstone.pickIt.domain.trait.repository.TraitItemRepository;
+import com.capstone.pickIt.domain.project.entity.ProjectTeamStatus;
+import com.capstone.pickIt.domain.project.repository.ProjectTeamMemberRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import com.capstone.pickIt.global.apiPayload.response.ErrorCode;
@@ -39,6 +41,7 @@ public class MypageCourseService {
     private final CourseRepository courseRepository;
     private final TraitItemRepository traitItemRepository;
     private final UserRepository userRepository;
+    private final ProjectTeamMemberRepository projectTeamMemberRepository;
 
     @Transactional(readOnly = true)
     public List<CourseListResponseDTO> getCourseList(Long userId) {
@@ -91,6 +94,14 @@ public class MypageCourseService {
         UserCourseProfile profile = userCourseProfileRepository
                 .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
                 .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
+
+        boolean hasActiveTeam = projectTeamMemberRepository.existsActiveTeamByCourseAndUser(
+                courseId, userId,
+                List.of(ProjectTeamStatus.RECRUITING, ProjectTeamStatus.IN_PROGRESS)
+        );
+        if (hasActiveTeam) {
+            throw new ProfileException(ProfileErrorCode.COURSE_HAS_ACTIVE_TEAM);
+        }
 
         userCourseTraitRepository.deleteByUserCourseProfileId(profile.getId());
         userCourseRepository.deleteByUserIdAndCourseId(userId, courseId);

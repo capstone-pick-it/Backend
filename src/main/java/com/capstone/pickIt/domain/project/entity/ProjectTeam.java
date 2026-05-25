@@ -49,6 +49,9 @@ public class ProjectTeam extends BaseEntity {
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
 
+    @Column(name = "first_confirmed_at")
+    private LocalDateTime firstConfirmedAt;
+
     public void start() {
         if (this.status != ProjectTeamStatus.RECRUITING) {
             throw new IllegalStateException("Project team은 RECRUITING 상태에서만 시작 가능합니다.");
@@ -73,6 +76,19 @@ public class ProjectTeam extends BaseEntity {
         if (this.status == null) {
             this.status = ProjectTeamStatus.RECRUITING;
         }
+    }
+
+    /** 최초 확정 시각 기록 (한 번만 세팅) */
+    public void recordFirstConfirmedAt() {
+        if (this.firstConfirmedAt == null) {
+            this.firstConfirmedAt = LocalDateTime.now();
+        }
+    }
+
+    /** 최초 확정 후 48시간 초과 여부 */
+    public boolean isConfirmWindowExpired() {
+        if (this.firstConfirmedAt == null) return false;
+        return LocalDateTime.now().isAfter(this.firstConfirmedAt.plusHours(48));
     }
 
     public static ProjectTeam createRecruitingTeam(Course course) {

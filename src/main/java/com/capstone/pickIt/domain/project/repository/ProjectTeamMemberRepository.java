@@ -8,10 +8,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMember, Long> {
 
     List<ProjectTeamMember> findByProjectTeam_Id(Long projectTeamId);
+
+    Optional<ProjectTeamMember> findByProjectTeamIdAndUserIdAndLeftAtIsNull(Long projectTeamId, Long userId);
+
+    List<ProjectTeamMember> findAllByProjectTeamIdAndLeftAtIsNull(Long projectTeamId);
 
     boolean existsByProjectTeamIdAndUserId(Long projectTeamId, Long userId);
 
@@ -22,6 +27,7 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
         WHERE pt.course.id = :courseId
         AND ptm.user.id = :userId
         AND ptm.leftAt IS NULL
+        AND ptm.recruitmentConfirmStatus = com.capstone.pickIt.domain.project.entity.RecruitmentConfirmStatus.CONFIRMED
         AND pt.status IN :statuses
     """)
     boolean existsActiveTeamByCourseAndUser(
