@@ -30,6 +30,4 @@ public interface PointRepository extends JpaRepository<Point, Long> {
     void deleteAllByUserIdIn(@Param("userIds") List<Long> userIds);
 
     List<Point> findAllByUserIdIn(List<Long> userIds);
-
-    boolean existsByUserId(Long userId);
 }
