@@ -10,7 +10,8 @@ public class ChatRoomEventResponseDTO {
             Long chatRoomId,
             String chatType,
             MessagePayload message,
-            TeamRequestPayload teamRequest
+            TeamRequestPayload teamRequest,
+            TeamLeaveRequestPayload teamLeaveRequest
     ) {
     }
 
@@ -47,6 +48,16 @@ public class ChatRoomEventResponseDTO {
             String status,
             LocalDateTime createdAt,
             LocalDateTime respondedAt
+    ) {
+    }
+
+    public record TeamLeaveRequestPayload(
+            Long teamLeaveRequestId,
+            Long projectTeamId,
+            Long requesterId,
+            String requesterNickname,
+            String status,
+            LocalDateTime createdAt
     ) {
     }
 }

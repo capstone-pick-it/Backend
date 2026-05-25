@@ -1,7 +1,10 @@
 package com.capstone.pickIt.api.project.service;
 
+import com.capstone.pickIt.api.chat.converter.ChatRoomEventConverter;
+import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
 import com.capstone.pickIt.api.project.dto.response.ConfirmResponseDTO;
 import com.capstone.pickIt.api.project.dto.response.TeamLeaveRequestResponseDTO;
+import com.capstone.pickIt.domain.chat.repository.ChatRoomRepository;
 import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
 import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
 import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
@@ -15,6 +18,7 @@ import com.capstone.pickIt.domain.user.exception.UserException;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import com.capstone.pickIt.global.config.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +35,8 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     private final TeamLeaveApprovalRepository teamLeaveApprovalRepository;
     private final UserCourseProfileRepository userCourseProfileRepository;
     private final UserRepository userRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
 
      // 팀원 확정
@@ -153,7 +159,18 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         TeamLeaveRequest leaveRequest = TeamLeaveRequest.create(team, user);
         teamLeaveRequestRepository.save(leaveRequest);
 
-        // 팀원들한테 나가기 요청 알림 해야함.
+        // GROUP 채팅방으로 나가기 요청 알림 발송 (채팅방 없으면 무시)
+        chatRoomRepository.findGroupChatRoomByProjectTeamId(projectTeamId)
+                .ifPresent(chatRoom -> eventPublisher.publishEvent(
+                        new ChatRoomBroadcastEvent(
+                                chatRoom.getId(),
+                                ChatRoomEventConverter.toTeamLeaveRequestCreatedEvent(
+                                        chatRoom.getId(),
+                                        chatRoom.getChatType().name(),
+                                        leaveRequest
+                                )
+                        )
+                ));
 
         return TeamLeaveRequestResponseDTO.builder()
                 .teamLeaveRequestId(leaveRequest.getId())

@@ -44,6 +44,7 @@ public class ChatRoomEventConverter {
                         message.getCreatedAt(),
                         unreadMemberCount
                 ),
+                null,
                 null
         );
     }
@@ -63,7 +64,8 @@ public class ChatRoomEventConverter {
                         teamRequest.getTeamRequestStatus().name(),
                         teamRequest.getCreatedAt(),
                         null
-                )
+                ),
+                null
         );
     }
 
@@ -82,7 +84,8 @@ public class ChatRoomEventConverter {
                         teamRequest.getTeamRequestStatus().name(),
                         teamRequest.getCreatedAt(),
                         teamRequest.getRespondedAt()
-                )
+                ),
+                null
         );
     }
 
@@ -101,6 +104,29 @@ public class ChatRoomEventConverter {
                         teamRequest.getTeamRequestStatus().name(),
                         teamRequest.getCreatedAt(),
                         teamRequest.getRespondedAt()
+                ),
+                null
+        );
+    }
+
+    public static ChatRoomEventResponseDTO.ChatRoomEvent toTeamLeaveRequestCreatedEvent(
+            Long chatRoomId,
+            String chatType,
+            com.capstone.pickIt.domain.project.entity.TeamLeaveRequest leaveRequest
+    ) {
+        return new ChatRoomEventResponseDTO.ChatRoomEvent(
+                ChatEventType.TEAM_LEAVE_REQUEST_CREATED.name(),
+                chatRoomId,
+                chatType,
+                null,
+                null,
+                new ChatRoomEventResponseDTO.TeamLeaveRequestPayload(
+                        leaveRequest.getId(),
+                        leaveRequest.getProjectTeam().getId(),
+                        leaveRequest.getRequester().getId(),
+                        leaveRequest.getRequester().getNickname(),
+                        leaveRequest.getStatus().name(),
+                        leaveRequest.getCreatedAt()
                 )
         );
     }
