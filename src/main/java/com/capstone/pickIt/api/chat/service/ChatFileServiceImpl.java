@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -85,7 +86,7 @@ public class ChatFileServiceImpl implements ChatFileService {
 
     /**
      * < 채팅방 메시지 목록 조회 시 사용 >
-     * GCS objectName을 일정 시간 동안 접근 가능한 Signed URL로 변환함
+     * GCS objectName을 24시간 동안 접근 가능한 Signed URL로 변환함
      * 현재 MessageFile.fileUrl 컬럼에는 실제 URL이 아니라 objectName이 저장됨
      */
     @Override
@@ -165,8 +166,13 @@ public class ChatFileServiceImpl implements ChatFileService {
             throw new ChatException(ChatErrorCode.FILE_SIZE_EXCEEDED);
         }
 
-        try {
-            String detectedContentType = tika.detect(file.getInputStream());
+        try (
+                InputStream is = file.getInputStream()
+        ) {
+            String detectedContentType =
+                    file.getOriginalFilename() != null
+                            ? tika.detect(is, file.getOriginalFilename())
+                            : tika.detect(is);
 
             if (!ALLOWED_CONTENT_TYPES.contains(detectedContentType)) {
                 throw new ChatException(ChatErrorCode.INVALID_FILE_TYPE);
