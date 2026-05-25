@@ -22,6 +22,7 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
         WHERE pt.course.id = :courseId
         AND ptm.user.id = :userId
         AND ptm.leftAt IS NULL
+        AND ptm.recruitmentConfirmStatus = com.capstone.pickIt.domain.project.entity.RecruitmentConfirmStatus.CONFIRMED
         AND pt.status IN :statuses
     """)
     boolean existsActiveTeamByCourseAndUser(
