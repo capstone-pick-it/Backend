@@ -5,6 +5,9 @@ import com.capstone.pickIt.global.entity.CreatedUpdatedDeletedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(
         name = "user_course_profile",
@@ -41,6 +44,10 @@ public class UserCourseProfile extends CreatedUpdatedDeletedBaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "recruitment_status", nullable = false, length = 30)
     private RecruitmentStatus recruitmentStatus;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "userCourseProfile", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserCourseTrait> traits = new ArrayList<>();
 
     public void updateCourse(Course course) {
         this.course = course;
