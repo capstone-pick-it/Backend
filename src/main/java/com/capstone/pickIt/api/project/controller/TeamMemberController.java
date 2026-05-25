@@ -40,6 +40,13 @@ public class TeamMemberController {
         return ApiResponse.onSuccess(SuccessCode.CREATED, teamMemberService.requestLeave(projectTeamId));
     }
 
+    @Operation(summary = "나가기 요청 조회", description = "팀의 PENDING 나가기 요청을 조회합니다. 요청이 없으면 null을 반환합니다.")
+    @GetMapping("/{projectTeamId}/leave/request")
+    public ApiResponse<TeamLeaveRequestResponseDTO> getLeaveRequest(
+            @PathVariable Long projectTeamId) {
+        return ApiResponse.onSuccess(SuccessCode.OK, teamMemberService.getLeaveRequest(projectTeamId));
+    }
+
     @Operation(summary = "나가기 인정", description = "다른 팀원의 나가기 요청에 동의합니다. 전원 동의 시 해당 팀원이 팀을 나갑니다.")
     @PostMapping("/{projectTeamId}/leave/approve")
     public ApiResponse<Void> approveLeave(
