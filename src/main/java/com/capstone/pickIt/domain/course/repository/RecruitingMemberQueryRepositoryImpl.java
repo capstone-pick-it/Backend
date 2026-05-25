@@ -91,7 +91,10 @@ public class RecruitingMemberQueryRepositoryImpl implements RecruitingMemberQuer
                         point.balance,
                         matchScore.totalScore
                 )
-                .orderBy(orderSpecifier(sort, profile, member, matchScore))
+                .orderBy(
+                        orderSpecifier(sort, profile, member, matchScore),
+                        profile.id.desc()
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
