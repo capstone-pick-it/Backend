@@ -70,6 +70,92 @@ public class PointServiceImpl implements PointService {
         );
     }
 
+    /**
+     * 사용자에게 포인트를 적립합니다.
+     *
+     * `@param` userId 포인트를 적립할 사용자 ID
+     * `@param` amount 적립할 포인트 금액 (1 이상)
+     * `@param` transactionType 거래 유형
+     * `@param` description 거래 설명
+     * `@throws` PointException amount가 0 이하인 경우
+     */
+    @Override
+    @Transactional
+    public void earnPoint(
+            Long userId,
+            int amount,
+            PointTransactionType transactionType,
+            String description
+    ) {
+        validatePointAmount(amount);
+
+        Point point = findPointForUpdate(userId);
+        point.add(amount);
+
+        savePointTransaction(
+                userId,
+                point,
+                transactionType,
+                amount,
+                description
+        );
+    }
+
+    /**
+     * 사용자의 포인트를 차감합니다. 서비스 정책상 잔액은 음수가 될 수 있습니다.
+     *
+     * `@param` userId 포인트를 차감할 사용자 ID
+     * `@param` amount 차감할 포인트 금액 (1 이상)
+     * `@param` transactionType 거래 유형
+     * `@param` description 거래 설명
+     * `@throws` PointException amount가 0 이하인 경우
+     */
+    @Override
+    @Transactional
+    public void usePoint(
+            Long userId,
+            int amount,
+            PointTransactionType transactionType,
+            String description
+    ) {
+        validatePointAmount(amount);
+
+        Point point = findPointForUpdate(userId);
+        point.subtract(amount);
+
+        savePointTransaction(
+                userId,
+                point,
+                transactionType,
+                amount * -1,
+                description
+        );
+    }
+
+    private void validatePointAmount(int amount) {
+        if (amount <= 0) {
+            throw new PointException(PointErrorCode.INVALID_POINT_AMOUNT);
+        }
+    }
+
+    private void savePointTransaction(
+            Long userId,
+            Point point,
+            PointTransactionType transactionType,
+            int amount,
+            String description
+    ) {
+        PointTransaction transaction = PointTransaction.builder()
+                .user(point.getUser())
+                .transactionType(transactionType)
+                .amount(amount)
+                .balanceAfter(point.getBalance())
+                .description(description)
+                .build();
+
+        pointTransactionRepository.save(transaction);
+    }
+
     private RecoveryResult calculateRecovery(Point point, LocalDateTime lastRecoveredAt) {
         if (point.getBalance() >= PROJECT_REQUIRED_POINT) {
             return new RecoveryResult(0, 0);
@@ -104,7 +190,7 @@ public class PointServiceImpl implements PointService {
             long elapsedWeeks
     ) {
         PointTransaction transaction = PointTransaction.builder()
-                .user(findUser(userId))
+                .user(point.getUser())
                 .transactionType(PointTransactionType.WEEKLY_RECOVERY)
                 .amount(recoveredPoint)
                 .balanceAfter(point.getBalance())
@@ -127,11 +213,6 @@ public class PointServiceImpl implements PointService {
     private Point findPointForUpdate(Long userId) {
         return pointRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new PointException(PointErrorCode.POINT_NOT_FOUND));
-    }
-
-    private User findUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new PointException(PointErrorCode.USER_NOT_FOUND));
     }
 
     private record RecoveryResult(
