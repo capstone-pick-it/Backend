@@ -1,6 +1,8 @@
 package com.capstone.pickIt.api.chat.converter;
 
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
+import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
+import com.capstone.pickIt.domain.chat.exception.ChatException;
 import com.capstone.pickIt.domain.project.entity.TeamRequest;
 import com.capstone.pickIt.domain.project.entity.TeamRequestRole;
 
@@ -45,9 +47,17 @@ public class TeamRequestConverter {
             TeamRequest teamRequest,
             Long currentUserId
     ) {
-        TeamRequestRole role = teamRequest.getSender().getId().equals(currentUserId)
-                ? TeamRequestRole.SENDER
-                : TeamRequestRole.RECEIVER;
+        TeamRequestRole role;
+
+        if (teamRequest.getSender().getId().equals(currentUserId)) {
+            role = TeamRequestRole.SENDER;
+
+        } else if (teamRequest.getReceiver().getId().equals(currentUserId)) {
+            role = TeamRequestRole.RECEIVER;
+
+        } else {
+            throw new ChatException(ChatErrorCode.INVALID_TEAM_REQUEST_USER);
+        }
 
         return new TeamRequestResponseDTO.LatestStatus(
                 teamRequest.getId(),
