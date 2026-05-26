@@ -81,7 +81,8 @@ public class MypageCourseService {
                 .stream()
                 .collect(Collectors.toMap(
                         m -> m.getProjectTeam().getCourse().getId(),
-                        m -> m.getProjectTeam().getStatus()
+                        m -> m.getProjectTeam().getStatus(),
+                        (existing, replacement) -> existing
                 ));
     }
 
