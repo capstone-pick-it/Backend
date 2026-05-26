@@ -1,9 +1,11 @@
 package com.capstone.pickIt.domain.course.repository;
 
 import com.capstone.pickIt.domain.course.entity.Course;
+import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
 import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,4 +53,17 @@ public interface UserCourseProfileRepository extends JpaRepository<UserCoursePro
     List<UserCourseProfile> findAllByUserIdAndDeletedAtIsNull(Long userId);
 
     List<UserCourseProfile> findAllByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
+
+    @Query("""
+        SELECT ucp FROM UserCourseProfile ucp
+        WHERE ucp.course.id = :courseId
+          AND ucp.user.id != :excludeUserId
+          AND ucp.deletedAt IS NULL
+          AND ucp.recruitmentStatus IN :statuses
+        """)
+    List<UserCourseProfile> findProfilesExcludingUserByStatuses(
+            @Param("courseId") Long courseId,
+            @Param("excludeUserId") Long excludeUserId,
+            @Param("statuses") List<RecruitmentStatus> statuses
+    );
 }
