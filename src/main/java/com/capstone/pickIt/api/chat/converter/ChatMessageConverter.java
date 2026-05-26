@@ -2,6 +2,7 @@ package com.capstone.pickIt.api.chat.converter;
 
 import com.capstone.pickIt.api.chat.dto.response.ChatMessageResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
+import com.capstone.pickIt.api.chat.service.ChatFileService;
 import com.capstone.pickIt.domain.chat.entity.ChatPart;
 import com.capstone.pickIt.domain.chat.entity.ChatRoom;
 import com.capstone.pickIt.domain.chat.entity.Message;
@@ -40,7 +41,8 @@ public class ChatMessageConverter {
             Message message,
             Long currentUserId,
             Map<Long, Long> unreadCountMap,
-            Map<Long, List<MessageFile>> fileMap
+            Map<Long, List<MessageFile>> fileMap,
+            ChatFileService chatFileService
     ) {
         return new ChatMessageResponseDTO.MessageSummary(
                 message.getId(),
@@ -55,7 +57,7 @@ public class ChatMessageConverter {
                         .map(file -> new ChatMessageResponseDTO.FileInfo(
                                 file.getId(),
                                 file.getFileName(),
-                                file.getFileUrl(),
+                                chatFileService.createSignedUrl(file.getFileUrl()),
                                 file.getFileSize(),
                                 file.getContentType()
                         ))
