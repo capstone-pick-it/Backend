@@ -94,9 +94,14 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT400_17",
             "파일 크기는 20MB를 초과할 수 없습니다."
     ),
-    INVALID_FILE_URL(
+    GROUP_CHAT_ROOM_ALREADY_EXISTS(
             HttpStatus.BAD_REQUEST,
             "CHAT400_18",
+            "이미 단체 채팅방이 생성된 팀입니다."
+    ),
+    INVALID_FILE_URL(
+            HttpStatus.BAD_REQUEST,
+            "CHAT400_19",
             "유효하지 않은 파일 경로입니다."
     ),
     NOT_CHAT_ROOM_PARTICIPANT(

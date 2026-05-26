@@ -2,6 +2,7 @@ package com.capstone.pickIt.api.user.dto.response;
 
 import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
 import com.capstone.pickIt.domain.course.entity.UserCourseTrait;
+import com.capstone.pickIt.domain.project.entity.ProjectTeamStatus;
 import com.capstone.pickIt.domain.trait.entity.TraitSide;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +17,7 @@ public class CourseCardResponseDTO {
     private String courseName;
     private String semester;
     private String importance;
+    private ProjectTeamStatus projectStatus;
     private List<TraitInfo> traits;
 
     @Getter
@@ -38,12 +40,13 @@ public class CourseCardResponseDTO {
         }
     }
 
-    public static CourseCardResponseDTO from(UserCourseProfile profile, List<UserCourseTrait> traits) {
+    public static CourseCardResponseDTO from(UserCourseProfile profile, List<UserCourseTrait> traits, ProjectTeamStatus projectStatus) {
         return CourseCardResponseDTO.builder()
                 .courseId(profile.getCourse().getId())
                 .courseName(profile.getCourse().getCourseName())
                 .semester(profile.getCourse().getSemester())
                 .importance(profile.getImportanceLevel() != null ? profile.getImportanceLevel().name() : null)
+                .projectStatus(projectStatus)
                 .traits(traits.stream().map(TraitInfo::from).toList())
                 .build();
     }
