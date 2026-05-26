@@ -60,7 +60,7 @@ public class UserCourseProfileServiceImpl implements UserCourseProfileService {
         Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new ProfileException(ProfileErrorCode.COURSE_NOT_FOUND));
 
-        if (userCourseProfileRepository.existsByUserIdAndCourseId(userId, request.getCourseId())) {
+        if (userCourseProfileRepository.existsByUserIdAndCourseIdAndDeletedAtIsNull(userId, request.getCourseId())) {
             throw new ProfileException(ProfileErrorCode.PROFILE_ALREADY_EXISTS);
         }
 
