@@ -2,6 +2,7 @@ package com.capstone.pickIt.api.chat.converter;
 
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
 import com.capstone.pickIt.domain.project.entity.TeamRequest;
+import com.capstone.pickIt.domain.project.entity.TeamRequestRole;
 
 public class TeamRequestConverter {
 
@@ -36,6 +37,26 @@ public class TeamRequestConverter {
                 teamRequest.getId(),
                 teamRequest.getChatRoom().getId(),
                 teamRequest.getTeamRequestStatus().name(),
+                teamRequest.getRespondedAt()
+        );
+    }
+
+    public static TeamRequestResponseDTO.LatestStatus toLatestStatusResponse(
+            TeamRequest teamRequest,
+            Long currentUserId
+    ) {
+        TeamRequestRole role = teamRequest.getSender().getId().equals(currentUserId)
+                ? TeamRequestRole.SENDER
+                : TeamRequestRole.RECEIVER;
+
+        return new TeamRequestResponseDTO.LatestStatus(
+                teamRequest.getId(),
+                teamRequest.getChatRoom().getId(),
+                teamRequest.getCourse().getId(),
+                teamRequest.getCourse().getCourseName(),
+                teamRequest.getTeamRequestStatus(),
+                role,
+                teamRequest.getCreatedAt(),
                 teamRequest.getRespondedAt()
         );
     }

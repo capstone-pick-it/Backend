@@ -51,8 +51,13 @@ public enum ChatSuccessCode implements BaseCode {
     ),
     CHAT_FILES_UPLOADED(
             HttpStatus.OK,
-            "CHAT_FILES_UPLOADED",
+            "CHAT200_9",
             "채팅 파일 업로드에 성공했습니다."
+    ),
+    TEAM_REQUEST_STATUS_FETCHED(
+            HttpStatus.OK,
+            "CHAT200_10",
+            "팀원 요청 상태 조회에 성공했습니다."
     );
 
     private final HttpStatus httpStatus;

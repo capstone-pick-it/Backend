@@ -63,4 +63,18 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             @Param("chatRoomId") Long chatRoomId,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT tr
+        FROM TeamRequest tr
+        JOIN FETCH tr.sender
+        JOIN FETCH tr.receiver
+        JOIN FETCH tr.course
+        WHERE tr.chatRoom.id = :chatRoomId
+        ORDER BY tr.createdAt DESC, tr.id DESC
+    """)
+    List<TeamRequest> findLatestByChatRoomIdWithCourse(
+            @Param("chatRoomId") Long chatRoomId,
+            Pageable pageable
+    );
 }
