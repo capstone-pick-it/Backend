@@ -1,6 +1,7 @@
 package com.capstone.pickIt.api.course.service;
 
 import com.capstone.pickIt.api.course.dto.response.RecruitProfileResponseDTO;
+import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
 import com.capstone.pickIt.domain.course.entity.UserCourseTrait;
 import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
 import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,7 @@ public class RecruitServiceImpl implements RecruitService {
 
     // 모집 탭 카드 목록 조회 (성향 유사순 정렬)
     @Override
-    public List<RecruitProfileResponseDTO> getRecruitProfiles(Long userId, Long courseId) {
+    public List<RecruitProfileResponseDTO> getRecruitProfiles(Long userId, Long courseId, boolean includeCompleted) {
 
         // 1. 내 UserDefaultTrait 조회 -> Map<traitItemsId, selectedSide>
         List<UserDefaultTrait> myDefaultTraits = userDefaultTraitRepository.findByUserId(userId);
@@ -38,15 +40,24 @@ public class RecruitServiceImpl implements RecruitService {
                         UserDefaultTrait::getSelectedSide
                 ));
 
-        // 2. courseId로 RECRUITING 상태이고 내 카드 제외한 카드들 조회
+        // 2. 조회할 상태 목록 결정
+        // 미체크: RECRUITING + CONFIRM_PENDING
+        // 체크:   RECRUITING + CONFIRM_PENDING + RECRUITMENT_COMPLETED
+        List<RecruitmentStatus> statuses = new ArrayList<>(
+                List.of(RecruitmentStatus.RECRUITING, RecruitmentStatus.CONFIRM_PENDING));
+        if (includeCompleted) {
+            statuses.add(RecruitmentStatus.RECRUITMENT_COMPLETED);
+        }
+
+        // 3. courseId로 해당 상태이고 내 카드 제외한 카드들 조회
         List<UserCourseProfile> profiles =
-                userCourseProfileRepository.findRecruitingProfilesExcludingUser(courseId, userId);
+                userCourseProfileRepository.findProfilesExcludingUserByStatuses(courseId, userId, statuses);
 
         if (profiles.isEmpty()) {
             return List.of();
         }
 
-        // 3. 해당 카드들의 성향 정보를 한 번에 조회 (N+1 방지)
+        // 4. 해당 카드들의 성향 정보를 한 번에 조회 (N+1 방지)
         List<Long> profileIds = profiles.stream()
                 .map(UserCourseProfile::getId)
                 .toList();
@@ -58,7 +69,7 @@ public class RecruitServiceImpl implements RecruitService {
         Map<Long, List<UserCourseTrait>> traitsByProfileId = allTraits.stream()
                 .collect(Collectors.groupingBy(t -> t.getUserCourseProfile().getId()));
 
-        // 4. 각 카드마다 traitScore 계산 후 DTO 변환, score 높은 순 정렬
+        // 5. 각 카드마다 traitScore 계산 후 DTO 변환, score 높은 순 정렬
         return profiles.stream()
                 .map(profile -> {
                     List<UserCourseTrait> profileTraits =

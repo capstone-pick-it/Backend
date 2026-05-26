@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface RecruitService {
 
-    List<RecruitProfileResponseDTO> getRecruitProfiles(Long userId, Long courseId);
+    List<RecruitProfileResponseDTO> getRecruitProfiles(Long userId, Long courseId, boolean includeCompleted);
 }

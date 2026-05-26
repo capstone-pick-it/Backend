@@ -27,12 +27,16 @@ public class UserCourseProfileController {
     private final UserCourseProfileService userCourseProfileService;
     private final RecruitService recruitService;
 
-    @Operation(summary = "모집 탭 카드 목록 조회 (성향 유사순)", description = "특정 과목의 모집 중인 카드를 내 성향과의 유사도 순으로 조회합니다.")
+    @Operation(summary = "모집 탭 카드 목록 조회 (성향 유사순)",
+            description = "특정 과목의 모집 카드를 내 성향과의 유사도 순으로 조회합니다. " +
+                    "기본(미체크): 모집중 + 확정대기 카드 조회. " +
+                    "includeCompleted=true(체크): 모집완료 카드도 포함하여 조회.")
     @GetMapping("/recruit")
     public ApiResponse<List<RecruitProfileResponseDTO>> getRecruitProfiles(
-            @RequestParam Long courseId) {
+            @RequestParam Long courseId,
+            @RequestParam(defaultValue = "false") boolean includeCompleted) {
         Long userId = SecurityUtil.requireUserId();
-        return ApiResponse.onSuccess(SuccessCode.OK, recruitService.getRecruitProfiles(userId, courseId));
+        return ApiResponse.onSuccess(SuccessCode.OK, recruitService.getRecruitProfiles(userId, courseId, includeCompleted));
     }
 
     @Operation(summary = "모집 프로필 목록 조회", description = "로그인한 사용자의 모집 프로필 목록을 조회합니다.")
