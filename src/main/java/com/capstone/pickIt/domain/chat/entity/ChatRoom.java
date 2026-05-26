@@ -105,6 +105,18 @@ public class ChatRoom extends CreatedBaseEntity {
                 .build();
     }
 
+    public static ChatRoom createGroupRoom(ProjectTeam projectTeam) {
+        if (projectTeam == null) {
+            throw new IllegalArgumentException("projectTeam은 필수입니다.");
+        }
+
+        return ChatRoom.builder()
+                .chatType(ChatType.GROUP)
+                .roomName(projectTeam.getCourse().getCourseName())
+                .projectTeam(projectTeam)
+                .build();
+    }
+
     public void addParticipant(User user) {
         if (user == null) {
             throw new IllegalArgumentException("참여 사용자는 null일 수 없습니다.");

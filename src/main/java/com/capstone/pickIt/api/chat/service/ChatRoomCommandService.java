@@ -7,12 +7,18 @@ import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.DirectChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.request.DirectChatRoomCreateRequestDTO;
 import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
+import com.capstone.pickIt.domain.chat.entity.ChatRoom;
+import com.capstone.pickIt.domain.project.entity.ProjectTeam;
 
 public interface ChatRoomCommandService {
 
     DirectChatRoomResponseDTO.CreateOrEnter createOrEnterDirectChatRoom(
             Long currentUserId,
             DirectChatRoomCreateRequestDTO request
+    );
+
+    ChatRoom createGroupChatRoom(
+            ProjectTeam projectTeam
     );
 
     ChatRoomResponseDTO.LeaveResponse leaveChatRoom(
