@@ -16,11 +16,19 @@ import org.springframework.context.annotation.Configuration;
 )
 public class SpringDocQuerydslDisableConfig implements BeanDefinitionRegistryPostProcessor {
 
+    private static final String SPRINGDOC_QUERYDSL_CUSTOMIZER_BEAN_NAME =
+            "queryDslQuerydslPredicateOperationCustomizer";
+
     private static final String SPRINGDOC_QUERYDSL_CUSTOMIZER_CLASS_NAME =
             "org.springdoc.core.customizers.QuerydslPredicateOperationCustomizer";
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+        if (registry.containsBeanDefinition(SPRINGDOC_QUERYDSL_CUSTOMIZER_BEAN_NAME)) {
+            registry.removeBeanDefinition(SPRINGDOC_QUERYDSL_CUSTOMIZER_BEAN_NAME);
+            return;
+        }
+
         for (String beanName : registry.getBeanDefinitionNames()) {
             BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
             String beanClassName = beanDefinition.getBeanClassName();
