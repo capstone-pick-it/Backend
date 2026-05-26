@@ -20,6 +20,11 @@ public class MessageFile {
     @JoinColumn(name = "message_id", nullable = false)
     private Message message;
 
+    /**
+     * 현재 컬럼명은 file_url이지만, 비공개 GCS 버킷 접근을 위해
+     * 실제 공개 URL이 아니라 GCS objectName을 저장함
+     * (예: chat/{userId}/{uuid}.png)
+     */
     @Column(name = "file_url", nullable = false, length = 500)
     private String fileUrl;
 

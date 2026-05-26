@@ -72,6 +72,10 @@ dependencies {
     // Google Cloud Storage (파일 업로드)
     implementation 'com.google.cloud:google-cloud-storage:2.48.2'
 
+    // File type detection
+    implementation 'org.apache.tika:tika-core:3.2.0'
+    implementation 'org.apache.tika:tika-parsers-standard-package:3.2.0'
+
     // Test (표준)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

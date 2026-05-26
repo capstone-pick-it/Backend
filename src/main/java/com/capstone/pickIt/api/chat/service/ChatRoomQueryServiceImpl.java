@@ -42,6 +42,7 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
     private final TeamRequestRepository teamRequestRepository;
     private final MessageRepository messageRepository;
     private final MessageFileRepository messageFileRepository;
+    private final ChatFileService chatFileService;
 
     @Override
     public CommonCourseResponseDTO.CommonCourseList getCommonCourses(
@@ -272,7 +273,8 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                                         message,
                                         currentUserId,
                                         unreadCountMap,
-                                        fileMap
+                                        fileMap,
+                                        chatFileService
                                 )
                         )
                         .toList();
