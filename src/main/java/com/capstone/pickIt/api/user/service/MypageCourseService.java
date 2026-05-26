@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,24 +47,42 @@ public class MypageCourseService {
 
     @Transactional(readOnly = true)
     public List<CourseListResponseDTO> getCourseList(Long userId) {
+        Map<Long, ProjectTeamStatus> courseStatusMap = buildCourseStatusMap(userId);
+
         return userCourseProfileRepository
                 .findAllByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId)
                 .stream()
-                .map(CourseListResponseDTO::from)
+                .map(profile -> CourseListResponseDTO.from(
+                        profile,
+                        courseStatusMap.getOrDefault(profile.getCourse().getId(), ProjectTeamStatus.RECRUITING)
+                ))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<CourseCardResponseDTO> getCourseCards(Long userId) {
+        Map<Long, ProjectTeamStatus> courseStatusMap = buildCourseStatusMap(userId);
+
         List<UserCourseProfile> profiles = userCourseProfileRepository
                 .findAllByUserIdAndDeletedAtIsNull(userId);
 
         return profiles.stream()
                 .map(profile -> CourseCardResponseDTO.from(
                         profile,
-                        userCourseTraitRepository.findByUserCourseProfileId(profile.getId())
+                        userCourseTraitRepository.findByUserCourseProfileId(profile.getId()),
+                        courseStatusMap.getOrDefault(profile.getCourse().getId(), ProjectTeamStatus.RECRUITING)
                 ))
                 .toList();
+    }
+
+    private Map<Long, ProjectTeamStatus> buildCourseStatusMap(Long userId) {
+        return projectTeamMemberRepository
+                .findActiveConfirmedMembershipsWithTeamAndCourse(userId, null)
+                .stream()
+                .collect(Collectors.toMap(
+                        m -> m.getProjectTeam().getCourse().getId(),
+                        m -> m.getProjectTeam().getStatus()
+                ));
     }
 
     @Transactional
