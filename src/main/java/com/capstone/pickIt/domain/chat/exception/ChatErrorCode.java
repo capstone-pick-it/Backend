@@ -114,6 +114,11 @@ public enum ChatErrorCode implements BaseCode {
             "CHAT403_2",
             "해당 팀원 요청을 처리할 권한이 없습니다."
     ),
+    INVALID_TEAM_REQUEST_USER(
+            HttpStatus.FORBIDDEN,
+            "CHAT403_3",
+            "팀원 요청 대상 사용자가 아닙니다."
+    ),
     CURRENT_USER_NOT_FOUND(
             HttpStatus.NOT_FOUND,
             "CHAT404_1",

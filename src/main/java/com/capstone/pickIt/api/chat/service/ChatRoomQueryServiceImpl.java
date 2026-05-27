@@ -2,9 +2,11 @@ package com.capstone.pickIt.api.chat.service;
 
 import com.capstone.pickIt.api.chat.converter.ChatMessageConverter;
 import com.capstone.pickIt.api.chat.converter.CommonCourseConverter;
+import com.capstone.pickIt.api.chat.converter.TeamRequestConverter;
 import com.capstone.pickIt.api.chat.dto.response.ChatMessageResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.CommonCourseResponseDTO;
+import com.capstone.pickIt.api.chat.dto.response.TeamRequestResponseDTO;
 import com.capstone.pickIt.domain.chat.entity.*;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.domain.chat.exception.ChatException;
@@ -292,6 +294,37 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
                 nextCursor,
                 hasNext
         );
+    }
+
+    @Override
+    public TeamRequestResponseDTO.LatestStatus getLatestTeamRequestStatus(
+            Long currentUserId,
+            Long chatRoomId
+    ) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        if (chatRoom.getChatType() != ChatType.DIRECT) {
+            throw new ChatException(ChatErrorCode.ONLY_DIRECT_CHAT_CAN_REQUEST_TEAM);
+        }
+
+        ChatPart currentChatPart = chatPartRepository
+                .findByChatRoomIdAndUserId(chatRoomId, currentUserId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT));
+
+        if (currentChatPart.isDeleted()) {
+            throw new ChatException(ChatErrorCode.NOT_CHAT_ROOM_PARTICIPANT);
+        }
+
+        return teamRequestRepository
+                .findLatestByChatRoomIdWithCourse(chatRoomId, PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .map(teamRequest -> TeamRequestConverter.toLatestStatusResponse(
+                        teamRequest,
+                        currentUserId
+                ))
+                .orElse(null);
     }
 
     private void validateCursor(

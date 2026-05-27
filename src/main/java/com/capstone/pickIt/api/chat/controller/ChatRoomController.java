@@ -209,4 +209,23 @@ public class ChatRoomController {
                 result
         );
     }
+
+    @Operation(
+            summary = "팀원 요청 상태 조회",
+            description = "현재 채팅방의 최신 팀원 요청 상태를 조회합니다."
+    )
+    @GetMapping("/{chatRoomId}/team-requests/latest")
+    public ApiResponse<TeamRequestResponseDTO.LatestStatus> getLatestTeamRequestStatus(
+            @PathVariable Long chatRoomId
+    ) {
+        Long currentUserId = SecurityUtil.requireUserId();
+
+        return ApiResponse.onSuccess(
+                ChatSuccessCode.TEAM_REQUEST_STATUS_FETCHED,
+                chatRoomQueryService.getLatestTeamRequestStatus(
+                        currentUserId,
+                        chatRoomId
+                )
+        );
+    }
 }
