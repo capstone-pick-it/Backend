@@ -108,6 +108,34 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
     }
 
     @Override
+    public ChatRoom createGroupChatRoom(
+            ProjectTeam projectTeam
+    ) {
+        chatRoomRepository.findByProjectTeamId(projectTeam.getId())
+                .ifPresent(chatRoom -> {
+                    throw new ChatException(ChatErrorCode.GROUP_CHAT_ROOM_ALREADY_EXISTS);
+                });
+
+        List<ProjectTeamMember> members =
+                projectTeamMemberRepository.findAllByProjectTeamIdAndLeftAtIsNull(projectTeam.getId());
+
+        ChatRoom chatRoom = ChatRoom.createGroupRoom(projectTeam);
+
+        members.forEach(member ->
+                chatRoom.addParticipant(member.getUser())
+        );
+
+        try {
+            return chatRoomRepository.saveAndFlush(chatRoom);
+
+        } catch (DataIntegrityViolationException e) {
+            throw new ChatException(
+                    ChatErrorCode.GROUP_CHAT_ROOM_ALREADY_EXISTS
+            );
+        }
+    }
+
+    @Override
     public ChatRoomResponseDTO.LeaveResponse leaveChatRoom(
             Long currentUserId,
             Long chatRoomId

@@ -18,4 +18,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             Long minUserId,
             Long maxUserId
     );
+
+    Optional<ChatRoom> findByProjectTeamId(Long projectTeamId);
+
 }

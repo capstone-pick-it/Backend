@@ -69,3 +69,8 @@ app:
       https://www.pick-it.site,
       http://localhost:5173,
       http://localhost:3000
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace

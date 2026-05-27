@@ -19,6 +19,8 @@ import com.capstone.pickIt.domain.trait.entity.TraitItem;
 import com.capstone.pickIt.domain.trait.exception.TraitErrorCode;
 import com.capstone.pickIt.domain.trait.exception.TraitException;
 import com.capstone.pickIt.domain.trait.repository.TraitItemRepository;
+import com.capstone.pickIt.domain.project.entity.ProjectTeamStatus;
+import com.capstone.pickIt.domain.project.repository.ProjectTeamMemberRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import com.capstone.pickIt.global.apiPayload.response.ErrorCode;
@@ -28,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,27 +43,47 @@ public class MypageCourseService {
     private final CourseRepository courseRepository;
     private final TraitItemRepository traitItemRepository;
     private final UserRepository userRepository;
+    private final ProjectTeamMemberRepository projectTeamMemberRepository;
 
     @Transactional(readOnly = true)
     public List<CourseListResponseDTO> getCourseList(Long userId) {
+        Map<Long, ProjectTeamStatus> courseStatusMap = buildCourseStatusMap(userId);
+
         return userCourseProfileRepository
                 .findAllByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId)
                 .stream()
-                .map(CourseListResponseDTO::from)
+                .map(profile -> CourseListResponseDTO.from(
+                        profile,
+                        courseStatusMap.getOrDefault(profile.getCourse().getId(), ProjectTeamStatus.RECRUITING)
+                ))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<CourseCardResponseDTO> getCourseCards(Long userId) {
+        Map<Long, ProjectTeamStatus> courseStatusMap = buildCourseStatusMap(userId);
+
         List<UserCourseProfile> profiles = userCourseProfileRepository
                 .findAllByUserIdAndDeletedAtIsNull(userId);
 
         return profiles.stream()
                 .map(profile -> CourseCardResponseDTO.from(
                         profile,
-                        userCourseTraitRepository.findByUserCourseProfileId(profile.getId())
+                        userCourseTraitRepository.findByUserCourseProfileId(profile.getId()),
+                        courseStatusMap.getOrDefault(profile.getCourse().getId(), ProjectTeamStatus.RECRUITING)
                 ))
                 .toList();
+    }
+
+    private Map<Long, ProjectTeamStatus> buildCourseStatusMap(Long userId) {
+        return projectTeamMemberRepository
+                .findActiveConfirmedMembershipsWithTeamAndCourse(userId, null)
+                .stream()
+                .collect(Collectors.toMap(
+                        m -> m.getProjectTeam().getCourse().getId(),
+                        m -> m.getProjectTeam().getStatus(),
+                        (existing, replacement) -> existing
+                ));
     }
 
     @Transactional
@@ -91,6 +115,14 @@ public class MypageCourseService {
         UserCourseProfile profile = userCourseProfileRepository
                 .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
                 .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
+
+        boolean hasActiveTeam = projectTeamMemberRepository.existsActiveTeamByCourseAndUser(
+                courseId, userId,
+                List.of(ProjectTeamStatus.RECRUITING, ProjectTeamStatus.IN_PROGRESS)
+        );
+        if (hasActiveTeam) {
+            throw new ProfileException(ProfileErrorCode.COURSE_HAS_ACTIVE_TEAM);
+        }
 
         userCourseTraitRepository.deleteByUserCourseProfileId(profile.getId());
         userCourseRepository.deleteByUserIdAndCourseId(userId, courseId);
