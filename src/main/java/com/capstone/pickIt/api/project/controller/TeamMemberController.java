@@ -43,7 +43,7 @@ public class TeamMemberController {
 
     @Operation(summary = "나가기 요청 조회", description = "팀의 PENDING 나가기 요청을 조회합니다. 요청이 없으면 204를 반환합니다.")
     @GetMapping("/{projectTeamId}/leave/request")
-    public ResponseEntity<ApiResponse<TeamLeaveRequestResponseDTO>> getLeaveRequest(
+    public ResponseEntity<?> getLeaveRequest(
             @PathVariable Long projectTeamId) {
         TeamLeaveRequestResponseDTO result = teamMemberService.getLeaveRequest(projectTeamId);
         if (result == null) {
