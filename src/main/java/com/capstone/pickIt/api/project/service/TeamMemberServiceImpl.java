@@ -153,11 +153,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         TeamLeaveRequest leaveRequest = TeamLeaveRequest.create(team, user);
         teamLeaveRequestRepository.save(leaveRequest);
 
-        long requiredCount = projectTeamMemberRepository
-                .findAllByProjectTeamIdAndLeftAtIsNull(projectTeamId).stream()
-                .filter(m -> m.getRecruitmentConfirmStatus() == RecruitmentConfirmStatus.CONFIRMED)
-                .filter(m -> !m.getUser().getId().equals(userId))
-                .count();
+        long requiredCount = calculateRequiredApprovals(projectTeamId, userId);
 
         return TeamLeaveRequestResponseDTO.builder()
                 .teamLeaveRequestId(leaveRequest.getId())
@@ -185,11 +181,8 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                     long approvedCount = teamLeaveApprovalRepository
                             .countByTeamLeaveRequestId(leaveRequest.getId());
 
-                    long requiredCount = projectTeamMemberRepository
-                            .findAllByProjectTeamIdAndLeftAtIsNull(projectTeamId).stream()
-                            .filter(m -> m.getRecruitmentConfirmStatus() == RecruitmentConfirmStatus.CONFIRMED)
-                            .filter(m -> !m.getUser().getId().equals(leaveRequest.getRequester().getId()))
-                            .count();
+                    long requiredCount = calculateRequiredApprovals(
+                            projectTeamId, leaveRequest.getRequester().getId());
 
                     return TeamLeaveRequestResponseDTO.builder()
                             .teamLeaveRequestId(leaveRequest.getId())
@@ -238,13 +231,8 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         teamLeaveApprovalRepository.save(TeamLeaveApproval.create(leaveRequest, approver));
 
         // 전원 인정 여부 확인 (요청자를 제외한 나머지 CONFIRMED 멤버 수 vs 인정 수)
-        List<ProjectTeamMember> activeMembers = projectTeamMemberRepository
-                .findAllByProjectTeamIdAndLeftAtIsNull(projectTeamId);
-
-        long requiredApprovals = activeMembers.stream()
-                .filter(m -> m.getRecruitmentConfirmStatus() == RecruitmentConfirmStatus.CONFIRMED)
-                .filter(m -> !m.getUser().getId().equals(leaveRequest.getRequester().getId()))
-                .count();
+        long requiredApprovals = calculateRequiredApprovals(
+                projectTeamId, leaveRequest.getRequester().getId());
 
         long currentApprovals = teamLeaveApprovalRepository.countByTeamLeaveRequestId(leaveRequest.getId());
 
@@ -312,5 +300,10 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         userCourseProfileRepository
                 .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
                 .ifPresent(profile -> profile.changeRecruitmentStatus(RecruitmentStatus.RECRUITING));
+    }
+
+    private long calculateRequiredApprovals(Long projectTeamId, Long requesterId) {
+        return projectTeamMemberRepository.countConfirmedMembersExcluding(
+                projectTeamId, RecruitmentConfirmStatus.CONFIRMED, requesterId);
     }
 }
