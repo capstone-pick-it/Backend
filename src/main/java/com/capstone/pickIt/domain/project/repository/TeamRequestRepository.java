@@ -22,6 +22,12 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             TeamRequestStatus teamRequestStatus
     );
 
+    boolean existsBySenderIdAndReceiverIdAndTeamRequestStatus(
+            Long senderId,
+            Long receiverId,
+            TeamRequestStatus teamRequestStatus
+    );
+
     Page<TeamRequest> findByTeamRequestStatusAndCreatedAtLessThanEqual(
             TeamRequestStatus teamRequestStatus,
             LocalDateTime createdAt,
