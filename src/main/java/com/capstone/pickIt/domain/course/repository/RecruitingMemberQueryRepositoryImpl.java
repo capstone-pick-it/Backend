@@ -148,10 +148,14 @@ public class RecruitingMemberQueryRepositoryImpl implements RecruitingMemberQuer
         if (includeCompleted) {
             builder.and(profile.recruitmentStatus.in(
                     RecruitmentStatus.RECRUITING,
+                    RecruitmentStatus.CONFIRM_PENDING,
                     RecruitmentStatus.RECRUITMENT_COMPLETED
             ));
         } else {
-            builder.and(profile.recruitmentStatus.eq(RecruitmentStatus.RECRUITING));
+            builder.and(profile.recruitmentStatus.in(
+                    RecruitmentStatus.RECRUITING,
+                    RecruitmentStatus.CONFIRM_PENDING
+            ));
         }
 
         if (keyword != null && !keyword.isBlank()) {

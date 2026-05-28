@@ -118,4 +118,18 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
     List<ProjectTeamMember> findActiveConfirmedMembersWithUserByProjectTeamIds(
             @Param("projectTeamIds") List<Long> projectTeamIds
     );
+
+    @Query("""
+        SELECT COUNT(ptm)
+        FROM ProjectTeamMember ptm
+        WHERE ptm.projectTeam.id = :teamId
+          AND ptm.leftAt IS NULL
+          AND ptm.recruitmentConfirmStatus = :status
+          AND ptm.user.id <> :excludeUserId
+    """)
+    long countConfirmedMembersExcluding(
+            @Param("teamId") Long teamId,
+            @Param("status") RecruitmentConfirmStatus status,
+            @Param("excludeUserId") Long excludeUserId
+    );
 }

@@ -20,9 +20,9 @@ public class DataInitializer implements ApplicationRunner {
             traitItemRepository.saveAll(List.of(
                     TraitItem.builder().nameA("미리미리").nameB("벼락치기").complementaryAllowed(false).build(),
                     TraitItem.builder().nameA("효율주의").nameB("완벽주의").complementaryAllowed(false).build(),
-                    TraitItem.builder().nameA("대면 선호").nameB("비대면 선호").complementaryAllowed(false).build(),
-                    TraitItem.builder().nameA("협업 선호").nameB("분담 선호").complementaryAllowed(false).build(),
-                    TraitItem.builder().nameA("아침형 인간").nameB("새벽형 인간").complementaryAllowed(false).build()
+                    TraitItem.builder().nameA("대면선호").nameB("비대면선호").complementaryAllowed(false).build(),
+                    TraitItem.builder().nameA("협업선호").nameB("분담선호").complementaryAllowed(false).build(),
+                    TraitItem.builder().nameA("아침형").nameB("새벽형").complementaryAllowed(false).build()
             ));
         }
     }

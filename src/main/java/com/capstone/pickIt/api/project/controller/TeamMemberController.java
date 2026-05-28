@@ -8,6 +8,7 @@ import com.capstone.pickIt.global.apiPayload.response.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Team Member", description = "팀원 확정 및 나가기 API")
@@ -38,6 +39,17 @@ public class TeamMemberController {
     public ApiResponse<TeamLeaveRequestResponseDTO> requestLeave(
             @PathVariable Long projectTeamId) {
         return ApiResponse.onSuccess(SuccessCode.CREATED, teamMemberService.requestLeave(projectTeamId));
+    }
+
+    @Operation(summary = "나가기 요청 조회", description = "팀의 PENDING 나가기 요청을 조회합니다. 요청이 없으면 204를 반환합니다.")
+    @GetMapping("/{projectTeamId}/leave/request")
+    public ResponseEntity<?> getLeaveRequest(
+            @PathVariable Long projectTeamId) {
+        TeamLeaveRequestResponseDTO result = teamMemberService.getLeaveRequest(projectTeamId);
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessCode.OK, result));
     }
 
     @Operation(summary = "나가기 인정", description = "다른 팀원의 나가기 요청에 동의합니다. 전원 동의 시 해당 팀원이 팀을 나갑니다.")

@@ -159,14 +159,49 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         TeamLeaveRequest leaveRequest = TeamLeaveRequest.create(team, user);
         teamLeaveRequestRepository.save(leaveRequest);
 
-        // 팀원들한테 나가기 요청 알림 해야함.
+        long requiredCount = calculateRequiredApprovals(projectTeamId, userId);
 
         return TeamLeaveRequestResponseDTO.builder()
                 .teamLeaveRequestId(leaveRequest.getId())
                 .projectTeamId(projectTeamId)
                 .requesterId(userId)
+                .requesterNickname(user.getNickname())
                 .status(leaveRequest.getStatus().name())
+                .approvedCount(0)
+                .requiredCount(requiredCount)
+                .createdAt(leaveRequest.getCreatedAt())
                 .build();
+    }
+
+    // 팀의 PENDING 나가기 요청 조회 (없으면 null 반환)
+    @Override
+    public TeamLeaveRequestResponseDTO getLeaveRequest(Long projectTeamId) {
+        Long userId = SecurityUtil.requireUserId();
+
+        // 팀 멤버인지 확인
+        findActiveMember(projectTeamId, userId);
+
+        return teamLeaveRequestRepository
+                .findByProjectTeamIdAndStatus(projectTeamId, TeamLeaveRequestStatus.PENDING)
+                .map(leaveRequest -> {
+                    long approvedCount = teamLeaveApprovalRepository
+                            .countByTeamLeaveRequestId(leaveRequest.getId());
+
+                    long requiredCount = calculateRequiredApprovals(
+                            projectTeamId, leaveRequest.getRequester().getId());
+
+                    return TeamLeaveRequestResponseDTO.builder()
+                            .teamLeaveRequestId(leaveRequest.getId())
+                            .projectTeamId(projectTeamId)
+                            .requesterId(leaveRequest.getRequester().getId())
+                            .requesterNickname(leaveRequest.getRequester().getNickname())
+                            .status(leaveRequest.getStatus().name())
+                            .approvedCount(approvedCount)
+                            .requiredCount(requiredCount)
+                            .createdAt(leaveRequest.getCreatedAt())
+                            .build();
+                })
+                .orElse(null);
     }
 
      // 나가기 인정
@@ -202,13 +237,8 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         teamLeaveApprovalRepository.save(TeamLeaveApproval.create(leaveRequest, approver));
 
         // 전원 인정 여부 확인 (요청자를 제외한 나머지 CONFIRMED 멤버 수 vs 인정 수)
-        List<ProjectTeamMember> activeMembers = projectTeamMemberRepository
-                .findAllByProjectTeamIdAndLeftAtIsNull(projectTeamId);
-
-        long requiredApprovals = activeMembers.stream()
-                .filter(m -> m.getRecruitmentConfirmStatus() == RecruitmentConfirmStatus.CONFIRMED)
-                .filter(m -> !m.getUser().getId().equals(leaveRequest.getRequester().getId()))
-                .count();
+        long requiredApprovals = calculateRequiredApprovals(
+                projectTeamId, leaveRequest.getRequester().getId());
 
         long currentApprovals = teamLeaveApprovalRepository.countByTeamLeaveRequestId(leaveRequest.getId());
 
@@ -276,5 +306,10 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         userCourseProfileRepository
                 .findByUserIdAndCourseIdAndDeletedAtIsNull(userId, courseId)
                 .ifPresent(profile -> profile.changeRecruitmentStatus(RecruitmentStatus.RECRUITING));
+    }
+
+    private long calculateRequiredApprovals(Long projectTeamId, Long requesterId) {
+        return projectTeamMemberRepository.countConfirmedMembersExcluding(
+                projectTeamId, RecruitmentConfirmStatus.CONFIRMED, requesterId);
     }
 }
