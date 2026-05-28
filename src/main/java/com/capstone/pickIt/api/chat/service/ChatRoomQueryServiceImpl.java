@@ -15,6 +15,7 @@ import com.capstone.pickIt.domain.chat.repository.ChatRoomRepository;
 import com.capstone.pickIt.domain.chat.repository.MessageFileRepository;
 import com.capstone.pickIt.domain.chat.repository.MessageRepository;
 import com.capstone.pickIt.domain.course.entity.Course;
+import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
 import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
 import com.capstone.pickIt.domain.project.entity.TeamRequestStatus;
 import com.capstone.pickIt.domain.project.repository.TeamRequestRepository;
@@ -72,20 +73,29 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
 
         Long opponentUserId = opponentChatPart.getUser().getId();
 
-        boolean existsPendingForReceiver =
-                teamRequestRepository.existsBySenderIdAndReceiverIdAndTeamRequestStatus(
+        // 현재 두 사용자 사이에 PENDING 팀원 요청이 존재하면
+        // 추가 요청을 보내지 못하도록 공통 과목 목록 전체를 빈 배열로 반환
+        boolean existsPendingBetweenUsers =
+                teamRequestRepository.existsPendingBetweenUsers(
                         currentUserId,
                         opponentUserId,
                         TeamRequestStatus.PENDING
                 );
 
-        if (existsPendingForReceiver) {
+        if (existsPendingBetweenUsers) {
             return new CommonCourseResponseDTO.CommonCourseList(List.of());
         }
 
+        // 요청 가능한 공통 과목 조회
+        // - 현재 사용자가 다른 사용자에게 이미 PENDING 요청을 보낸 과목은 제외
+        // - 현재 상대방과 이미 ACCEPTED 된 과목은 양쪽 모두에게 제외
+        // - 두 사용자 모두 RECRUITING 상태인 공통 과목만 조회
         List<Course> commonCourses = userCourseProfileRepository.findRequestableCommonCourses(
                 currentUserId,
-                opponentChatPart.getUser().getId()
+                opponentUserId,
+                RecruitmentStatus.RECRUITING,
+                TeamRequestStatus.PENDING,
+                TeamRequestStatus.ACCEPTED
         );
 
         return CommonCourseConverter.toCommonCourseList(commonCourses);

@@ -22,16 +22,26 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             TeamRequestStatus teamRequestStatus
     );
 
-    boolean existsBySenderIdAndReceiverIdAndTeamRequestStatus(
-            Long senderId,
-            Long receiverId,
-            TeamRequestStatus teamRequestStatus
-    );
-
     Page<TeamRequest> findByTeamRequestStatusAndCreatedAtLessThanEqual(
             TeamRequestStatus teamRequestStatus,
             LocalDateTime createdAt,
             Pageable pageable
+    );
+
+    @Query("""
+        SELECT COUNT(tr) > 0
+        FROM TeamRequest tr
+        WHERE tr.teamRequestStatus = :status
+        AND (
+            (tr.sender.id = :userId AND tr.receiver.id = :opponentUserId)
+            OR
+            (tr.sender.id = :opponentUserId AND tr.receiver.id = :userId)
+        )
+    """)
+    boolean existsPendingBetweenUsers(
+            @Param("userId") Long userId,
+            @Param("opponentUserId") Long opponentUserId,
+            @Param("status") TeamRequestStatus status
     );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
