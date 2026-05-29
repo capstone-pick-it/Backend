@@ -81,20 +81,24 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                 currentUserId
         );
 
+        // 채팅방 메시지 브로드캐스트용 이벤트 발행
         eventPublisher.publishEvent(
                 new ChatRoomBroadcastEvent(chatRoom.getId(), response)
         );
 
+        // 채팅방 참여자별 채팅 목록 갱신 알림 이벤트 발행
         List<ChatPart> participants =
                 chatPartRepository.findActiveParticipantsWithUserByChatRoomId(chatRoom.getId());
 
         for (ChatPart participant : participants) {
             Long receiverId = participant.getUser().getId();
 
+            // 발신자는 제외
             if (receiverId.equals(currentUserId)) {
                 continue;
             }
 
+            // 수신자 기준 안 읽은 메시지 개수 계산
             Long unreadCount = messageRepository.countUnreadMessagesByChatRoomId(
                     chatRoom.getId(),
                     receiverId
@@ -121,6 +125,7 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                     currentUserId
             );
 
+            // 채팅 목록(lastMessage, unreadCount) 갱신용 개인 알림 이벤트 발행
             eventPublisher.publishEvent(
                     new ChatUserNotificationEvent(receiverId, notification)
             );

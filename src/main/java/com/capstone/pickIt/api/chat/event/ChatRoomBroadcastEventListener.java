@@ -23,6 +23,7 @@ public class ChatRoomBroadcastEventListener {
                 event.chatRoomId()
         );
 
+        // 채팅방 구독자에게 메시지 브로드캐스트
         messagingTemplate.convertAndSend(
                 "/topic/chatrooms/" + event.chatRoomId(),
                 event.payload()

@@ -24,8 +24,11 @@ public class ChatUserNotificationEventListener {
                 destination
         );
 
-        // TODO: UserDestination 설정이 안정화되면
-        // /user/queue/notifications 방식으로 전환
+        /*
+        * TODO: UserDestination 설정이 안정화되면
+        *  /user/queue/notifications 방식으로 전환
+        * */
+        // 사용자별 채팅 목록 갱신 알림 전송
         messagingTemplate.convertAndSend(
                 destination,
                 event.payload()
