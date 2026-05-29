@@ -141,4 +141,15 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
             @Param("chatRoomId") Long chatRoomId,
             @Param("messageIds") List<Long> messageIds
     );
+
+    @Query("""
+        SELECT cp
+        FROM ChatPart cp
+        JOIN FETCH cp.user
+        WHERE cp.chatRoom.id = :chatRoomId
+            AND cp.deletedAt IS NULL
+    """)
+    List<ChatPart> findActiveParticipantsWithUserByChatRoomId(
+            @Param("chatRoomId") Long chatRoomId
+    );
 }
