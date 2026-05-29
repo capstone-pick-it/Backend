@@ -7,25 +7,30 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
-public class ChatRoomBroadcastEventListener {
+public class ChatUserNotificationEventListener {
 
     private final SimpMessagingTemplate messagingTemplate;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handle(ChatRoomBroadcastEvent event) {
+    public void handle(ChatUserNotificationEvent event) {
+        String destination = "/queue/notifications/" + event.receiverId();
 
         log.info(
-                "Broadcasting chat room event: chatRoomId={}, destination=/topic/chatrooms/{}",
-                event.chatRoomId(),
-                event.chatRoomId()
+                "Sending chat notification: receiverId={}, destination={}",
+                event.receiverId(),
+                destination
         );
 
-        // 채팅방 구독자에게 메시지 브로드캐스트
+        /*
+        * TODO: UserDestination 설정이 안정화되면
+        *  /user/queue/notifications 방식으로 전환
+        * */
+        // 사용자별 채팅 목록 갱신 알림 전송
         messagingTemplate.convertAndSend(
-                "/topic/chatrooms/" + event.chatRoomId(),
+                destination,
                 event.payload()
         );
     }

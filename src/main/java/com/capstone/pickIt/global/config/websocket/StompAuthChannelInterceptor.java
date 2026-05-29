@@ -40,16 +40,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
             Long userId = jwtProvider.getUserId(authorization);
             String email = jwtProvider.getEmail(authorization);
 
-            AuthPrincipal principal = new AuthPrincipal(userId, email);
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            principal,
-                            null,
-                            Collections.emptyList()
-                    );
-
-            accessor.setUser(authentication);
+            accessor.setUser(() -> userId.toString());
 
             Map<String, Object> sessionAttrs = accessor.getSessionAttributes();
 

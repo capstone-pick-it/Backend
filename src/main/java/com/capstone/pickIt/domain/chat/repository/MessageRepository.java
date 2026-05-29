@@ -56,6 +56,27 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     );
 
     @Query("""
+        SELECT cp.user.id AS userId,
+           COUNT(m.id) AS unreadCount
+        FROM ChatPart cp
+        LEFT JOIN Message m
+        ON m.chatRoom.id = cp.chatRoom.id
+            AND m.user.id <> cp.user.id
+            AND (
+                cp.lastReadMessage IS NULL
+                OR m.id > cp.lastReadMessage.id
+                )
+        WHERE cp.chatRoom.id = :chatRoomId
+            AND cp.deletedAt IS NULL
+            AND cp.user.id <> :senderId
+        GROUP BY cp.user.id
+    """)
+    List<UnreadCountByUserProjection> countUnreadMessagesByUsersInChatRoom(
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("senderId") Long senderId
+    );
+
+    @Query("""
         SELECT m
         FROM Message m
         JOIN FETCH m.user

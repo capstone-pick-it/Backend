@@ -3,6 +3,7 @@ package com.capstone.pickIt.domain.course.repository;
 import com.capstone.pickIt.domain.course.entity.Course;
 import com.capstone.pickIt.domain.course.entity.RecruitmentStatus;
 import com.capstone.pickIt.domain.course.entity.UserCourseProfile;
+import com.capstone.pickIt.domain.project.entity.TeamRequestStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,20 +30,34 @@ public interface UserCourseProfileRepository extends JpaRepository<UserCoursePro
           AND ucp2.user.id = :opponentUserId
           AND ucp1.deletedAt IS NULL
           AND ucp2.deletedAt IS NULL
-          AND ucp1.recruitmentStatus = 'RECRUITING'
-          AND ucp2.recruitmentStatus = 'RECRUITING'
+          AND ucp1.recruitmentStatus = :recruitingStatus
+          AND ucp2.recruitmentStatus = :recruitingStatus
           AND NOT EXISTS (
               SELECT 1
               FROM TeamRequest tr
               WHERE tr.sender.id = :currentUserId
                 AND tr.course.id = ucp1.course.id
-                AND tr.teamRequestStatus = 'PENDING'
+                AND tr.teamRequestStatus = :pendingStatus
+          )
+          AND NOT EXISTS (
+              SELECT 1
+              FROM TeamRequest tr
+              WHERE tr.course.id = ucp1.course.id
+                AND tr.teamRequestStatus = :acceptedStatus
+                AND (
+                  (tr.sender.id = :currentUserId AND tr.receiver.id = :opponentUserId)
+                  OR
+                  (tr.sender.id = :opponentUserId AND tr.receiver.id = :currentUserId)
+                )
           )
         ORDER BY ucp1.course.courseName ASC
         """)
     List<Course> findRequestableCommonCourses(
-            Long currentUserId,
-            Long opponentUserId
+            @Param("currentUserId") Long currentUserId,
+            @Param("opponentUserId") Long opponentUserId,
+            @Param("recruitingStatus") RecruitmentStatus recruitingStatus,
+            @Param("pendingStatus") TeamRequestStatus pendingStatus,
+            @Param("acceptedStatus") TeamRequestStatus acceptedStatus
     );
 
     Optional<UserCourseProfile> findByUserIdAndCourseIdAndDeletedAtIsNull(

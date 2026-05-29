@@ -34,6 +34,22 @@ public interface TeamRequestRepository extends JpaRepository<TeamRequest, Long> 
             Pageable pageable
     );
 
+    @Query("""
+        SELECT COUNT(tr) > 0
+        FROM TeamRequest tr
+        WHERE tr.teamRequestStatus = :status
+        AND (
+            (tr.sender.id = :userId AND tr.receiver.id = :opponentUserId)
+            OR
+            (tr.sender.id = :opponentUserId AND tr.receiver.id = :userId)
+        )
+    """)
+    boolean existsPendingBetweenUsers(
+            @Param("userId") Long userId,
+            @Param("opponentUserId") Long opponentUserId,
+            @Param("status") TeamRequestStatus status
+    );
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT tr FROM TeamRequest tr WHERE tr.id = :teamRequestId")
     Optional<TeamRequest> findByIdWithLock(@Param("teamRequestId") Long teamRequestId);
