@@ -120,6 +120,10 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
 
             Long unreadCount = unreadCountMap.getOrDefault(receiverId, 0L);
 
+            String lastMessage = message.getMessageType() == MessageType.FILE
+                    ? "파일을 보냈습니다."
+                    : message.getContent();
+
             ChatNotificationResponseDTO.ChatRoomNotification notification =
                     new ChatNotificationResponseDTO.ChatRoomNotification(
                             "CHAT_MESSAGE_RECEIVED",
@@ -127,7 +131,7 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                             chatRoom.getChatType(),
                             message.getId(),
                             message.getMessageType(),
-                            message.getContent(),
+                            lastMessage,
                             message.getCreatedAt(),
                             sender.getId(),
                             sender.getNickname(),
