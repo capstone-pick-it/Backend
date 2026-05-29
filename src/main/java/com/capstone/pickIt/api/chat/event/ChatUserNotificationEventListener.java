@@ -24,6 +24,8 @@ public class ChatUserNotificationEventListener {
                 destination
         );
 
+        // TODO: UserDestination 설정이 안정화되면
+        // /user/queue/notifications 방식으로 전환
         messagingTemplate.convertAndSend(
                 destination,
                 event.payload()
