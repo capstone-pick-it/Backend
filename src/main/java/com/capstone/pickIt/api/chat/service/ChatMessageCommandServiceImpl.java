@@ -9,10 +9,7 @@ import com.capstone.pickIt.api.chat.event.ChatUserNotificationEvent;
 import com.capstone.pickIt.domain.chat.entity.*;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.domain.chat.exception.ChatException;
-import com.capstone.pickIt.domain.chat.repository.ChatPartRepository;
-import com.capstone.pickIt.domain.chat.repository.ChatRoomRepository;
-import com.capstone.pickIt.domain.chat.repository.MessageFileRepository;
-import com.capstone.pickIt.domain.chat.repository.MessageRepository;
+import com.capstone.pickIt.domain.chat.repository.*;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,15 +51,20 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
         User sender = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.CURRENT_USER_NOT_FOUND));
 
+        // 메시지 타입별 요청 데이터 검증
         validateMessagePayload(request);
 
+        // 메시지 저장
         Message message = createMessage(chatRoom, sender, request);
         messageRepository.saveAndFlush(message);
 
+        // 첨부파일 저장
         List<MessageFile> files = saveMessageFiles(message, request);
 
+        // 채팅방 마지막 메시지 정보 갱신
         chatRoom.updateLastMessage(message);
 
+        // 발신자를 제외한 안 읽은 참여자 수 계산
         int unreadMemberCount = Math.max(
                 0,
                 chatPartRepository.countActiveParticipants(chatRoom.getId()) - 1
@@ -81,14 +85,30 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                 currentUserId
         );
 
-        // 채팅방 메시지 브로드캐스트용 이벤트 발행
+        /*
+         * 채팅방 메시지 브로드캐스트용 이벤트 발행
+         */
         eventPublisher.publishEvent(
                 new ChatRoomBroadcastEvent(chatRoom.getId(), response)
         );
 
-        // 채팅방 참여자별 채팅 목록 갱신 알림 이벤트 발행
+        /*
+         * 채팅방 참여자별 채팅 목록 갱신 알림 이벤트 발행
+         */
         List<ChatPart> participants =
                 chatPartRepository.findActiveParticipantsWithUserByChatRoomId(chatRoom.getId());
+
+        // 수신자별 안 읽은 메시지 개수 한 번에 조회
+        Map<Long, Long> unreadCountMap =
+                messageRepository.countUnreadMessagesByUsersInChatRoom(
+                                chatRoom.getId(),
+                                currentUserId
+                        )
+                        .stream()
+                        .collect(Collectors.toMap(
+                                UnreadCountByUserProjection::getUserId,
+                                UnreadCountByUserProjection::getUnreadCount
+                        ));
 
         for (ChatPart participant : participants) {
             Long receiverId = participant.getUser().getId();
@@ -98,11 +118,7 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                 continue;
             }
 
-            // 수신자 기준 안 읽은 메시지 개수 계산
-            Long unreadCount = messageRepository.countUnreadMessagesByChatRoomId(
-                    chatRoom.getId(),
-                    receiverId
-            );
+            Long unreadCount = unreadCountMap.getOrDefault(receiverId, 0L);
 
             ChatNotificationResponseDTO.ChatRoomNotification notification =
                     new ChatNotificationResponseDTO.ChatRoomNotification(
