@@ -7,24 +7,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
-public class ChatRoomBroadcastEventListener {
+public class ChatUserNotificationEventListener {
 
     private final SimpMessagingTemplate messagingTemplate;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handle(ChatRoomBroadcastEvent event) {
+    public void handle(ChatUserNotificationEvent event) {
+        String destination = "/queue/notifications/" + event.receiverId();
 
         log.info(
-                "Broadcasting chat room event: chatRoomId={}, destination=/topic/chatrooms/{}",
-                event.chatRoomId(),
-                event.chatRoomId()
+                "Sending chat notification: receiverId={}, destination={}",
+                event.receiverId(),
+                destination
         );
 
         messagingTemplate.convertAndSend(
-                "/topic/chatrooms/" + event.chatRoomId(),
+                destination,
                 event.payload()
         );
     }

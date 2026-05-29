@@ -2,8 +2,10 @@ package com.capstone.pickIt.api.chat.service;
 
 import com.capstone.pickIt.api.chat.converter.ChatRoomEventConverter;
 import com.capstone.pickIt.api.chat.dto.request.ChatMessageSendRequestDTO;
+import com.capstone.pickIt.api.chat.dto.response.ChatNotificationResponseDTO;
 import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
 import com.capstone.pickIt.api.chat.event.ChatRoomBroadcastEvent;
+import com.capstone.pickIt.api.chat.event.ChatUserNotificationEvent;
 import com.capstone.pickIt.domain.chat.entity.*;
 import com.capstone.pickIt.domain.chat.exception.ChatErrorCode;
 import com.capstone.pickIt.domain.chat.exception.ChatException;
@@ -14,6 +16,7 @@ import com.capstone.pickIt.domain.chat.repository.MessageRepository;
 import com.capstone.pickIt.domain.user.entity.User;
 import com.capstone.pickIt.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ChatMessageCommandServiceImpl implements ChatMessageCommandService {
 
     private final ChatRoomRepository chatRoomRepository;
@@ -70,9 +74,57 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                         unreadMemberCount
                 );
 
+        log.info(
+                "Publishing chat message event: chatRoomId={}, chatType={}, senderId={}",
+                chatRoom.getId(),
+                chatRoom.getChatType(),
+                currentUserId
+        );
+
         eventPublisher.publishEvent(
                 new ChatRoomBroadcastEvent(chatRoom.getId(), response)
         );
+
+        List<ChatPart> participants =
+                chatPartRepository.findActiveParticipantsWithUserByChatRoomId(chatRoom.getId());
+
+        for (ChatPart participant : participants) {
+            Long receiverId = participant.getUser().getId();
+
+            if (receiverId.equals(currentUserId)) {
+                continue;
+            }
+
+            Long unreadCount = messageRepository.countUnreadMessagesByChatRoomId(
+                    chatRoom.getId(),
+                    receiverId
+            );
+
+            ChatNotificationResponseDTO.ChatRoomNotification notification =
+                    new ChatNotificationResponseDTO.ChatRoomNotification(
+                            "CHAT_MESSAGE_RECEIVED",
+                            chatRoom.getId(),
+                            chatRoom.getChatType(),
+                            message.getId(),
+                            message.getMessageType(),
+                            message.getContent(),
+                            message.getCreatedAt(),
+                            sender.getId(),
+                            sender.getNickname(),
+                            unreadCount
+                    );
+
+            log.info(
+                    "Publishing chat user notification: chatRoomId={}, receiverId={}, senderId={}",
+                    chatRoom.getId(),
+                    receiverId,
+                    currentUserId
+            );
+
+            eventPublisher.publishEvent(
+                    new ChatUserNotificationEvent(receiverId, notification)
+            );
+        }
     }
 
     private void validateMessagePayload(ChatMessageSendRequestDTO request) {
