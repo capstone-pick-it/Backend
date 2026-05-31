@@ -92,11 +92,6 @@ public class ChatFileServiceImpl implements ChatFileService {
     @Override
     public String createSignedUrl(String objectName) {
 
-        log.info(
-                "credential type = {}",
-                storage.getOptions().getCredentials().getClass()
-        );
-
         if (objectName == null || objectName.isBlank()) {
             throw new ChatException(ChatErrorCode.INVALID_FILE_URL);
         }
