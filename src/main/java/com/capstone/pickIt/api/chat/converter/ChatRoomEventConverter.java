@@ -4,7 +4,6 @@ import com.capstone.pickIt.api.chat.dto.response.ChatRoomEventResponseDTO;
 import com.capstone.pickIt.domain.chat.entity.ChatEventType;
 import com.capstone.pickIt.domain.chat.entity.ChatRoom;
 import com.capstone.pickIt.domain.chat.entity.Message;
-import com.capstone.pickIt.domain.chat.entity.MessageFile;
 import com.capstone.pickIt.domain.project.entity.TeamRequest;
 
 import java.util.List;
@@ -17,7 +16,7 @@ public class ChatRoomEventConverter {
     public static ChatRoomEventResponseDTO.ChatRoomEvent toMessageEvent(
             ChatRoom chatRoom,
             Message message,
-            List<MessageFile> files,
+            List<ChatRoomEventResponseDTO.FilePayload> files,
             int unreadMemberCount
     ) {
         return new ChatRoomEventResponseDTO.ChatRoomEvent(
@@ -32,15 +31,7 @@ public class ChatRoomEventConverter {
                         ),
                         message.getMessageType().name(),
                         message.getContent(),
-                        files.stream()
-                                .map(file -> new ChatRoomEventResponseDTO.FilePayload(
-                                        file.getId(),
-                                        file.getFileName(),
-                                        file.getFileUrl(),
-                                        file.getFileSize(),
-                                        file.getContentType()
-                                ))
-                                .toList(),
+                        files,
                         message.getCreatedAt(),
                         unreadMemberCount
                 ),
