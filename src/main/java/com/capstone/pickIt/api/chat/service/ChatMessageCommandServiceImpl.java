@@ -34,6 +34,7 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
     private final MessageRepository messageRepository;
     private final MessageFileRepository messageFileRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ChatFileService chatFileService;
 
     @Override
     public void sendMessage(Long currentUserId, ChatMessageSendRequestDTO request) {
@@ -60,6 +61,15 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
 
         // 첨부파일 저장
         List<MessageFile> files = saveMessageFiles(message, request);
+        List<ChatRoomEventResponseDTO.FilePayload> filePayloads = files.stream()
+                .map(file -> new ChatRoomEventResponseDTO.FilePayload(
+                        file.getId(),
+                        file.getFileName(),
+                        chatFileService.createSignedUrl(file.getFileUrl()),
+                        file.getFileSize(),
+                        file.getContentType()
+                ))
+                .toList();
 
         // 채팅방 마지막 메시지 정보 갱신
         chatRoom.updateLastMessage(message);
@@ -74,7 +84,7 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                 ChatRoomEventConverter.toMessageEvent(
                         chatRoom,
                         message,
-                        files,
+                        filePayloads,
                         unreadMemberCount
                 );
 
@@ -216,8 +226,8 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
         List<MessageFile> files = request.files().stream()
                 .map(file -> MessageFile.create(
                         message,
-                        file.fileUrl(),
-                        file.fileName(),
+                        file.fileUrl(), // GCS objectName
+                        file.fileName(), // 원본 파일명
                         file.fileSize(),
                         file.contentType()
                 ))
