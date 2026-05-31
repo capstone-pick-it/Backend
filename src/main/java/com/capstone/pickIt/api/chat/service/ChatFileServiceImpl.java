@@ -85,7 +85,7 @@ public class ChatFileServiceImpl implements ChatFileService {
     }
 
     /**
-     * < 채팅 메시지 이벤트 응답 및 채팅방 메시지 목록 조회 시 사용 >
+     * 채팅 메시지 이벤트 응답 및 채팅방 메시지 목록 조회 시에 사용됨
      * GCS objectName을 24시간 동안 접근 가능한 Signed URL로 변환함
      * 현재 MessageFile.fileUrl 컬럼에는 실제 URL이 아니라 objectName이 저장됨
      */
