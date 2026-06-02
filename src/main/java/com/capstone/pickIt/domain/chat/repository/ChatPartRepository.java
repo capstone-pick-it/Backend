@@ -10,9 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
     Optional<ChatPart> findByChatRoomIdAndUserId(Long chatRoomId, Long userId);
@@ -24,6 +22,18 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
             WHERE cp.chatRoom.id = :chatRoomId
               AND cp.user.id <> :currentUserId
               AND cp.deletedAt IS NULL
+            """)
+    Optional<ChatPart> findActiveOpponent(
+            Long chatRoomId,
+            Long currentUserId
+    );
+
+    @Query("""
+            SELECT cp
+            FROM ChatPart cp
+            JOIN FETCH cp.user
+            WHERE cp.chatRoom.id = :chatRoomId
+              AND cp.user.id <> :currentUserId
             """)
     Optional<ChatPart> findOpponent(
             Long chatRoomId,
@@ -110,7 +120,6 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
         FROM ChatPart cp
         WHERE cp.chatRoom.id IN :chatRoomIds
         AND cp.user.id <> :currentUserId
-        AND cp.deletedAt IS NULL
     """)
     List<OpponentProjection> findOpponentsByChatRoomIds(
             @Param("chatRoomIds") List<Long> chatRoomIds,
