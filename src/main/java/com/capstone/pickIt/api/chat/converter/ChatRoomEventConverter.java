@@ -35,6 +35,7 @@ public class ChatRoomEventConverter {
                         message.getCreatedAt(),
                         unreadMemberCount
                 ),
+                null,
                 null
         );
     }
@@ -54,7 +55,8 @@ public class ChatRoomEventConverter {
                         teamRequest.getTeamRequestStatus().name(),
                         teamRequest.getCreatedAt(),
                         null
-                )
+                ),
+                null
         );
     }
 
@@ -73,7 +75,8 @@ public class ChatRoomEventConverter {
                         teamRequest.getTeamRequestStatus().name(),
                         teamRequest.getCreatedAt(),
                         teamRequest.getRespondedAt()
-                )
+                ),
+                null
         );
     }
 
@@ -92,6 +95,25 @@ public class ChatRoomEventConverter {
                         teamRequest.getTeamRequestStatus().name(),
                         teamRequest.getCreatedAt(),
                         teamRequest.getRespondedAt()
+                ),
+                null
+        );
+    }
+
+    public static ChatRoomEventResponseDTO.ChatRoomEvent toMessageReadEvent(
+            ChatRoom chatRoom,
+            Long readerId,
+            Long lastReadMessageId
+    ) {
+        return new ChatRoomEventResponseDTO.ChatRoomEvent(
+                ChatEventType.CHAT_MESSAGE_READ.name(),
+                chatRoom.getId(),
+                chatRoom.getChatType().name(),
+                null,
+                null,
+                new ChatRoomEventResponseDTO.MessageReadPayload(
+                        readerId,
+                        lastReadMessageId
                 )
         );
     }

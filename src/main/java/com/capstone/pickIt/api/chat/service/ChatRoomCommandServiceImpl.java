@@ -179,9 +179,22 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
                 .findByIdAndChatRoomId(request.lastReadMessageId(), chatRoomId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.MESSAGE_NOT_FOUND));
 
-        if (chatPart.getLastReadMessage() == null
-                || chatPart.getLastReadMessage().getId() < message.getId()) {
+        boolean isUpdated = chatPart.getLastReadMessage() == null
+                || chatPart.getLastReadMessage().getId() < message.getId();
+
+        if (isUpdated) {
             chatPart.updateLastReadMessage(message);
+
+            ChatRoomEventResponseDTO.ChatRoomEvent readEvent =
+                    ChatRoomEventConverter.toMessageReadEvent(
+                            message.getChatRoom(),
+                            currentUserId,
+                            message.getId()
+                    );
+
+            eventPublisher.publishEvent(
+                    new ChatRoomBroadcastEvent(chatRoomId, readEvent)
+            );
         }
 
         Long unreadCount = messageRepository.countUnreadMessagesByChatRoomId(chatRoomId, currentUserId);
