@@ -10,7 +10,8 @@ public class ChatRoomEventResponseDTO {
             Long chatRoomId,
             String chatType,
             MessagePayload message,
-            TeamRequestPayload teamRequest
+            TeamRequestPayload teamRequest,
+            MessageReadPayload messageRead
     ) {
     }
 
@@ -47,6 +48,12 @@ public class ChatRoomEventResponseDTO {
             String status,
             LocalDateTime createdAt,
             LocalDateTime respondedAt
+    ) {
+    }
+
+    public record MessageReadPayload(
+            Long readerId,
+            Long lastReadMessageId
     ) {
     }
 }

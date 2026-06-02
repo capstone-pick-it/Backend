@@ -38,7 +38,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static com.capstone.pickIt.domain.point.policy.PointPolicy.PROJECT_REQUIRED_POINT;
@@ -179,16 +178,33 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
                 .findByIdAndChatRoomId(request.lastReadMessageId(), chatRoomId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.MESSAGE_NOT_FOUND));
 
-        if (chatPart.getLastReadMessage() == null
-                || chatPart.getLastReadMessage().getId() < message.getId()) {
+        boolean isUpdated = chatPart.getLastReadMessage() == null
+                || chatPart.getLastReadMessage().getId() < message.getId();
+
+        if (isUpdated) {
             chatPart.updateLastReadMessage(message);
+
+            ChatRoomEventResponseDTO.ChatRoomEvent readEvent =
+                    ChatRoomEventConverter.toMessageReadEvent(
+                            message.getChatRoom(),
+                            currentUserId,
+                            message.getId()
+                    );
+
+            eventPublisher.publishEvent(
+                    new ChatRoomBroadcastEvent(chatRoomId, readEvent)
+            );
         }
 
         Long unreadCount = messageRepository.countUnreadMessagesByChatRoomId(chatRoomId, currentUserId);
 
+        Long lastReadMessageId = chatPart.getLastReadMessage() != null
+                ? chatPart.getLastReadMessage().getId()
+                : message.getId();
+
         return new ChatMessageResponseDTO.ReadUpdateResponse(
                 chatRoomId,
-                chatPart.getLastReadMessage().getId(),
+                lastReadMessageId,
                 unreadCount
         );
     }
@@ -215,7 +231,7 @@ public class ChatRoomCommandServiceImpl implements ChatRoomCommandService {
         }
 
         ChatPart receiverChatPart = chatPartRepository
-                .findOpponent(chatRoomId, currentUserId)
+                .findActiveOpponent(chatRoomId, currentUserId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
 
         User sender = currentChatPart.getUser();

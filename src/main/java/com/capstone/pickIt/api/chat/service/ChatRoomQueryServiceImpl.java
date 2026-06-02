@@ -68,7 +68,7 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
         }
 
         ChatPart opponentChatPart = chatPartRepository
-                .findOpponent(chatRoomId, currentUserId)
+                .findActiveOpponent(chatRoomId, currentUserId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
 
         Long opponentUserId = opponentChatPart.getUser().getId();
