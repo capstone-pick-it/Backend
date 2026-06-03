@@ -11,6 +11,7 @@ public record ProjectMemberSummaryDTO(
         Long userId,
         String nickname,
         String major,
+        Integer grade,
         ProjectTeamMemberRole role,
         RecruitmentConfirmStatus recruitmentConfirmStatus,
         LocalDateTime joinedAt,

@@ -69,6 +69,7 @@ public class ProjectConverter {
                 userId,
                 member.getUser().getNickname(),
                 member.getUser().getMajor(),
+                member.getUser().getGrade(),
                 member.getRole(),
                 member.getRecruitmentConfirmStatus(),
                 member.getJoinedAt(),
