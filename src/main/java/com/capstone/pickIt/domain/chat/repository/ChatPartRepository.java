@@ -35,7 +35,7 @@ public interface ChatPartRepository extends JpaRepository<ChatPart, Long> {
             WHERE cp.chatRoom.id = :chatRoomId
               AND cp.user.id <> :currentUserId
             """)
-    Optional<ChatPart> findOpponent(
+    Optional<ChatPart> findOpponentIncludingDeleted(
             Long chatRoomId,
             Long currentUserId
     );

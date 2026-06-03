@@ -436,7 +436,7 @@ public class ChatRoomQueryServiceImpl implements ChatRoomQueryService {
         }
 
         ChatPart opponentChatPart = chatPartRepository
-                .findOpponent(chatRoomId, currentUserId)
+                .findOpponentIncludingDeleted(chatRoomId, currentUserId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.CHAT_PART_NOT_FOUND));
 
         return ChatMessageConverter.toOpponent(opponentChatPart);
