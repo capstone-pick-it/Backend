@@ -24,21 +24,21 @@ public class MypageProjectHistoryService {
 
     @Transactional(readOnly = true)
     public ProjectHistorySummaryResponseDTO getProjectHistorySummary(Long userId) {
-        long totalProjectCount = projectTeamMemberRepository.countConfirmedByUserId(userId);
+        List<ProjectTeamMember> members = projectTeamMemberRepository
+                .findActiveConfirmedMembershipsWithTeamAndCourse(userId, ProjectTeamStatus.DONE);
 
-        double averageScore = 0.0;
-        long doneProjectCount = projectTeamMemberRepository.countDoneConfirmedByUserId(userId);
-
-        if (totalProjectCount > 0) {
-            averageScore = (double) doneProjectCount / totalProjectCount * 100;
-        }
+        double averageScore = members.stream()
+                .mapToDouble(m -> m.getProjectTeam().getProgressRate() != null
+                        ? m.getProjectTeam().getProgressRate().doubleValue() : 0.0)
+                .average()
+                .orElse(0.0);
 
         double averageContribution = peerReviewRepository
                 .findAverageScoreByRevieweeId(userId)
                 .doubleValue();
 
         return ProjectHistorySummaryResponseDTO.builder()
-                .projectCount((int) doneProjectCount) // DONE 프로젝트만 반환
+                .projectCount(members.size())
                 .averageScore(averageScore)
                 .averageContribution(averageContribution)
                 .build();
