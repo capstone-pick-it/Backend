@@ -14,13 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Table(
-        name = "project_team",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_project_team_course_status",
-                        columnNames = {"course_id", "status"}
-                )
-        }
+        name = "project_team"
 )
 public class ProjectTeam extends BaseEntity {
 
