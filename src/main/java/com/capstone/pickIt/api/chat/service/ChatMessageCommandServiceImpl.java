@@ -155,6 +155,12 @@ public class ChatMessageCommandServiceImpl implements ChatMessageCommandService 
                     currentUserId
             );
 
+            // DIRECT 채팅 상대방이 나간 상태라면 채팅방 재노출을 위해 복구
+            if (chatRoom.getChatType() == ChatType.DIRECT) {
+                chatPartRepository.findOpponentIncludingDeleted(chatRoom.getId(), currentUserId)
+                        .ifPresent(ChatPart::restore);
+            }
+
             // 채팅 목록(lastMessage, unreadCount) 갱신용 개인 알림 이벤트 발행
             eventPublisher.publishEvent(
                     new ChatUserNotificationEvent(receiverId, notification)
