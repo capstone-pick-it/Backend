@@ -4,7 +4,7 @@ import com.capstone.pickIt.api.user.dto.response.ProjectHistoryDetailResponseDTO
 import com.capstone.pickIt.api.user.dto.response.ProjectHistorySummaryResponseDTO;
 import com.capstone.pickIt.domain.project.entity.ProjectTeam;
 import com.capstone.pickIt.domain.project.entity.ProjectTeamMember;
-import com.capstone.pickIt.domain.project.entity.RecruitmentConfirmStatus;
+import com.capstone.pickIt.domain.project.entity.ProjectTeamStatus;
 import com.capstone.pickIt.domain.project.repository.PeerReviewRepository;
 import com.capstone.pickIt.domain.project.repository.ProjectTeamMemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,8 +46,8 @@ public class MypageProjectHistoryService {
     @Transactional(readOnly = true)
     public ProjectHistoryDetailResponseDTO getProjectHistoryDetail(Long userId) {
         List<ProjectTeamMember> members = projectTeamMemberRepository
-                .findAllByUserIdAndRecruitmentConfirmStatusAndLeftAtIsNullOrderByJoinedAtDesc(
-                        userId, RecruitmentConfirmStatus.CONFIRMED);
+                .findActiveConfirmedMembershipsWithTeamAndCourse(
+                        userId, ProjectTeamStatus.DONE);
 
         double averageCompletionRate = members.stream()
                 .mapToDouble(m -> m.getProjectTeam().getProgressRate() != null
