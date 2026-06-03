@@ -24,12 +24,13 @@ public class MypageProjectHistoryService {
 
     @Transactional(readOnly = true)
     public ProjectHistorySummaryResponseDTO getProjectHistorySummary(Long userId) {
-        long projectCount = projectTeamMemberRepository.countConfirmedByUserId(userId);
+        long totalProjectCount = projectTeamMemberRepository.countConfirmedByUserId(userId);
 
         double averageScore = 0.0;
-        if (projectCount > 0) {
-            long doneCount = projectTeamMemberRepository.countDoneConfirmedByUserId(userId);
-            averageScore = (double) doneCount / projectCount * 100;
+        long doneProjectCount = projectTeamMemberRepository.countDoneConfirmedByUserId(userId);
+
+        if (totalProjectCount > 0) {
+            averageScore = (double) doneProjectCount / totalProjectCount * 100;
         }
 
         double averageContribution = peerReviewRepository
@@ -37,7 +38,7 @@ public class MypageProjectHistoryService {
                 .doubleValue();
 
         return ProjectHistorySummaryResponseDTO.builder()
-                .projectCount((int) projectCount)
+                .projectCount((int) doneProjectCount) // DONE 프로젝트만 반환
                 .averageScore(averageScore)
                 .averageContribution(averageContribution)
                 .build();
