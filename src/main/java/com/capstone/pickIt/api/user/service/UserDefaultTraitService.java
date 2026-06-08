@@ -1,5 +1,6 @@
 package com.capstone.pickIt.api.user.service;
 
+import com.capstone.pickIt.api.course.service.MatchScoreService;
 import com.capstone.pickIt.api.user.dto.request.UserDefaultTraitRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.UserDefaultTraitResponseDTO;
 import com.capstone.pickIt.domain.trait.entity.TraitItem;
@@ -25,6 +26,7 @@ public class UserDefaultTraitService {
     private final UserDefaultTraitRepository userDefaultTraitRepository;
     private final UserRepository userRepository;
     private final TraitItemRepository traitItemRepository;
+    private final MatchScoreService matchScoreService;
 
     // 기본 팀플 성향 조회
     @Transactional(readOnly = true)
@@ -70,6 +72,7 @@ public class UserDefaultTraitService {
     public List<UserDefaultTraitResponseDTO> updateDefaultTraits(Long userId, List<UserDefaultTraitRequestDTO> requests) {
         userDefaultTraitRepository.deleteByUserId(userId);
         saveDefaultTraits(userId, requests);
+        matchScoreService.recalculateForUser(userId);
         return getDefaultTraits(userId);
     }
 }
