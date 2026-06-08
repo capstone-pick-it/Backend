@@ -6,6 +6,7 @@ import com.capstone.pickIt.global.entity.CreatedBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @Table(name = "match_scores")
@@ -42,4 +43,17 @@ public class MatchScore extends CreatedBaseEntity {
 
     @Column(name = "calculated_at", nullable = false)
     private LocalDateTime calculatedAt;
+
+    public static MatchScore of(User user, UserCourseProfile profile,
+                                int traitScore, int importanceScore, int levelScore) {
+        return MatchScore.builder()
+                .user(user)
+                .userCourseProfile(profile)
+                .traitScore(traitScore)
+                .importanceScore(importanceScore)
+                .levelScore(levelScore)
+                .totalScore(traitScore + importanceScore + levelScore)
+                .calculatedAt(LocalDateTime.now(ZoneOffset.UTC))
+                .build();
+    }
 }
