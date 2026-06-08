@@ -7,6 +7,7 @@ import com.capstone.pickIt.domain.course.entity.UserCourseTrait;
 import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
 import com.capstone.pickIt.domain.matching.entity.MatchScore;
 import com.capstone.pickIt.domain.matching.repository.MatchScoreRepository;
+import com.capstone.pickIt.domain.teamlevel.entity.TeamLevel;
 import com.capstone.pickIt.domain.teamlevel.repository.TeamLevelRepository;
 import com.capstone.pickIt.domain.trait.entity.TraitSide;
 import com.capstone.pickIt.domain.user.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -124,11 +126,16 @@ public class MatchScoreService {
 
     // 팀플 레벨 (최대 3점)
     private int calculateLevelScore(Long myUserId, Long targetUserId) {
-        int myLevel = teamLevelRepository.findByUserId(myUserId)
-                .map(tl -> tl.getLevel()).orElse(0);
-        int targetLevel = teamLevelRepository.findByUserId(targetUserId)
-                .map(tl -> tl.getLevel()).orElse(0);
+        Optional<TeamLevel> myTeamLevel = teamLevelRepository.findByUserId(myUserId);
+        Optional<TeamLevel> targetTeamLevel = teamLevelRepository.findByUserId(targetUserId);
 
+        // 한쪽이라도 레벨 정보 없으면 0점
+        if (myTeamLevel.isEmpty() || targetTeamLevel.isEmpty()) {
+            return 0;
+        }
+
+        int myLevel = myTeamLevel.get().getLevel();
+        int targetLevel = targetTeamLevel.get().getLevel();
         int diff = Math.abs(myLevel - targetLevel);
         return Math.max(3 - diff, 0);
     }

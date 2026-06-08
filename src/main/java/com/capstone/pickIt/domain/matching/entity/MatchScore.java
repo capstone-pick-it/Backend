@@ -53,7 +53,7 @@ public class MatchScore extends CreatedBaseEntity {
                 .importanceScore(importanceScore)
                 .levelScore(levelScore)
                 .totalScore(traitScore + importanceScore + levelScore)
-                .calculatedAt(LocalDateTime.now(ZoneOffset.UTC))
+                .calculatedAt(LocalDateTime.now())
                 .build();
     }
 }
