@@ -1,5 +1,6 @@
 package com.capstone.pickIt.api.user.service;
 
+import com.capstone.pickIt.api.course.service.MatchScoreService;
 import com.capstone.pickIt.api.user.dto.request.AddCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.request.UpdateCourseRequestDTO;
 import com.capstone.pickIt.api.user.dto.response.CourseCardResponseDTO;
@@ -15,6 +16,7 @@ import com.capstone.pickIt.domain.course.repository.CourseRepository;
 import com.capstone.pickIt.domain.course.repository.UserCourseProfileRepository;
 import com.capstone.pickIt.domain.course.repository.UserCourseRepository;
 import com.capstone.pickIt.domain.course.repository.UserCourseTraitRepository;
+import com.capstone.pickIt.domain.matching.repository.MatchScoreRepository;
 import com.capstone.pickIt.domain.trait.entity.TraitItem;
 import com.capstone.pickIt.domain.trait.exception.TraitErrorCode;
 import com.capstone.pickIt.domain.trait.exception.TraitException;
@@ -44,6 +46,8 @@ public class MypageCourseService {
     private final TraitItemRepository traitItemRepository;
     private final UserRepository userRepository;
     private final ProjectTeamMemberRepository projectTeamMemberRepository;
+    private final MatchScoreService matchScoreService;
+    private final MatchScoreRepository matchScoreRepository;
 
     @Transactional(readOnly = true)
     public List<CourseListResponseDTO> getCourseList(Long userId) {
@@ -108,6 +112,7 @@ public class MypageCourseService {
                             .build()
             );
         }
+        matchScoreService.recalculateForProfile(profile);
     }
 
     @Transactional
@@ -126,6 +131,9 @@ public class MypageCourseService {
 
         userCourseTraitRepository.deleteByUserCourseProfileId(profile.getId());
         userCourseRepository.deleteByUserIdAndCourseId(userId, courseId);
+
+        matchScoreRepository.deleteByProfileId(profile.getId());
+
         profile.softDelete();
     }
 
@@ -177,5 +185,7 @@ public class MypageCourseService {
                             .build()
             );
         }
+
+        matchScoreService.recalculateForProfile(profile);
     }
 }
