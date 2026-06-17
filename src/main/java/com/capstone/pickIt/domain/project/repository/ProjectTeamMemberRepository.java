@@ -96,7 +96,7 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
         JOIN FETCH ptm.projectTeam pt
         JOIN FETCH pt.course
         WHERE ptm.user.id = :userId
-          AND ptm.recruitmentConfirmStatus = 'CONFIRMED'
+          AND ptm.recruitmentConfirmStatus IN ('CONFIRMED', 'PENDING')
           AND ptm.leftAt IS NULL
           AND (:status IS NULL OR pt.status = :status)
         ORDER BY ptm.joinedAt DESC
@@ -112,7 +112,7 @@ public interface ProjectTeamMemberRepository extends JpaRepository<ProjectTeamMe
         JOIN FETCH ptm.user
         WHERE ptm.projectTeam.id IN :projectTeamIds
           AND ptm.leftAt IS NULL
-          AND ptm.recruitmentConfirmStatus = 'CONFIRMED'
+          AND ptm.recruitmentConfirmStatus IN ('CONFIRMED', 'PENDING')
         ORDER BY ptm.projectTeam.id, ptm.joinedAt ASC
     """)
     List<ProjectTeamMember> findActiveConfirmedMembersWithUserByProjectTeamIds(
